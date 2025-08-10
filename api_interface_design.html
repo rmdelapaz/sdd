@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API and Interface Design</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="icon" href="/favicon.png">
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true });
+    </script>
+</head>
+<body>
+    <h1>API and Interface Design</h1>
+    
+    <p>APIs are like restaurants - they serve requests from hungry clients. A good API, like a good restaurant, has a clear menu, consistent service, and delivers exactly what was ordered. Let's learn how to design APIs that developers will love!</p>
+    
+    <h2>The Restaurant Menu Analogy</h2>
+    
+    <canvas id="restaurantCanvas" width="600" height="400"></canvas>
+    
+    <script>
+    const restaurantCanvas = document.getElementById('restaurantCanvas');
+    const rctx = restaurantCanvas.getContext('2d');
+    
+    // Background
+    rctx.fillStyle = '#faf8f3';
+    rctx.fillRect(0, 0, 600, 400);
+    
+    // Restaurant front
+    rctx.fillStyle = '#8B4513';
+    rctx.fillRect(150, 100, 300, 250);
+    
+    // Door
+    rctx.fillStyle = '#654321';
+    rctx.fillRect(270, 200, 60, 150);
+    
+    // Sign
+    rctx.fillStyle = '#FFD700';
+    rctx.fillRect(200, 60, 200, 40);
+    rctx.fillStyle = '#333';
+    rctx.font = '20px Arial';
+    rctx.fillText('API Restaurant', 235, 88);
+    
+    // Menu board
+    rctx.fillStyle = '#fff';
+    rctx.fillRect(170, 130, 100, 150);
+    rctx.fillStyle = '#333';
+    rctx.font = '12px Arial';
+    rctx.fillText('MENU', 210, 150);
+    rctx.font = '10px Arial';
+    rctx.fillText('GET /users', 180, 170);
+    rctx.fillText('POST /orders', 180, 190);
+    rctx.fillText('PUT /items/:id', 180, 210);
+    rctx.fillText('DELETE /cart', 180, 230);
+    
+    // Response window
+    rctx.fillStyle = '#87CEEB';
+    rctx.fillRect(330, 130, 100, 60);
+    rctx.fillStyle = '#333';
+    rctx.fillText('Order Ready!', 350, 165);
+    rctx.fillText('200 OK', 360, 180);
+    
+    // Customer
+    rctx.fillStyle = '#333';
+    rctx.beginPath();
+    rctx.arc(100, 250, 20, 0, 2 * Math.PI);
+    rctx.fill();
+    rctx.fillText('Client', 85, 290);
+    
+    // Speech bubble
+    rctx.fillStyle = '#fff';
+    rctx.beginPath();
+    rctx.moveTo(120, 230);
+    rctx.lineTo(200, 230);
+    rctx.lineTo(200, 200);
+    rctx.lineTo(140, 200);
+    rctx.lineTo(130, 210);
+    rctx.closePath();
+    rctx.fill();
+    rctx.stroke();
+    
+    rctx.fillStyle = '#333';
+    rctx.font = '11px Arial';
+    rctx.fillText('I\'d like to', 145, 215);
+    rctx.fillText('GET /users', 140, 227);
+    
+    // API flow arrows
+    rctx.strokeStyle = '#4CAF50';
+    rctx.lineWidth = 2;
+    rctx.beginPath();
+    rctx.moveTo(120, 250);
+    rctx.lineTo(270, 250);
+    rctx.stroke();
+    
+    rctx.beginPath();
+    rctx.moveTo(330, 250);
+    rctx.lineTo(480, 250);
+    rctx.stroke();
+    
+    rctx.fillStyle = '#333';
+    rctx.font = '12px Arial';
+    rctx.fillText('Request', 180, 245);
+    rctx.fillText('Response', 380, 245);
+    </script>
+    
+    <h2>RESTful API Design Principles</h2>
+    
+    <p>REST is like the grammar of API design - it gives us rules to communicate clearly:</p>
+    
+    <div class="mermaid">
+    graph TD
+        A[RESTful Principles] --> B[Resources as Nouns]
+        A --> C[HTTP Verbs as Actions]
+        A --> D[Stateless Communication]
+        A --> E[Uniform Interface]
+        A --> F[Client-Server Separation]
+        
+        B --> B1[/users not /getUsers]
+        C --> C1[GET: Read<br/>POST: Create<br/>PUT: Update<br/>DELETE: Remove]
+        D --> D1[Each request is complete]
+        E --> E1[Consistent patterns]
+        F --> F1[API doesn't know UI]
+        
+        style A fill:#4CAF50
+        style B fill:#81C784
+        style C fill:#81C784
+        style D fill:#81C784
+        style E fill:#81C784
+        style F fill:#81C784
+    </div>
+    
+    <h2>Real-World Example: E-Commerce API</h2>
+    
+    <div style="background-color: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3>Product Catalog API Endpoints</h3>
+        
+        <div style="margin: 10px 0;">
+            <strong>GET /api/v1/products</strong>
+            <pre style="background: #263238; color: #aed581; padding: 10px; border-radius: 5px;">
+{
+  "products": [
+    {
+      "id": "prod_123",
+      "name": "Wireless Headphones",
+      "price": 79.99,
+      "stock": 150,
+      "category": "electronics"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "per_page": 20,
+    "total": 485
+  }
+}</pre>
+        </div>
+        
+        <div style="margin: 10px 0;">
+            <strong>POST /api/v1/orders</strong>
+            <pre style="background: #263238; color: #aed581; padding: 10px; border-radius: 5px;">
+// Request
+{
+  "customer_id": "cust_456",
+  "items": [
+    {"product_id": "prod_123", "quantity": 2}
+  ],
+  "shipping_address": {...}
+}
+
+// Response (201 Created)
+{
+  "order_id": "ord_789",
+  "status": "pending",
+  "total": 159.98,
+  "created_at": "2024-03-15T10:30:00Z"
+}</pre>
+        </div>
+    </div>
+    
+    <h2>API Versioning: The Evolution Strategy</h2>
+    
+    <canvas id="versioningCanvas" width="600" height="300"></canvas>
+    
+    <script>
+    const versionCanvas = document.getElementById('versioningCanvas');
+    const vctx = versionCanvas.getContext('2d');
+    
+    // Background
+    vctx.fillStyle = '#f5f5f5';
+    vctx.fillRect(0, 0, 600, 300);
+    
+    // Timeline
+    vctx.strokeStyle = '#333';
+    vctx.lineWidth = 3;
+    vctx.beginPath();
+    vctx.moveTo(50, 150);
+    vctx.lineTo(550, 150);
+    vctx.stroke();
+    
+    // Version points
+    const versions = [
+        {x: 100, label: 'v1', color: '#4CAF50', features: 'Basic CRUD'},
+        {x: 250, label: 'v2', color: '#2196F3', features: '+ Filtering'},
+        {x: 400, label: 'v3', color: '#FF9800', features: '+ Webhooks'},
+        {x: 500, label: 'v4', color: '#9C27B0', features: '+ GraphQL'}
+    ];
+    
+    versions.forEach((version, index) => {
+        // Version circle
+        vctx.fillStyle = version.color;
+        vctx.beginPath();
+        vctx.arc(version.x, 150, 20, 0, 2 * Math.PI);
+        vctx.fill();
+        
+        // Version label
+        vctx.fillStyle = '#fff';
+        vctx.font = '14px Arial';
+        vctx.fillText(version.label, version.x - 10, 155);
+        
+        // Features
+        vctx.fillStyle = '#333';
+        vctx.font = '11px Arial';
+        vctx.fillText(version.features, version.x - 30, 190);
+        
+        // Deprecation warning
+        if (index < 2) {
+            vctx.fillStyle = '#ffcccc';
+            vctx.fillRect(version.x - 40, 70, 80, 30);
+            vctx.fillStyle = '#d32f2f';
+            vctx.font = '10px Arial';
+            vctx.fillText('Deprecated', version.x - 30, 90);
+        }
+    });
+    
+    // Best practice note
+    vctx.fillStyle = '#666';
+    vctx.font = '12px Arial';
+    vctx.fillText('Support at least 2 versions concurrently for smooth migrations', 150, 250);
+    
+    // URL examples
+    vctx.fillStyle = '#333';
+    vctx.font = '11px Arial';
+    vctx.fillText('/api/v1/products', 60, 220);
+    vctx.fillText('/api/v2/products?filter=active', 180, 220);
+    vctx.fillText('/api/v3/products + webhooks', 330, 220);
+    </script>
+    
+    <h2>Authentication & Security: The Bouncer at the Door</h2>
+    
+    <div class="mermaid">
+    sequenceDiagram
+        participant Client
+        participant API
+        participant AuthServer
+        participant Database
+        
+        Client->>AuthServer: POST /auth/login<br/>{email, password}
+        AuthServer->>Database: Verify credentials
+        Database-->>AuthServer: User valid
+        AuthServer-->>Client: JWT Token
+        
+        Note over Client: Store token securely
+        
+        Client->>API: GET /api/products<br/>Authorization: Bearer {token}
+        API->>API: Validate JWT
+        API->>Database: Fetch products
+        Database-->>API: Product data
+        API-->>Client: 200 OK + Products
+        
+        Note over Client,API: All subsequent requests include token
+    </div>
+    
+    <h2>Error Handling: Speaking the Same Language</h2>
+    
+    <canvas id="errorCanvas" width="600" height="350"></canvas>
+    
+    <script>
+    const errorCanvas = document.getElementById('errorCanvas');
+    const ectx = errorCanvas.getContext('2d');
+    
+    // Background
+    ectx.fillStyle = '#fff';
+    ectx.fillRect(0, 0, 600, 350);
+    
+    // Title
+    ectx.fillStyle = '#333';
+    ectx.font = '16px Arial';
+    ectx.fillText('Consistent Error Response Format', 200, 30);
+    
+    // Error examples
+    const errors = [
+        {
+            code: 400,
+            color: '#FFA726',
+            title: 'Bad Request',
+            example: {
+                error: 'validation_failed',
+                message: 'Email is required',
+                field: 'email'
+            }
+        },
+        {
+            code: 401,
+            color: '#EF5350',
+            title: 'Unauthorized',
+            example: {
+                error: 'invalid_token',
+                message: 'Token has expired'
+            }
+        },
+        {
+            code: 404,
+            color: '#AB47BC',
+            title: 'Not Found',
+            example: {
+                error: 'resource_not_found',
+                message: 'Product with ID prod_999 not found'
+            }
+        },
+        {
+            code: 500,
+            color: '#EC407A',
+            title: 'Server Error',
+            example: {
+                error: 'internal_error',
+                message: 'An unexpected error occurred',
+                request_id: 'req_abc123'
+            }
+        }
+    ];
+    
+    errors.forEach((error, index) => {
+        const y = 60 + index * 70;
+        
+        // Status code box
+        ectx.fillStyle = error.color;
+        ectx.fillRect(50, y, 60, 50);
+        ectx.fillStyle = '#fff';
+        ectx.font = '18px Arial';
+        ectx.fillText(error.code, 65, y + 32);
+        
+        // Error details
+        ectx.fillStyle = '#f5f5f5';
+        ectx.fillRect(120, y, 430, 50);
+        
+        ectx.fillStyle = '#333';
+        ectx.font = '12px Arial';
+        ectx.fillText(error.title, 130, y + 15);
+        
+        ectx.font = '10px Courier';
+        ectx.fillText(JSON.stringify(error.example, null, 2).split('\n')[1], 130, y + 35);
+    });
+    
+    // Best practice
+    ectx.fillStyle = '#4CAF50';
+    ectx.fillRect(50, 310, 500, 30);
+    ectx.fillStyle = '#fff';
+    ectx.font = '12px Arial';
+    ectx.fillText('✓ Always return consistent error structure with actionable messages', 180, 330);
+    </script>
+    
+    <h2>API Documentation: The Instruction Manual</h2>
+    
+    <div class="mermaid">
+    graph LR
+        A[Good API Docs] --> B[Interactive Examples]
+        A --> C[Clear Authentication]
+        A --> D[Request/Response Samples]
+        A --> E[Error Scenarios]
+        A --> F[Rate Limits]
+        
+        B --> G[Try it now button]
+        C --> H[Step-by-step setup]
+        D --> I[Multiple languages]
+        E --> J[How to handle each]
+        F --> K[Headers show limits]
+        
+        style A fill:#4CAF50
+        style B fill:#81C784
+        style C fill:#81C784
+        style D fill:#81C784
+        style E fill:#81C784
+        style F fill:#81C784
+    </div>
+    
+    <h2>Rate Limiting: The Traffic Controller</h2>
+    
+    <div style="background-color: #fff3e0; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3>Rate Limiting Strategy</h3>
+        
+        <pre style="background: #263238; color: #aed581; padding: 10px; border-radius: 5px;">
+// Response Headers
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 487
+X-RateLimit-Reset: 1615642800
+
+// When limit exceeded (429 Too Many Requests)
+{
+  "error": "rate_limit_exceeded",
+  "message": "API rate limit exceeded. Try again in 34 seconds.",
+  "retry_after": 34
+}</pre>
+        
+        <p><strong>Strategies:</strong></p>
+        <ul>
+            <li>🪟 <strong>Fixed Window:</strong> 1000 requests per hour</li>
+            <li>🎯 <strong>Sliding Window:</strong> More accurate, complex</li>
+            <li>🪣 <strong>Token Bucket:</strong> Allows bursts, refills over time</li>
+            <li>👤 <strong>Per-User Limits:</strong> Based on subscription tier</li>
+        </ul>
+    </div>
+    
+    <h2>GraphQL vs REST: Choose Your Fighter</h2>
+    
+    <canvas id="comparisonCanvas" width="600" height="300"></canvas>
+    
+    <script>
+    const compCanvas = document.getElementById('comparisonCanvas');
+    const cctx = compCanvas.getContext('2d');
+    
+    // Background
+    cctx.fillStyle = '#f9f9f9';
+    cctx.fillRect(0, 0, 600, 300);
+    
+    // REST side
+    cctx.fillStyle = '#4CAF50';
+    cctx.fillRect(20, 40, 270, 240);
+    cctx.fillStyle = '#fff';
+    cctx.font = '16px Arial';
+    cctx.fillText('REST', 135, 65);
+    
+    cctx.font = '12px Arial';
+    cctx.fillText('✓ Simple & familiar', 40, 100);
+    cctx.fillText('✓ HTTP caching', 40, 125);
+    cctx.fillText('✓ Stateless', 40, 150);
+    cctx.fillText('✗ Over/under fetching', 40, 175);
+    cctx.fillText('✗ Multiple requests', 40, 200);
+    
+    cctx.fillStyle = '#333';
+    cctx.font = '10px Courier';
+    cctx.fillText('GET /users/123', 40, 230);
+    cctx.fillText('GET /users/123/posts', 40, 245);
+    cctx.fillText('GET /users/123/friends', 40, 260);
+    
+    // GraphQL side
+    cctx.fillStyle = '#E91E63';
+    cctx.fillRect(310, 40, 270, 240);
+    cctx.fillStyle = '#fff';
+    cctx.font = '16px Arial';
+    cctx.fillText('GraphQL', 415, 65);
+    
+    cctx.font = '12px Arial';
+    cctx.fillText('✓ Get exactly what you need', 330, 100);
+    cctx.fillText('✓ Single request', 330, 125);
+    cctx.fillText('✓ Strong typing', 330, 150);
+    cctx.fillText('✗ Learning curve', 330, 175);
+    cctx.fillText('✗ Complex caching', 330, 200);
+    
+    cctx.fillStyle = '#333';
+    cctx.font = '10px Courier';
+    cctx.fillText('query {', 330, 230);
+    cctx.fillText('  user(id: 123) {', 330, 245);
+    cctx.fillText('    name, posts, friends', 330, 260);
+    cctx.fillText('  }', 330, 275);
+    
+    // VS
+    cctx.fillStyle = '#333';
+    cctx.font = '20px Arial';
+    cctx.fillText('VS', 290, 160);
+    </script>
+    
+    <h2>Best Practices Checklist</h2>
+    
+    <div style="background-color: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3>The API Designer's Checklist</h3>
+        
+        <p>☑️ <strong>Use nouns for resources:</strong> <code>/products</code> not <code>/getProducts</code></p>
+        <p>☑️ <strong>Version your API:</strong> <code>/api/v1/...</code></p>
+        <p>☑️ <strong>Use proper HTTP status codes:</strong> 201 for created, 204 for no content</p>
+        <p>☑️ <strong>Support filtering and pagination:</strong> <code>?page=2&limit=20&category=electronics</code></p>
+        <p>☑️ <strong>Return consistent responses:</strong> Always use the same structure</p>
+        <p>☑️ <strong>Include request IDs:</strong> For debugging and support</p>
+        <p>☑️ <strong>Document everything:</strong> If it's not documented, it doesn't exist</p>
+        <p>☑️ <strong>Use HTTPS everywhere:</strong> Security is not optional</p>
+        <p>☑️ <strong>Implement CORS properly:</strong> Don't just use <code>*</code></p>
+        <p>☑️ <strong>Design for failure:</strong> What happens when things go wrong?</p>
+    </div>
+    
+    <p><em>Next, we'll explore security considerations in design documents - building fortresses, not just houses!</em></p>
+</body>
+</html>

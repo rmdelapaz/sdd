@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Strategies and Quality Assurance</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="icon" href="/favicon.png">
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true });
+    </script>
+</head>
+<body>
+    <h1>Testing Strategies and Quality Assurance</h1>
+    
+    <p>Testing is like a safety net for trapeze artists - you hope you'll never need it, but you'd be foolish to perform without it. Let's explore how to build comprehensive testing strategies that catch bugs before your users do!</p>
+    
+    <h2>The Testing Pyramid: A Balanced Diet</h2>
+    
+    <canvas id="pyramidCanvas" width="600" height="400"></canvas>
+    
+    <script>
+    const pyramidCanvas = document.getElementById('pyramidCanvas');
+    const pctx = pyramidCanvas.getContext('2d');
+    
+    // Background
+    pctx.fillStyle = '#f5f5f5';
+    pctx.fillRect(0, 0, 600, 400);
+    
+    // Title
+    pctx.fillStyle = '#333';
+    pctx.font = '16px Arial';
+    pctx.fillText('The Testing Pyramid', 230, 30);
+    
+    // Draw pyramid
+    pctx.fillStyle = '#4CAF50';
+    pctx.beginPath();
+    pctx.moveTo(300, 80);
+    pctx.lineTo(480, 320);
+    pctx.lineTo(120, 320);
+    pctx.closePath();
+    pctx.fill();
+    
+    // Pyramid layers
+    pctx.strokeStyle = '#333';
+    pctx.lineWidth = 2;
+    
+    // E2E layer
+    pctx.beginPath();
+    pctx.moveTo(250, 140);
+    pctx.lineTo(350, 140);
+    pctx.stroke();
+    
+    // Integration layer
+    pctx.beginPath();
+    pctx.moveTo(200, 210);
+    pctx.lineTo(400, 210);
+    pctx.stroke();
+    
+    // Labels
+    pctx.fillStyle = '#fff';
+    pctx.font = '14px Arial';
+    pctx.fillText('E2E', 285, 115);
+    pctx.fillText('Integration', 265, 180);
+    pctx.fillText('Unit Tests', 270, 270);
+    
+    // Percentages and details
+    pctx.fillStyle = '#333';
+    pctx.font = '12px Arial';
+    
+    // E2E details
+    pctx.fillText('10%', 380, 115);
+    pctx.fillText('Slow, Expensive', 380, 130);
+    pctx.fillText('UI workflows', 380, 145);
+    
+    // Integration details
+    pctx.fillText('20%', 430, 180);
+    pctx.fillText('Medium speed', 430, 195);
+    pctx.fillText('API, Database', 430, 210);
+    
+    // Unit details
+    pctx.fillText('70%', 480, 270);
+    pctx.fillText('Fast, Cheap', 480, 285);
+    pctx.fillText('Business logic', 480, 300);
+    
+    // Cost/Time arrow
+    pctx.strokeStyle = '#FF5722';
+    pctx.lineWidth = 3;
+    pctx.beginPath();
+    pctx.moveTo(50, 100);
+    pctx.lineTo(50, 300);
+    pctx.stroke();
+    
+    // Arrow heads
+    pctx.beginPath();
+    pctx.moveTo(50, 100);
+    pctx.lineTo(45, 110);
+    pctx.lineTo(55, 110);
+    pctx.closePath();
+    pctx.fill();
+    
+    pctx.beginPath();
+    pctx.moveTo(50, 300);
+    pctx.lineTo(45, 290);
+    pctx.lineTo(55, 290);
+    pctx.closePath();
+    pctx.fill();
+    
+    pctx.fillStyle = '#FF5722';
+    pctx.font = '11px Arial';
+    pctx.fillText('Cost', 20, 95);
+    pctx.fillText('Speed', 15, 310);
+    
+    // Examples
+    pctx.fillStyle = '#666';
+    pctx.font = '10px Arial';
+    pctx.fillText('• Full user journey', 120, 360);
+    pctx.fillText('• Service interactions', 250, 360);
+    pctx.fillText('• Function validation', 380, 360);
+    </script>
+    
+    <h2>Types of Testing: The Complete Toolkit</h2>
+    
+    <div class="mermaid">
+    mindmap
+      root((Testing Types))
+        Functional
+          Unit Testing
+          Integration Testing
+          System Testing
+          Acceptance Testing
+        Non-Functional
+          Performance Testing
+          Security Testing
+          Usability Testing
+          Compatibility Testing
+        Specialized
+          Regression Testing
+          Smoke Testing
+          Sanity Testing
+          Exploratory Testing
+        Automated
+          CI/CD Pipeline
+          Test Scripts
+          Monitoring
+          Alerts
+    </div>
+    
+    <h2>Test-Driven Development: Write Tests First</h2>
+    
+    <canvas id="tddCanvas" width="600" height="300"></canvas>
+    
+    <script>
+    const tddCanvas = document.getElementById('tddCanvas');
+    const tctx = tddCanvas.getContext('2d');
+    
+    // Background
+    tctx.fillStyle = '#f9f9f9';
+    tctx.fillRect(0, 0, 600, 300);
+    
+    // TDD Cycle
+    const centerX = 300;
+    const centerY = 150;
+    const radius = 80;
+    
+    // Draw cycle circles
+    const steps = [
+        {angle: 0, color: '#f44336', label: 'Red', desc: 'Write failing test'},
+        {angle: 120, color: '#4CAF50', label: 'Green', desc: 'Make test pass'},
+        {angle: 240, color: '#2196F3', label: 'Refactor', desc: 'Improve code'}
+    ];
+    
+    steps.forEach((step, index) => {
+        const angleRad = (step.angle - 90) * Math.PI / 180;
+        const x = centerX + Math.cos(angleRad) * radius;
+        const y = centerY + Math.sin(angleRad) * radius;
+        
+        // Circle
+        tctx.fillStyle = step.color;
+        tctx.beginPath();
+        tctx.arc(x, y, 40, 0, 2 * Math.PI);
+        tctx.fill();
+        
+        // Label
+        tctx.fillStyle = '#fff';
+        tctx.font = '14px Arial';
+        tctx.fillText(step.label, x - 20, y + 5);
+        
+        // Description
+        tctx.fillStyle = '#333';
+        tctx.font = '11px Arial';
+        tctx.fillText(step.desc, x - 40, y + 60);
+        
+        // Arrow to next
+        const nextAngle = (steps[(index + 1) % 3].angle - 90) * Math.PI / 180;
+        const nextX = centerX + Math.cos(nextAngle) * radius;
+        const nextY = centerY + Math.sin(nextAngle) * radius;
+        
+        const startX = x + Math.cos(nextAngle) * 40;
+        const startY = y + Math.sin(nextAngle) * 40;
+        const endX = nextX - Math.cos(nextAngle) * 40;
+        const endY = nextY - Math.sin(nextAngle) * 40;
+        
+        tctx.strokeStyle = '#666';
+        tctx.lineWidth = 2;
+        tctx.beginPath();
+        tctx.moveTo(startX, startY);
+        tctx.lineTo(endX, endY);
+        tctx.stroke();
+        
+        // Arrowhead
+        const arrowAngle = Math.atan2(endY - startY, endX - startX);
+        tctx.beginPath();
+        tctx.moveTo(endX, endY);
+        tctx.lineTo(endX - 10 * Math.cos(arrowAngle - Math.PI/6), endY - 10 * Math.sin(arrowAngle - Math.PI/6));
+        tctx.moveTo(endX, endY);
+        tctx.lineTo(endX - 10 * Math.cos(arrowAngle + Math.PI/6), endY - 10 * Math.sin(arrowAngle + Math.PI/6));
+        tctx.stroke();
+    });
+    
+    // Center text
+    tctx.fillStyle = '#333';
+    tctx.font = '16px Arial';
+    tctx.fillText('TDD', centerX - 15, centerY + 5);
+    
+    // Title
+    tctx.font = '18px Arial';
+    tctx.fillText('Test-Driven Development Cycle', 180, 30);
+    </script>
+    
+    <h2>Real-World Example: E-Commerce Testing Strategy</h2>
+    
+    <div style="background-color: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3>Comprehensive Test Suite for Online Store</h3>
+        
+        <div class="mermaid">
+        graph TD
+            A[User Story: Checkout Process] --> B[Unit Tests]
+            A --> C[Integration Tests]
+            A --> D[E2E Tests]
+            
+            B --> B1[Calculate total price]
+            B --> B2[Apply discount codes]
+            B --> B3[Validate credit card]
+            B --> B4[Check inventory]
+            
+            C --> C1[Payment gateway API]
+            C --> C2[Inventory database]
+            C --> C3[Email service]
+            C --> C4[Shipping API]
+            
+            D --> D1[Complete purchase flow]
+            D --> D2[Guest checkout]
+            D --> D3[Multiple items]
+            D --> D4[Error handling]
+            
+            style B fill:#4CAF50
+            style C fill:#2196F3
+            style D fill:#FF9800
+        </graph>
+        </div>
+        
+        <h4>Test Coverage Example:</h4>
+        <pre style="background: #263238; color: #aed581; padding: 15px; border-radius: 5px;">
+// Unit Test Example
+describe('ShoppingCart', () => {
+  it('should calculate total with tax', () => {
+    const cart = new ShoppingCart();
+    cart.addItem({ price: 100, quantity: 2 });
+    cart.addItem({ price: 50, quantity: 1 });
+    
+    expect(cart.getSubtotal()).toBe(250);
+    expect(cart.getTotalWithTax(0.08)).toBe(270);
+  });
+  
+  it('should apply percentage discount', () => {
+    const cart = new ShoppingCart();
+    cart.addItem({ price: 100, quantity: 1 });
+    cart.applyDiscount('SAVE20', 0.20);
+    
+    expect(cart.getTotal()).toBe(80);
+  });
+});</pre>
+    </div>
+    
+    <h2>Quality Gates: The Checkpoint System</h2>
+    
+    <canvas id="gatesCanvas" width="600" height="350"></canvas>
+    
+    <script>
+    const gatesCanvas = document.getElementById('gatesCanvas');
+    const gctx = gatesCanvas.getContext('2d');
+    
+    // Background
+    gctx.fillStyle = '#f5f5f5';
+    gctx.fillRect(0, 0, 600, 350);
+    
+    // Pipeline
+    gctx.fillStyle = '#ddd';
+    gctx.fillRect(50, 150, 500, 60);
+    
+    // Gates
+    const gates = [
+        {x: 100, name: 'Linting', metric: 'No errors', color: '#4CAF50'},
+        {x: 200, name: 'Unit Tests', metric: '> 80%', color: '#2196F3'},
+        {x: 300, name: 'Integration', metric: 'All pass', color: '#FF9800'},
+        {x: 400, name: 'Security', metric: 'No vulns', color: '#9C27B0'},
+        {x: 500, name: 'Deploy', metric: 'Ready!', color: '#00BCD4'}
+    ];
+    
+    gates.forEach((gate, index) => {
+        // Gate post
+        gctx.fillStyle = gate.color;
+        gctx.fillRect(gate.x - 5, 120, 10, 120);
+        
+        // Gate sign
+        gctx.fillRect(gate.x - 40, 80, 80, 40);
+        gctx.fillStyle = '#fff';
+        gctx.font = '11px Arial';
+        gctx.fillText(gate.name, gate.x - 30, 100);
+        gctx.font = '9px Arial';
+        gctx.fillText(gate.metric, gate.x - 25, 112);
+        
+        // Status indicator
+        if (index < 3) {
+            gctx.fillStyle = '#4CAF50';
+            gctx.beginPath();
+            gctx.arc(gate.x, 180, 15, 0, 2 * Math.PI);
+            gctx.fill();
+            gctx.fillStyle = '#fff';
+            gctx.fillText('✓', gate.x - 5, 185);
+        } else if (index === 3) {
+            gctx.fillStyle = '#f44336';
+            gctx.beginPath();
+            gctx.arc(gate.x, 180, 15, 0, 2 * Math.PI);
+            gctx.fill();
+            gctx.fillStyle = '#fff';
+            gctx.fillText('✗', gate.x - 5, 185);
+        } else {
+            gctx.fillStyle = '#ccc';
+            gctx.beginPath();
+            gctx.arc(gate.x, 180, 15, 0, 2 * Math.PI);
+            gctx.fill();
+            gctx.fillStyle = '#fff';
+            gctx.fillText('?', gate.x - 4, 185);
+        }
+    });
+    
+    // Code flow
+    gctx.fillStyle = '#333';
+    gctx.beginPath();
+    gctx.arc(30, 180, 10, 0, 2 * Math.PI);
+    gctx.fill();
+    gctx.font = '12px Arial';
+    gctx.fillText('Code', 15, 210);
+    
+    // Blocked at security
+    gctx.strokeStyle = '#f44336';
+    gctx.lineWidth = 3;
+    gctx.beginPath();
+    gctx.moveTo(380, 160);
+    gctx.lineTo(420, 200);
+    gctx.moveTo(420, 160);
+    gctx.lineTo(380, 200);
+    gctx.stroke();
+    
+    gctx.fillStyle = '#f44336';
+    gctx.font = '14px Arial';
+    gctx.fillText('Blocked: Security vulnerability detected!', 150, 280);
+    
+    // Title
+    gctx.fillStyle = '#333';
+    gctx.font = '16px Arial';
+    gctx.fillText('Quality Gates in CI/CD Pipeline', 200, 30);
+    </script>
+    
+    <h2>Testing Best Practices: The Golden Rules</h2>
+    
+    <div style="background-color: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3>Testing Commandments</h3>
+        
+        <p>📝 <strong>Test Names Should Tell a Story:</strong> <code>test_user_can_checkout_with_valid_credit_card</code></p>
+        <p>🎯 <strong>One Assertion Per Test:</strong> Each test should verify one specific behavior</p>
+        <p>🔄 <strong>Tests Should Be Independent:</strong> Order shouldn't matter, no shared state</p>
+        <p>⚡ <strong>Fast Tests Get Run More:</strong> Mock external dependencies in unit tests</p>
+        <p>🤖 <strong>Automate Everything Possible:</strong> If you do it twice, automate it</p>
+        <p>📊 <strong>Measure Code Coverage:</strong> But remember 100% coverage ≠ bug-free</p>
+        <p>🎭 <strong>Test Happy Path and Edge Cases:</strong> What happens with null, "", -1?</p>
+        <p>🔍 <strong>Test Data Should Be Realistic:</strong> Use production-like data sets</p>
+        <p>🚨 <strong>Failing Tests Should Be Clear:</strong> Good error messages save debugging time</p>
+        <p>🔧 <strong>Maintain Your Tests:</strong> Delete obsolete tests, refactor along with code</p>
+    </div>
+    
+    <h2>Bug Tracking: The Issue Lifecycle</h2>
+    
+    <div class="mermaid">
+    stateDiagram-v2
+        [*] --> Reported: Bug Found
+        Reported --> Triaged: Assign Priority
+        Triaged --> InProgress: Developer Assigned
+        InProgress --> InReview: Fix Submitted
+        InReview --> Testing: Code Review Passed
+        Testing --> Resolved: Tests Pass
+        Testing --> InProgress: Tests Fail
+        Resolved --> Closed: Verified in Production
+        Closed --> [*]
+        
+        Reported --> Duplicate: Already Reported
+        Duplicate --> [*]
+        
+        Reported --> WontFix: Not a Bug
+        WontFix --> [*]
+    </div>
+    
+    <h2>Performance Testing: Speed Under Pressure</h2>
+    
+    <canvas id="perfTestCanvas" width="600" height="300"></canvas>
+    
+    <script>
+    const perfCanvas = document.getElementById('perfTestCanvas');
+    const perfctx = perfCanvas.getContext('2d');
+    
+    // Background
+    perfctx.fillStyle = '#f9f9f9';
+    perfctx.fillRect(0, 0, 600, 300);
+    
+    // Graph axes
+    perfctx.strokeStyle = '#333';
+    perfctx.lineWidth = 2;
+    perfctx.beginPath();
+    perfctx.moveTo(60, 250);
+    perfctx.lineTo(550, 250);
+    perfctx.moveTo(60, 250);
+    perfctx.lineTo(60, 50);
+    perfctx.stroke();
+    
+    // Labels
+    perfctx.fillStyle = '#333';
+    perfctx.font = '12px Arial';
+    perfctx.fillText('Response Time (ms)', 10, 30);
+    perfctx.fillText('Concurrent Users', 250, 280);
+    
+    // Response time curve
+    perfctx.strokeStyle = '#f44336';
+    perfctx.lineWidth = 3;
+    perfctx.beginPath();
+    perfctx.moveTo(60, 200);
+    
+    // Exponential curve
+    for(let x = 60; x <= 500; x += 10) {
+        const users = (x - 60) * 2;
+        const responseTime = 200 - (150 * Math.exp(-users/200));
+        const y = 250 - responseTime;
+        perfctx.lineTo(x, y);
+    }
+    perfctx.stroke();
+    
+    // Acceptable threshold
+    perfctx.strokeStyle = '#4CAF50';
+    perfctx.lineWidth = 2;
+    perfctx.setLineDash([10, 5]);
+    perfctx.beginPath();
+    perfctx.moveTo(60, 150);
+    perfctx.lineTo(550, 150);
+    perfctx.stroke();
+    
+    perfctx.fillStyle = '#4CAF50';
+    perfctx.font = '11px Arial';
+    perfctx.fillText('Acceptable threshold (200ms)', 400, 145);
+    
+    // Breaking point
+    perfctx.setLineDash([]);
+    perfctx.strokeStyle = '#ff9800';
+    perfctx.beginPath();
+    perfctx.moveTo(280, 50);
+    perfctx.lineTo(280, 250);
+    perfctx.stroke();
+    
+    perfctx.fillStyle = '#ff9800';
+    perfctx.fillText('Breaking point', 290, 70);
+    perfctx.fillText('(500 users)', 295, 85);
+    
+    // Title
+    perfctx.fillStyle = '#333';
+    perfctx.font = '16px Arial';
+    perfctx.fillText('Load Testing Results', 230, 30);
+    </script>
+    
+    <h2>Continuous Quality: Building Quality In</h2>
+    
+    <div style="background-color: #fff3e0; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3>Quality is Everyone's Responsibility</h3>
+        
+        <div class="mermaid">
+        graph LR
+            A[Developer] --> Q{Quality}
+            B[Tester] --> Q
+            C[Designer] --> Q
+            D[Product Owner] --> Q
+            E[DevOps] --> Q
+            
+            Q --> F[Great Product]
+            
+            A --> A1[Clean code]
+            B --> B1[Test coverage]
+            C --> C1[Usability]
+            D --> D1[Clear requirements]
+            E --> E1[Reliable deployment]
+            
+            style Q fill:#FFD700
+            style F fill:#4CAF50
+        </graph>
+        </div>
+        
+        <p><strong>Remember:</strong> Quality isn't just about finding bugs - it's about preventing them from happening in the first place!</p>
+    </div>
+    
+    <p><em>Congratulations! You've completed the comprehensive journey through software design documentation. Remember, great documentation is a living artifact that evolves with your project!</em></p>
+</body>
+</html>

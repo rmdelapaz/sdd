@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Design Documentation Tutorial</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="icon" href="/favicon.png">
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true });
+    </script>
+</head>
+<body>
+    <h1>Software Design Documentation Tutorial</h1>
+    
+    <p>Welcome to your comprehensive guide to creating effective software design documents! This tutorial will take you from complete beginner to documentation expert through interactive lessons, real-world examples, and practical exercises.</p>
+    
+    <canvas id="welcomeCanvas" width="600" height="200"></canvas>
+    
+    <script>
+    const welcomeCanvas = document.getElementById('welcomeCanvas');
+    const wctx = welcomeCanvas.getContext('2d');
+    
+    // Background
+    wctx.fillStyle = '#e3f2fd';
+    wctx.fillRect(0, 0, 600, 200);
+    
+    // Draw book
+    wctx.fillStyle = '#1976d2';
+    wctx.fillRect(200, 50, 200, 120);
+    wctx.fillStyle = '#fff';
+    wctx.fillRect(210, 60, 180, 100);
+    
+    // Book details
+    wctx.fillStyle = '#333';
+    wctx.font = '16px Arial';
+    wctx.fillText('Design', 270, 90);
+    wctx.fillText('Documentation', 245, 110);
+    wctx.fillText('Mastery', 265, 130);
+    
+    // Sparkles
+    wctx.fillStyle = '#FFD700';
+    wctx.font = '20px Arial';
+    wctx.fillText('✨', 150, 80);
+    wctx.fillText('✨', 420, 100);
+    wctx.fillText('✨', 180, 140);
+    wctx.fillText('✨', 410, 160);
+    
+    // Progress arrow
+    wctx.strokeStyle = '#4CAF50';
+    wctx.lineWidth = 3;
+    wctx.beginPath();
+    wctx.moveTo(50, 180);
+    wctx.lineTo(550, 180);
+    wctx.stroke();
+    
+    wctx.fillStyle = '#4CAF50';
+    wctx.beginPath();
+    wctx.moveTo(550, 180);
+    wctx.lineTo(540, 175);
+    wctx.lineTo(540, 185);
+    wctx.closePath();
+    wctx.fill();
+    
+    wctx.fillStyle = '#333';
+    wctx.font = '12px Arial';
+    wctx.fillText('Your Journey Begins Here', 230, 195);
+    </script>
+    
+    <h2>Course Overview</h2>
+    
+    <p>This tutorial is structured as a progressive journey through all aspects of software design documentation. Each lesson builds upon the previous ones, taking you from fundamental concepts to advanced techniques.</p>
+    
+    <div class="mermaid">
+    graph TD
+        A[Start Here] --> B[Foundations]
+        B --> C[Core Components]
+        C --> D[Technical Details]
+        D --> E[Quality & Excellence]
+        
+        B --> B1[Introduction]
+        B --> B2[Document Anatomy]
+        
+        C --> C1[System Overview]
+        C --> C2[Architecture]
+        C --> C3[Data Design]
+        
+        D --> D1[API Design]
+        D --> D2[Security]
+        D --> D3[Performance]
+        
+        E --> E1[Testing]
+        E --> E2[Mastery!]
+        
+        style A fill:#4CAF50
+        style E2 fill:#FFD700
+    </div>
+    
+    <h2>Tutorial Lessons</h2>
+    
+    <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        
+        <h3>Foundation Module</h3>
+        
+        <div style="margin: 20px 0; padding: 15px; background-color: #fff; border-left: 4px solid #4CAF50;">
+            <h4><a href="software_design_intro.html">Lesson 1: Introduction to Software Design Documents</a></h4>
+            <p>🎯 <strong>What you'll learn:</strong> The purpose and importance of design documents, real-world analogies, and why they're essential for project success.</p>
+            <p>⏱️ <strong>Duration:</strong> 20 minutes</p>
+            <p>🔧 <strong>Key concepts:</strong> Blueprint analogy, kitchen recipe metaphor, orchestra conductor principle</p>
+        </div>
+        
+        <div style="margin: 20px 0; padding: 15px; background-color: #fff; border-left: 4px solid #4CAF50;">
+            <h4><a href="sdd_anatomy.html">Lesson 2: Anatomy of a Software Design Document</a></h4>
+            <p>🎯 <strong>What you'll learn:</strong> The essential sections of a design document and how they work together to create a complete picture.</p>
+            <p>⏱️ <strong>Duration:</strong> 25 minutes</p>
+            <p>🔧 <strong>Key concepts:</strong> Document structure, living document philosophy, restaurant menu approach</p>
+        </div>
+        
+        <h3>Core Components Module</h3>
+        
+        <div style="margin: 20px 0; padding: 15px; background-color: #fff; border-left: 4px solid #2196F3;">
+            <h4><a href="system_overview_guide.html">Lesson 3: Writing Effective System Overviews</a></h4>
+            <p>🎯 <strong>What you'll learn:</strong> How to craft clear, engaging system overviews that communicate your vision effectively.</p>
+            <p>⏱️ <strong>Duration:</strong> 25 minutes</p>
+            <p>🔧 <strong>Key concepts:</strong> Storytelling approach, museum tour guide principle, clarity pyramid</p>
+        </div>
+        
+        <div style="margin: 20px 0; padding: 15px; background-color: #fff; border-left: 4px solid #2196F3;">
+            <h4><a href="architecture_diagrams_guide.html">Lesson 4: Creating Effective Architecture Diagrams</a></h4>
+            <p>🎯 <strong>What you'll learn:</strong> Visual communication techniques, diagramming tools, and the C4 model for architecture.</p>
+            <p>⏱️ <strong>Duration:</strong> 30 minutes</p>
+            <p>🔧 <strong>Key concepts:</strong> Language of shapes, C4 model, golden rules of diagramming</p>
+        </div>
+        
+        <div style="margin: 20px 0; padding: 15px; background-color: #fff; border-left: 4px solid #2196F3;">
+            <h4><a href="data_design_modeling.html">Lesson 5: Data Design and Modeling</a></h4>
+            <p>🎯 <strong>What you'll learn:</strong> Database design principles, ER diagrams, normalization, and choosing the right database.</p>
+            <p>⏱️ <strong>Duration:</strong> 30 minutes</p>
+            <p>🔧 <strong>Key concepts:</strong> Library catalog metaphor, Marie Kondo normalization, data flow diagrams</p>
+        </div>
+        
+        <h3>Technical Details Module</h3>
+        
+        <div style="margin: 20px 0; padding: 15px; background-color: #fff; border-left: 4px solid #FF9800;">
+            <h4><a href="api_interface_design.html">Lesson 6: API and Interface Design</a></h4>
+            <p>🎯 <strong>What you'll learn:</strong> RESTful principles, API documentation, authentication patterns, and versioning strategies.</p>
+            <p>⏱️ <strong>Duration:</strong> 30 minutes</p>
+            <p>🔧 <strong>Key concepts:</strong> Restaurant menu analogy, authentication flows, error handling patterns</p>
+        </div>
+        
+        <div style="margin: 20px 0; padding: 15px; background-color: #fff; border-left: 4px solid #FF9800;">
+            <h4><a href="security_considerations.html">Lesson 7: Security Considerations in Design Documents</a></h4>
+            <p>🎯 <strong>What you'll learn:</strong> Security architecture, threat modeling, OWASP principles, and zero trust design.</p>
+            <p>⏱️ <strong>Duration:</strong> 30 minutes</p>
+            <p>🔧 <strong>Key concepts:</strong> Castle defense strategy, STRIDE model, security checklist</p>
+        </div>
+        
+        <div style="margin: 20px 0; padding: 15px; background-color: #fff; border-left: 4px solid #FF9800;">
+            <h4><a href="performance_scalability.html">Lesson 8: Performance and Scalability Considerations</a></h4>
+            <p>🎯 <strong>What you'll learn:</strong> Performance metrics, scaling strategies, caching patterns, and optimization techniques.</p>
+            <p>⏱️ <strong>Duration:</strong> 30 minutes</p>
+            <p>🔧 <strong>Key concepts:</strong> Highway analogy, vertical vs horizontal scaling, performance budgets</p>
+        </div>
+        
+        <h3>Quality & Excellence Module</h3>
+        
+        <div style="margin: 20px 0; padding: 15px; background-color: #fff; border-left: 4px solid #9C27B0;">
+            <h4><a href="testing_quality_assurance.html">Lesson 9: Testing Strategies and Quality Assurance</a></h4>
+            <p>🎯 <strong>What you'll learn:</strong> Testing pyramid, TDD principles, quality gates, and comprehensive testing strategies.</p>
+            <p>⏱️ <strong>Duration:</strong> 30 minutes</p>
+            <p>🔧 <strong>Key concepts:</strong> Testing pyramid, quality gates, continuous quality mindset</p>
+        </div>
+    </div>
+    
+    <h2>Learning Path Recommendations</h2>
+    
+    <div style="background-color: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3>Choose Your Learning Style</h3>
+        
+        <p><strong>🚀 Fast Track (2-3 hours):</strong> Complete lessons 1, 3, 4, and 6 for a quick overview of essential concepts.</p>
+        
+        <p><strong>📚 Comprehensive (4-5 hours):</strong> Work through all lessons in order for complete mastery.</p>
+        
+        <p><strong>🎯 Role-Based Paths:</strong></p>
+        <ul>
+            <li><strong>Developers:</strong> Focus on lessons 4, 5, 6, and 8</li>
+            <li><strong>Architects:</strong> Prioritize lessons 2, 4, 7, and 8</li>
+            <li><strong>Product Managers:</strong> Start with lessons 1, 3, and 9</li>
+            <li><strong>QA Engineers:</strong> Emphasize lessons 6, 7, and 9</li>
+        </ul>
+    </div>
+    
+    <h2>Tips for Success</h2>
+    
+    <canvas id="tipsCanvas" width="600" height="250"></canvas>
+    
+    <script>
+    const tipsCanvas = document.getElementById('tipsCanvas');
+    const tctx = tipsCanvas.getContext('2d');
+    
+    // Background
+    tctx.fillStyle = '#fff3e0';
+    tctx.fillRect(0, 0, 600, 250);
+    
+    // Tip cards
+    const tips = [
+        {x: 50, icon: '💡', tip: 'Practice with\nreal projects'},
+        {x: 200, icon: '📝', tip: 'Take notes\nas you learn'},
+        {x: 350, icon: '🤝', tip: 'Share with\nyour team'},
+        {x: 500, icon: '🔄', tip: 'Iterate and\nimprove'}
+    ];
+    
+    tips.forEach(tip => {
+        // Card
+        tctx.fillStyle = '#fff';
+        tctx.fillRect(tip.x - 40, 80, 80, 100);
+        
+        // Icon
+        tctx.font = '30px Arial';
+        tctx.fillText(tip.icon, tip.x - 15, 120);
+        
+        // Text
+        tctx.fillStyle = '#333';
+        tctx.font = '11px Arial';
+        const lines = tip.tip.split('\n');
+        lines.forEach((line, i) => {
+            tctx.fillText(line, tip.x - 30, 150 + i * 15);
+        });
+    });
+    
+    // Title
+    tctx.fillStyle = '#333';
+    tctx.font = '16px Arial';
+    tctx.fillText('Keys to Documentation Success', 200, 40);
+    
+    // Bottom message
+    tctx.font = '14px Arial';
+    tctx.fillText('Remember: Great documentation is a skill that improves with practice!', 120, 220);
+    </script>
+    
+    <h2>Ready to Begin?</h2>
+    
+    <p>Start your journey with <a href="software_design_intro.html" style="font-size: 18px; font-weight: bold;">Lesson 1: Introduction to Software Design Documents</a> and transform the way you document software projects!</p>
+    
+    <div style="text-align: center; margin: 40px 0;">
+        <p style="font-size: 20px;">🚀 Happy Learning! 🚀</p>
+    </div>
+</body>
+</html>

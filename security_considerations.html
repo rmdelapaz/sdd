@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Considerations in Design Documents</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="icon" href="/favicon.png">
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true });
+    </script>
+</head>
+<body>
+    <h1>Security Considerations in Design Documents</h1>
+    
+    <p>Building software without security considerations is like building a house with no locks, alarms, or fences. Security isn't an afterthought - it's a fundamental part of your architecture. Let's explore how to build digital fortresses, not just digital houses!</p>
+    
+    <h2>The Castle Defense Strategy</h2>
+    
+    <canvas id="castleCanvas" width="600" height="400"></canvas>
+    
+    <script>
+    const castleCanvas = document.getElementById('castleCanvas');
+    const cctx = castleCanvas.getContext('2d');
+    
+    // Background
+    cctx.fillStyle = '#87CEEB';
+    cctx.fillRect(0, 0, 600, 300);
+    cctx.fillStyle = '#90EE90';
+    cctx.fillRect(0, 300, 600, 100);
+    
+    // Moat (Network Security)
+    cctx.fillStyle = '#4682B4';
+    cctx.fillRect(100, 280, 400, 40);
+    cctx.fillStyle = '#fff';
+    cctx.font = '12px Arial';
+    cctx.fillText('Network Security (Moat)', 230, 305);
+    
+    // Outer Wall (Firewall)
+    cctx.fillStyle = '#8B7355';
+    cctx.fillRect(150, 200, 300, 80);
+    cctx.fillStyle = '#fff';
+    cctx.fillText('Firewall (Outer Wall)', 250, 240);
+    
+    // Inner Wall (Application Security)
+    cctx.fillStyle = '#A0522D';
+    cctx.fillRect(200, 120, 200, 80);
+    cctx.fillStyle = '#fff';
+    cctx.fillText('App Security', 260, 160);
+    
+    // Keep (Data Encryption)
+    cctx.fillStyle = '#654321';
+    cctx.fillRect(250, 50, 100, 70);
+    cctx.fillStyle = '#fff';
+    cctx.fillText('Encrypted', 270, 80);
+    cctx.fillText('Data', 280, 100);
+    
+    // Guards (Authentication)
+    cctx.fillStyle = '#333';
+    cctx.beginPath();
+    cctx.arc(180, 240, 10, 0, 2 * Math.PI);
+    cctx.arc(420, 240, 10, 0, 2 * Math.PI);
+    cctx.arc(230, 160, 10, 0, 2 * Math.PI);
+    cctx.arc(370, 160, 10, 0, 2 * Math.PI);
+    cctx.fill();
+    
+    // Attacker
+    cctx.fillStyle = '#FF0000';
+    cctx.beginPath();
+    cctx.arc(50, 350, 15, 0, 2 * Math.PI);
+    cctx.fill();
+    cctx.fillStyle = '#333';
+    cctx.font = '11px Arial';
+    cctx.fillText('Attacker', 30, 380);
+    
+    // Defense layers labels
+    cctx.strokeStyle = '#333';
+    cctx.lineWidth = 1;
+    cctx.setLineDash([5, 5]);
+    
+    // Lines pointing to each layer
+    cctx.beginPath();
+    cctx.moveTo(500, 300);
+    cctx.lineTo(520, 300);
+    cctx.moveTo(500, 240);
+    cctx.lineTo(520, 240);
+    cctx.moveTo(500, 160);
+    cctx.lineTo(520, 160);
+    cctx.moveTo(500, 85);
+    cctx.lineTo(520, 85);
+    cctx.stroke();
+    
+    cctx.setLineDash([]);
+    cctx.fillStyle = '#333';
+    cctx.font = '10px Arial';
+    cctx.fillText('Layer 1', 525, 305);
+    cctx.fillText('Layer 2', 525, 245);
+    cctx.fillText('Layer 3', 525, 165);
+    cctx.fillText('Layer 4', 525, 90);
+    
+    cctx.font = '14px Arial';
+    cctx.fillText('Defense in Depth: Multiple Layers of Security', 180, 30);
+    </script>
+    
+    <h2>The STRIDE Threat Model</h2>
+    
+    <p>STRIDE helps us think like attackers. It's like a burglar's checklist - if we know what they're looking for, we can protect against it:</p>
+    
+    <div class="mermaid">
+    graph TD
+        S[Spoofing] --> S1[Pretending to be someone else]
+        T[Tampering] --> T1[Modifying data or code]
+        R[Repudiation] --> R1[Denying actions performed]
+        I[Information Disclosure] --> I1[Exposing private data]
+        D[Denial of Service] --> D1[Making system unavailable]
+        E[Elevation of Privilege] --> E1[Gaining unauthorized access]
+        
+        S --> S2[Solution: Strong Authentication]
+        T --> T2[Solution: Data Integrity Checks]
+        R --> R2[Solution: Audit Logging]
+        I --> I2[Solution: Encryption]
+        D --> D2[Solution: Rate Limiting]
+        E --> E2[Solution: Least Privilege]
+        
+        style S fill:#ffcdd2
+        style T fill:#f8bbd0
+        style R fill:#e1bee7
+        style I fill:#d1c4e9
+        style D fill:#c5cae9
+        style E fill:#bbdefb
+        
+        style S2 fill:#c8e6c9
+        style T2 fill:#c8e6c9
+        style R2 fill:#c8e6c9
+        style I2 fill:#c8e6c9
+        style D2 fill:#c8e6c9
+        style E2 fill:#c8e6c9
+    </div>
+    
+    <h2>Real-World Example: Banking Application Security</h2>
+    
+    <div style="background-color: #ffebee; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3>Security Architecture for Online Banking</h3>
+        
+        <div class="mermaid">
+        graph TB
+            subgraph "Public Zone"
+                U[User Browser]
+                M[Mobile App]
+            end
+            
+            subgraph "DMZ"
+                WAF[Web Application Firewall]
+                LB[Load Balancer]
+                API[API Gateway]
+            end
+            
+            subgraph "Application Zone"
+                WEB[Web Servers]
+                APP[App Servers]
+                AUTH[Auth Service]
+            end
+            
+            subgraph "Data Zone"
+                DB[(Encrypted Database)]
+                VAULT[Secrets Vault]
+                LOGS[Security Logs]
+            end
+            
+            U --> WAF
+            M --> WAF
+            WAF --> LB
+            LB --> API
+            API --> WEB
+            API --> APP
+            APP --> AUTH
+            APP --> DB
+            AUTH --> VAULT
+            APP --> LOGS
+            
+            style DB fill:#ffcdd2
+            style VAULT fill:#ffcdd2
+            style WAF fill:#c8e6c9
+            style AUTH fill:#fff9c4
+        </graph>
+        </div>
+    </div>
+    
+    <h2>Authentication vs Authorization: The Bouncer and the VIP List</h2>
+    
+    <canvas id="authCanvas" width="600" height="300"></canvas>
+    
+    <script>
+    const authCanvas = document.getElementById('authCanvas');
+    const actx = authCanvas.getContext('2d');
+    
+    // Background
+    actx.fillStyle = '#f5f5f5';
+    actx.fillRect(0, 0, 600, 300);
+    
+    // Club entrance
+    actx.fillStyle = '#333';
+    actx.fillRect(200, 50, 200, 200);
+    
+    // Door
+    actx.fillStyle = '#8B4513';
+    actx.fillRect(280, 150, 40, 100);
+    
+    // Authentication (Bouncer)
+    actx.fillStyle = '#2196F3';
+    actx.beginPath();
+    actx.arc(150, 200, 30, 0, 2 * Math.PI);
+    actx.fill();
+    actx.fillStyle = '#fff';
+    actx.font = '10px Arial';
+    actx.fillText('AUTH', 138, 205);
+    
+    // User approaching
+    actx.fillStyle = '#4CAF50';
+    actx.beginPath();
+    actx.arc(50, 200, 20, 0, 2 * Math.PI);
+    actx.fill();
+    
+    // ID Check
+    actx.strokeStyle = '#333';
+    actx.lineWidth = 2;
+    actx.beginPath();
+    actx.moveTo(70, 200);
+    actx.lineTo(120, 200);
+    actx.stroke();
+    
+    actx.fillStyle = '#333';
+    actx.font = '11px Arial';
+    actx.fillText('"Who are you?"', 75, 180);
+    actx.fillText('Show ID', 85, 220);
+    
+    // Inside club - Authorization
+    actx.fillStyle = '#FF9800';
+    actx.fillRect(220, 80, 60, 40);
+    actx.fillRect(320, 80, 60, 40);
+    actx.fillRect(270, 140, 60, 40);
+    
+    actx.fillStyle = '#fff';
+    actx.font = '10px Arial';
+    actx.fillText('VIP Area', 230, 105);
+    actx.fillText('Bar', 340, 105);
+    actx.fillText('Dance', 285, 165);
+    
+    // Authorization checks
+    actx.fillStyle = '#E91E63';
+    actx.beginPath();
+    actx.arc(250, 100, 8, 0, 2 * Math.PI);
+    actx.arc(350, 100, 8, 0, 2 * Math.PI);
+    actx.arc(300, 160, 8, 0, 2 * Math.PI);
+    actx.fill();
+    
+    // Labels
+    actx.fillStyle = '#333';
+    actx.font = '14px Arial';
+    actx.fillText('Authentication', 100, 30);
+    actx.fillText('Authorization', 270, 30);
+    
+    actx.font = '12px Arial';
+    actx.fillText('Verifies identity', 90, 260);
+    actx.fillText('"What can you access?"', 250, 260);
+    
+    // Arrow
+    actx.strokeStyle = '#4CAF50';
+    actx.lineWidth = 3;
+    actx.beginPath();
+    actx.moveTo(180, 200);
+    actx.lineTo(280, 200);
+    actx.stroke();
+    actx.fillText('✓', 225, 195);
+    </script>
+    
+    <h2>The OWASP Top 10: Know Your Enemies</h2>
+    
+    <div class="mermaid">
+    graph LR
+        A[OWASP Top 10] --> A1[Broken Access Control]
+        A --> A2[Cryptographic Failures]
+        A --> A3[Injection]
+        A --> A4[Insecure Design]
+        A --> A5[Security Misconfiguration]
+        
+        A1 --> B1[Users access others data]
+        A2 --> B2[Sensitive data exposed]
+        A3 --> B3[SQL/Command injection]
+        A4 --> B4[Missing security controls]
+        A5 --> B5[Default passwords]
+        
+        B1 --> C1[Implement RBAC]
+        B2 --> C2[Encrypt everything]
+        B3 --> C3[Parameterized queries]
+        B4 --> C4[Threat modeling]
+        B5 --> C5[Security hardening]
+        
+        style A1 fill:#ffcdd2
+        style A2 fill:#ffcdd2
+        style A3 fill:#ffcdd2
+        style A4 fill:#ffcdd2
+        style A5 fill:#ffcdd2
+        
+        style C1 fill:#c8e6c9
+        style C2 fill:#c8e6c9
+        style C3 fill:#c8e6c9
+        style C4 fill:#c8e6c9
+        style C5 fill:#c8e6c9
+    </div>
+    
+    <h2>Encryption: The Secret Code</h2>
+    
+    <canvas id="encryptionCanvas" width="600" height="350"></canvas>
+    
+    <script>
+    const encCanvas = document.getElementById('encryptionCanvas');
+    const ectx = encCanvas.getContext('2d');
+    
+    // Background
+    ectx.fillStyle = '#f9f9f9';
+    ectx.fillRect(0, 0, 600, 350);
+    
+    // Title
+    ectx.fillStyle = '#333';
+    ectx.font = '16px Arial';
+    ectx.fillText('Encryption in Transit and at Rest', 200, 30);
+    
+    // Data at Rest
+    ectx.fillStyle = '#3F51B5';
+    ectx.fillRect(50, 60, 200, 120);
+    ectx.fillStyle = '#fff';
+    ectx.font = '14px Arial';
+    ectx.fillText('Data at Rest', 115, 85);
+    
+    // Database icon
+    ectx.beginPath();
+    ectx.ellipse(150, 110, 40, 15, 0, 0, 2 * Math.PI);
+    ectx.fill();
+    ectx.fillRect(110, 110, 80, 40);
+    ectx.beginPath();
+    ectx.ellipse(150, 150, 40, 15, 0, 0, 2 * Math.PI);
+    ectx.fill();
+    
+    ectx.fillStyle = '#FFD700';
+    ectx.font = '20px Arial';
+    ectx.fillText('🔒', 135, 135);
+    
+    // Data in Transit
+    ectx.strokeStyle = '#4CAF50';
+    ectx.lineWidth = 3;
+    ectx.beginPath();
+    ectx.moveTo(250, 120);
+    ectx.lineTo(350, 120);
+    ectx.stroke();
+    
+    ectx.fillStyle = '#4CAF50';
+    ectx.font = '12px Arial';
+    ectx.fillText('HTTPS/TLS', 270, 110);
+    ectx.fillText('🔒 Encrypted', 265, 140);
+    
+    // Destination
+    ectx.fillStyle = '#E91E63';
+    ectx.fillRect(350, 60, 200, 120);
+    ectx.fillStyle = '#fff';
+    ectx.font = '14px Arial';
+    ectx.fillText('Client Application', 405, 85);
+    
+    // Computer icon
+    ectx.fillRect(420, 110, 60, 40);
+    ectx.fillStyle = '#E91E63';
+    ectx.fillRect(430, 120, 40, 25);
+    ectx.fillRect(415, 155, 70, 10);
+    
+    // Encryption types
+    ectx.fillStyle = '#666';
+    ectx.font = '11px Arial';
+    ectx.fillText('• AES-256 encryption', 70, 210);
+    ectx.fillText('• Encrypted backups', 70, 230);
+    ectx.fillText('• Key management', 70, 250);
+    
+    ectx.fillText('• TLS 1.3', 270, 210);
+    ectx.fillText('• Certificate pinning', 270, 230);
+    ectx.fillText('• Perfect forward secrecy', 270, 250);
+    
+    ectx.fillText('• End-to-end encryption', 420, 210);
+    ectx.fillText('• Local storage encryption', 420, 230);
+    ectx.fillText('• Secure key storage', 420, 250);
+    
+    // Warning
+    ectx.fillStyle = '#ffccbc';
+    ectx.fillRect(100, 280, 400, 50);
+    ectx.fillStyle = '#d32f2f';
+    ectx.font = '12px Arial';
+    ectx.fillText('⚠️ Never store sensitive data in plain text!', 200, 295);
+    ectx.fillText('Always encrypt: passwords, credit cards, PII, API keys', 180, 315);
+    </script>
+    
+    <h2>Security Checklist for Design Documents</h2>
+    
+    <div style="background-color: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3>Essential Security Considerations</h3>
+        
+        <h4>Authentication & Authorization</h4>
+        <p>☑️ Multi-factor authentication (MFA) support</p>
+        <p>☑️ Role-based access control (RBAC)</p>
+        <p>☑️ Session management and timeout policies</p>
+        <p>☑️ Password complexity requirements</p>
+        
+        <h4>Data Protection</h4>
+        <p>☑️ Encryption at rest and in transit</p>
+        <p>☑️ Data classification and handling procedures</p>
+        <p>☑️ Secure backup and recovery</p>
+        <p>☑️ Data retention and deletion policies</p>
+        
+        <h4>Application Security</h4>
+        <p>☑️ Input validation and sanitization</p>
+        <p>☑️ Output encoding to prevent XSS</p>
+        <p>☑️ SQL injection prevention</p>
+        <p>☑️ Security headers implementation</p>
+        
+        <h4>Infrastructure Security</h4>
+        <p>☑️ Network segmentation</p>
+        <p>☑️ Firewall rules and configurations</p>
+        <p>☑️ Intrusion detection systems</p>
+        <p>☑️ Regular security updates and patches</p>
+        
+        <h4>Monitoring & Incident Response</h4>
+        <p>☑️ Security logging and monitoring</p>
+        <p>☑️ Incident response plan</p>
+        <p>☑️ Regular security audits</p>
+        <p>☑️ Penetration testing schedule</p>
+    </div>
+    
+    <h2>Zero Trust Architecture: Trust No One</h2>
+    
+    <div class="mermaid">
+    graph TD
+        A[Zero Trust Principles] --> B[Verify Explicitly]
+        A --> C[Least Privilege Access]
+        A --> D[Assume Breach]
+        
+        B --> B1[Always authenticate]
+        B --> B2[Always authorize]
+        B --> B3[Context-aware decisions]
+        
+        C --> C1[Just-in-time access]
+        C --> C2[Just-enough access]
+        C --> C3[Time-limited permissions]
+        
+        D --> D1[Minimize blast radius]
+        D --> D2[Segment everything]
+        D --> D3[Encrypt by default]
+        
+        style A fill:#1976d2,color:#fff
+        style B fill:#42a5f5
+        style C fill:#42a5f5
+        style D fill:#42a5f5
+    </div>
+    
+    <h2>Security Testing in Your Pipeline</h2>
+    
+    <canvas id="pipelineCanvas" width="600" height="200"></canvas>
+    
+    <script>
+    const pipeCanvas = document.getElementById('pipelineCanvas');
+    const pctx = pipeCanvas.getContext('2d');
+    
+    // Background
+    pctx.fillStyle = '#f5f5f5';
+    pctx.fillRect(0, 0, 600, 200);
+    
+    // Pipeline stages
+    const stages = [
+        {x: 50, label: 'Code', test: 'SAST', color: '#4CAF50'},
+        {x: 170, label: 'Build', test: 'Dependency\nScan', color: '#2196F3'},
+        {x: 290, label: 'Test', test: 'DAST', color: '#FF9800'},
+        {x: 410, label: 'Deploy', test: 'Config\nScan', color: '#9C27B0'},
+        {x: 530, label: 'Monitor', test: 'Runtime\nProtection', color: '#E91E63'}
+    ];
+    
+    // Draw pipeline
+    pctx.strokeStyle = '#333';
+    pctx.lineWidth = 3;
+    pctx.beginPath();
+    pctx.moveTo(30, 100);
+    pctx.lineTo(570, 100);
+    pctx.stroke();
+    
+    stages.forEach((stage, index) => {
+        // Stage circle
+        pctx.fillStyle = stage.color;
+        pctx.beginPath();
+        pctx.arc(stage.x, 100, 25, 0, 2 * Math.PI);
+        pctx.fill();
+        
+        // Stage label
+        pctx.fillStyle = '#fff';
+        pctx.font = '11px Arial';
+        pctx.fillText(stage.label, stage.x - 15, 105);
+        
+        // Security test
+        pctx.fillStyle = '#333';
+        pctx.font = '10px Arial';
+        const lines = stage.test.split('\n');
+        lines.forEach((line, i) => {
+            pctx.fillText(line, stage.x - 25, 140 + i * 12);
+        });
+        
+        // Arrow to next
+        if (index < stages.length - 1) {
+            pctx.strokeStyle = '#666';
+            pctx.lineWidth = 2;
+            pctx.beginPath();
+            pctx.moveTo(stage.x + 25, 100);
+            pctx.lineTo(stages[index + 1].x - 25, 100);
+            pctx.stroke();
+        }
+    });
+    
+    pctx.fillStyle = '#333';
+    pctx.font = '14px Arial';
+    pctx.fillText('Security at Every Stage', 220, 30);
+    </script>
+    
+    <p><em>Next, we'll explore performance and scalability considerations - because a secure system that can't handle users is like a fortress with no food!</em></p>
+</body>
+</html>
