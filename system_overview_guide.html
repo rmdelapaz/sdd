@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writing Effective System Overviews</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="icon" href="/favicon.png">
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true });
+    </script>
+</head>
+<body>
+    <h1>Writing Effective System Overviews</h1>
+    
+    <p>A system overview is like the opening chapter of a great novel - it sets the stage, introduces the main characters, and makes readers want to know more. Let's master the art of crafting overviews that inform without overwhelming!</p>
+    
+    <h2>The Storytelling Approach</h2>
+    
+    <p>Every great system has a story. Your overview should answer the fundamental questions any good story addresses:</p>
+    
+    <div class="mermaid">
+    mindmap
+      root((System Overview))
+        WHO
+          End Users
+          Stakeholders
+          Development Team
+        WHAT
+          Core Functionality
+          Key Features
+          System Boundaries
+        WHY
+          Business Problem
+          User Pain Points
+          Expected Benefits
+        WHERE
+          Deployment Environment
+          Geographic Scope
+          Integration Points
+        WHEN
+          Development Timeline
+          Release Schedule
+          Usage Patterns
+        HOW
+          High-Level Approach
+          Technology Choices
+          Key Workflows
+    </div>
+    
+    <h2>The Museum Tour Guide Principle</h2>
+    
+    <p>Imagine you're a tour guide at a museum. You wouldn't start by explaining the chemical composition of paint - you'd first show visitors the big picture, the most impressive pieces, and explain why they matter.</p>
+    
+    <canvas id="museumCanvas" width="600" height="400"></canvas>
+    
+    <script>
+    const museumCanvas = document.getElementById('museumCanvas');
+    const mctx = museumCanvas.getContext('2d');
+    
+    // Background
+    mctx.fillStyle = '#faf8f3';
+    mctx.fillRect(0, 0, 600, 400);
+    
+    // Museum entrance
+    mctx.fillStyle = '#8B7355';
+    mctx.fillRect(250, 320, 100, 80);
+    mctx.fillStyle = '#654321';
+    mctx.fillRect(270, 340, 60, 60);
+    
+    // Tour path
+    mctx.strokeStyle = '#FF6347';
+    mctx.lineWidth = 3;
+    mctx.setLineDash([10, 5]);
+    mctx.beginPath();
+    mctx.moveTo(300, 340);
+    mctx.lineTo(300, 250);
+    mctx.lineTo(150, 250);
+    mctx.lineTo(150, 150);
+    mctx.lineTo(450, 150);
+    mctx.lineTo(450, 100);
+    mctx.stroke();
+    mctx.setLineDash([]);
+    
+    // Exhibits (System Components)
+    // Big Picture
+    mctx.fillStyle = '#4169E1';
+    mctx.fillRect(400, 50, 100, 80);
+    mctx.fillStyle = '#fff';
+    mctx.font = '12px Arial';
+    mctx.fillText('Big Picture', 425, 90);
+    
+    // Key Features
+    mctx.fillStyle = '#32CD32';
+    mctx.fillRect(100, 100, 100, 80);
+    mctx.fillStyle = '#fff';
+    mctx.fillText('Key Features', 120, 140);
+    
+    // User Stories
+    mctx.fillStyle = '#FF69B4';
+    mctx.fillRect(250, 180, 100, 80);
+    mctx.fillStyle = '#fff';
+    mctx.fillText('User Stories', 275, 220);
+    
+    // Labels
+    mctx.fillStyle = '#333';
+    mctx.font = '14px Arial';
+    mctx.fillText('Start Here', 240, 380);
+    mctx.fillText('1', 430, 45);
+    mctx.fillText('2', 130, 95);
+    mctx.fillText('3', 280, 175);
+    
+    // Tour guide
+    mctx.fillStyle = '#333';
+    mctx.beginPath();
+    mctx.arc(320, 300, 15, 0, 2 * Math.PI);
+    mctx.fill();
+    
+    // Speech bubble
+    mctx.fillStyle = '#fff';
+    mctx.strokeStyle = '#333';
+    mctx.lineWidth = 1;
+    mctx.beginPath();
+    mctx.moveTo(340, 280);
+    mctx.lineTo(450, 280);
+    mctx.lineTo(450, 250);
+    mctx.lineTo(360, 250);
+    mctx.lineTo(350, 270);
+    mctx.closePath();
+    mctx.fill();
+    mctx.stroke();
+    
+    mctx.fillStyle = '#333';
+    mctx.font = '11px Arial';
+    mctx.fillText("Let's start with", 365, 265);
+    mctx.fillText("the big picture!", 365, 277);
+    </script>
+    
+    <h2>Real-World Example: Smart Home System</h2>
+    
+    <div style="background-color: #f0f8ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3>System Overview: SmartNest Home Automation</h3>
+        
+        <h4>The Problem We're Solving</h4>
+        <p>Homeowners waste energy and compromise security due to manual control of home systems. SmartNest brings intelligence to everyday living.</p>
+        
+        <h4>Our Solution</h4>
+        <p>SmartNest is an AI-powered home automation platform that learns from your habits to optimize comfort, security, and energy efficiency. Think of it as a digital butler that knows your preferences before you do.</p>
+        
+        <h4>Who Benefits</h4>
+        <ul>
+            <li><strong>Homeowners:</strong> Save 30% on energy bills while living more comfortably</li>
+            <li><strong>Property Managers:</strong> Monitor multiple properties from one dashboard</li>
+            <li><strong>Energy Companies:</strong> Reduce peak load through smart consumption</li>
+        </ul>
+        
+        <h4>Key Capabilities</h4>
+        <p>• Learns daily routines and adjusts automatically<br>
+        • Integrates with 200+ smart devices<br>
+        • Provides real-time energy insights<br>
+        • Offers voice and mobile control</p>
+    </div>
+    
+    <h2>The Clarity Pyramid</h2>
+    
+    <canvas id="pyramidCanvas" width="600" height="350"></canvas>
+    
+    <script>
+    const pyramidCanvas = document.getElementById('pyramidCanvas');
+    const pctx = pyramidCanvas.getContext('2d');
+    
+    // Background
+    pctx.fillStyle = '#f9f9f9';
+    pctx.fillRect(0, 0, 600, 350);
+    
+    // Draw pyramid
+    pctx.fillStyle = '#FFD700';
+    pctx.beginPath();
+    pctx.moveTo(300, 50);
+    pctx.lineTo(450, 250);
+    pctx.lineTo(150, 250);
+    pctx.closePath();
+    pctx.fill();
+    
+    // Pyramid sections
+    pctx.strokeStyle = '#333';
+    pctx.lineWidth = 2;
+    
+    // Top section
+    pctx.beginPath();
+    pctx.moveTo(250, 120);
+    pctx.lineTo(350, 120);
+    pctx.stroke();
+    
+    // Middle section
+    pctx.beginPath();
+    pctx.moveTo(200, 185);
+    pctx.lineTo(400, 185);
+    pctx.stroke();
+    
+    // Labels
+    pctx.fillStyle = '#333';
+    pctx.font = '14px Arial';
+    pctx.fillText('One-Line Summary', 240, 90);
+    pctx.fillText('Core Concepts', 255, 155);
+    pctx.fillText('Supporting Details', 240, 220);
+    
+    // Arrows and explanations
+    pctx.font = '12px Arial';
+    pctx.fillStyle = '#666';
+    
+    // Arrow 1
+    pctx.strokeStyle = '#666';
+    pctx.beginPath();
+    pctx.moveTo(100, 85);
+    pctx.lineTo(230, 85);
+    pctx.stroke();
+    pctx.fillText('"Uber for dog walking"', 20, 90);
+    
+    // Arrow 2
+    pctx.beginPath();
+    pctx.moveTo(100, 150);
+    pctx.lineTo(245, 150);
+    pctx.stroke();
+    pctx.fillText('Connects owners', 40, 145);
+    pctx.fillText('with walkers', 50, 160);
+    
+    // Arrow 3
+    pctx.beginPath();
+    pctx.moveTo(100, 215);
+    pctx.lineTo(235, 215);
+    pctx.stroke();
+    pctx.fillText('GPS tracking,', 50, 210);
+    pctx.fillText('ratings, payments', 35, 225);
+    
+    pctx.font = '16px Arial';
+    pctx.fillStyle = '#333';
+    pctx.fillText('Start simple, add detail gradually', 180, 300);
+    </script>
+    
+    <h2>Common Pitfalls to Avoid</h2>
+    
+    <div class="mermaid">
+    graph TD
+        A[Writing System Overview] --> B{Common Mistakes}
+        B --> C[Too Technical Too Soon]
+        B --> D[Assuming Prior Knowledge]
+        B --> E[Missing the Why]
+        B --> F[Information Overload]
+        
+        C --> G[Fix: Start with business language]
+        D --> H[Fix: Define all acronyms]
+        E --> I[Fix: Lead with problem/solution]
+        F --> J[Fix: Use progressive disclosure]
+        
+        style C fill:#ffcccc
+        style D fill:#ffcccc
+        style E fill:#ffcccc
+        style F fill:#ffcccc
+        
+        style G fill:#ccffcc
+        style H fill:#ccffcc
+        style I fill:#ccffcc
+        style J fill:#ccffcc
+    </div>
+    
+    <h2>The Movie Trailer Technique</h2>
+    
+    <p>Your system overview should be like a movie trailer - it gives enough information to understand what's coming without spoiling all the details. Hook them with the problem, tease them with the solution, and leave them wanting to know more.</p>
+    
+    <canvas id="trailerCanvas" width="600" height="200"></canvas>
+    
+    <script>
+    const trailerCanvas = document.getElementById('trailerCanvas');
+    const tctx = trailerCanvas.getContext('2d');
+    
+    // Film strip background
+    tctx.fillStyle = '#000';
+    tctx.fillRect(0, 0, 600, 200);
+    
+    // Film frames
+    const frames = [
+        {x: 50, text: 'Problem', color: '#e74c3c'},
+        {x: 200, text: 'Solution', color: '#3498db'},
+        {x: 350, text: 'Benefits', color: '#2ecc71'},
+        {x: 500, text: 'Call to Action', color: '#f39c12'}
+    ];
+    
+    frames.forEach((frame, index) => {
+        // Frame
+        tctx.fillStyle = '#fff';
+        tctx.fillRect(frame.x, 50, 100, 100);
+        
+        // Content
+        tctx.fillStyle = frame.color;
+        tctx.fillRect(frame.x + 10, 60, 80, 80);
+        
+        // Text
+        tctx.fillStyle = '#fff';
+        tctx.font = '12px Arial';
+        tctx.fillText(frame.text, frame.x + 20, 105);
+        
+        // Film perforations
+        for(let i = 0; i < 4; i++) {
+            tctx.fillStyle = '#fff';
+            tctx.fillRect(frame.x + 5 + i * 25, 30, 15, 10);
+            tctx.fillRect(frame.x + 5 + i * 25, 160, 15, 10);
+        }
+    });
+    
+    // Timeline arrow
+    tctx.strokeStyle = '#fff';
+    tctx.lineWidth = 2;
+    tctx.beginPath();
+    tctx.moveTo(30, 180);
+    tctx.lineTo(570, 180);
+    tctx.lineTo(560, 175);
+    tctx.moveTo(570, 180);
+    tctx.lineTo(560, 185);
+    tctx.stroke();
+    </script>
+    
+    <h2>Template for Success</h2>
+    
+    <div style="background-color: #ffe6e6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3>Your System Overview Checklist</h3>
+        
+        <p><strong>Opening Hook (1-2 sentences):</strong><br>
+        State the problem in terms anyone can understand.</p>
+        
+        <p><strong>Solution Summary (1 paragraph):</strong><br>
+        Describe what you're building without technical jargon.</p>
+        
+        <p><strong>Key Users (Bullet points):</strong><br>
+        Who will use this and what will they gain?</p>
+        
+        <p><strong>Core Features (3-5 items):</strong><br>
+        What makes your solution special?</p>
+        
+        <p><strong>Success Metrics (2-3 measurable goals):</strong><br>
+        How will we know if we've succeeded?</p>
+        
+        <p><strong>Scope Boundaries (What's NOT included):</strong><br>
+        Be clear about what you're not building.</p>
+    </div>
+    
+    <h2>The Zoom Lens Approach</h2>
+    
+    <div class="mermaid">
+    graph LR
+        A[Wide Shot: Industry Context] --> B[Medium Shot: Your Solution]
+        B --> C[Close-up: Key Features]
+        C --> D[Detail Shot: Technical Specifics]
+        
+        A --> E["Everyone understands"]
+        B --> F["Stakeholders engaged"]
+        C --> G["Users excited"]
+        D --> H["Developers informed"]
+        
+        style A fill:#e3f2fd
+        style B fill:#bbdefb
+        style C fill:#90caf9
+        style D fill:#64b5f6
+    </div>
+    
+    <h2>Remember: Write for Your Grandmother</h2>
+    
+    <p>The best system overviews can be understood by your grandmother (who might not be technical) AND excite your lead developer (who definitely is). If your grandmother can understand what you're building and why it matters, you've written a great overview!</p>
+    
+    <p><em>Next, we'll explore how to create architecture diagrams that communicate complex technical concepts visually and effectively.</em></p>
+</body>
+</html>

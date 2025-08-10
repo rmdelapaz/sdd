@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anatomy of a Software Design Document</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="icon" href="/favicon.png">
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true });
+    </script>
+</head>
+<body>
+    <h1>The Anatomy of a Software Design Document</h1>
+    
+    <p>Just like the human body has essential organs that work together, a software design document has key sections that create a complete picture of your system. Let's explore each vital component!</p>
+    
+    <h2>The Complete Structure</h2>
+    
+    <div class="mermaid">
+    graph TD
+        A[Software Design Document] --> B[Executive Summary]
+        A --> C[System Overview]
+        A --> D[Architecture Design]
+        A --> E[Data Design]
+        A --> F[Interface Design]
+        A --> G[Component Design]
+        A --> H[Security Considerations]
+        A --> I[Performance Requirements]
+        A --> J[Testing Strategy]
+        
+        B --> B1[Project Goals]
+        B --> B2[Key Features]
+        B --> B3[Success Metrics]
+        
+        D --> D1[High-Level Architecture]
+        D --> D2[Technology Stack]
+        D --> D3[System Components]
+        
+        style A fill:#f9f,stroke:#333,stroke-width:4px
+    </div>
+    
+    <h2>Executive Summary: The Elevator Pitch</h2>
+    
+    <p>Imagine you're in an elevator with your CEO, and you have 30 seconds to explain your project. That's your executive summary! It's the bird's-eye view of your entire system.</p>
+    
+    <canvas id="elevatorCanvas" width="600" height="300"></canvas>
+    
+    <script>
+    const elevatorCanvas = document.getElementById('elevatorCanvas');
+    const ectx = elevatorCanvas.getContext('2d');
+    
+    // Background
+    ectx.fillStyle = '#f0f0f0';
+    ectx.fillRect(0, 0, 600, 300);
+    
+    // Elevator
+    ectx.fillStyle = '#ddd';
+    ectx.fillRect(200, 50, 200, 200);
+    
+    // Elevator doors
+    ectx.strokeStyle = '#999';
+    ectx.lineWidth = 2;
+    ectx.moveTo(300, 50);
+    ectx.lineTo(300, 250);
+    ectx.stroke();
+    
+    // People
+    ectx.fillStyle = '#4a90e2';
+    ectx.beginPath();
+    ectx.arc(250, 150, 20, 0, 2 * Math.PI);
+    ectx.fill();
+    
+    ectx.fillStyle = '#e74c3c';
+    ectx.beginPath();
+    ectx.arc(350, 150, 20, 0, 2 * Math.PI);
+    ectx.fill();
+    
+    // Speech bubble
+    ectx.fillStyle = '#fff';
+    ectx.beginPath();
+    ectx.moveTo(270, 100);
+    ectx.lineTo(380, 100);
+    ectx.lineTo(380, 70);
+    ectx.lineTo(290, 70);
+    ectx.lineTo(280, 80);
+    ectx.closePath();
+    ectx.fill();
+    ectx.stroke();
+    
+    ectx.fillStyle = '#333';
+    ectx.font = '12px Arial';
+    ectx.fillText('30 seconds to', 295, 85);
+    ectx.fillText('explain everything!', 285, 97);
+    
+    // Labels
+    ectx.font = '14px Arial';
+    ectx.fillText('You', 235, 190);
+    ectx.fillText('CEO', 335, 190);
+    
+    // Floor indicator
+    for(let i = 0; i < 5; i++) {
+        ectx.fillStyle = i === 2 ? '#4a90e2' : '#ccc';
+        ectx.beginPath();
+        ectx.arc(450, 70 + i * 30, 8, 0, 2 * Math.PI);
+        ectx.fill();
+    }
+    </script>
+    
+    <h3>Real-World Example: Food Delivery App</h3>
+    
+    <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h4>Executive Summary</h4>
+        <p><strong>Project:</strong> QuickBite - Food Delivery Platform</p>
+        <p><strong>Goal:</strong> Connect hungry customers with local restaurants through a seamless mobile experience</p>
+        <p><strong>Key Features:</strong> Real-time tracking, AI-powered recommendations, 30-minute delivery guarantee</p>
+        <p><strong>Success Metrics:</strong> 100,000 active users in 6 months, 15% month-over-month growth</p>
+    </div>
+    
+    <h2>System Overview: The Map of Your Kingdom</h2>
+    
+    <p>Think of this section as a map showing all the territories in your software kingdom. It answers: What are we building? Who will use it? How does it fit into the bigger picture?</p>
+    
+    <div class="mermaid">
+    graph LR
+        subgraph "External World"
+            U[Users]
+            R[Restaurants]
+            D[Delivery Partners]
+            P[Payment Systems]
+        end
+        
+        subgraph "Our System"
+            A[QuickBite Platform]
+            A1[Mobile App]
+            A2[Web Portal]
+            A3[Admin Dashboard]
+        end
+        
+        U --> A1
+        R --> A2
+        D --> A1
+        A --> P
+        
+        style A fill:#90EE90
+    </div>
+    
+    <h2>Architecture Design: The Blueprint</h2>
+    
+    <p>This is where we get into the "how" - like showing how rooms connect in a house blueprint. It reveals the technical structure and how components communicate.</p>
+    
+    <canvas id="architectureCanvas" width="600" height="400"></canvas>
+    
+    <script>
+    const archCanvas = document.getElementById('architectureCanvas');
+    const actx = archCanvas.getContext('2d');
+    
+    // Background
+    actx.fillStyle = '#f9f9f9';
+    actx.fillRect(0, 0, 600, 400);
+    
+    // Title
+    actx.fillStyle = '#333';
+    actx.font = '16px Arial';
+    actx.fillText('3-Tier Architecture Example', 220, 30);
+    
+    // Presentation Layer
+    actx.fillStyle = '#3498db';
+    actx.fillRect(150, 60, 300, 80);
+    actx.fillStyle = '#fff';
+    actx.font = '14px Arial';
+    actx.fillText('Presentation Layer', 250, 90);
+    actx.font = '12px Arial';
+    actx.fillText('React Web App | Mobile App | API Gateway', 200, 115);
+    
+    // Business Logic Layer
+    actx.fillStyle = '#2ecc71';
+    actx.fillRect(150, 170, 300, 80);
+    actx.fillStyle = '#fff';
+    actx.font = '14px Arial';
+    actx.fillText('Business Logic Layer', 245, 200);
+    actx.font = '12px Arial';
+    actx.fillText('Order Service | User Service | Payment Service', 195, 225);
+    
+    // Data Layer
+    actx.fillStyle = '#e74c3c';
+    actx.fillRect(150, 280, 300, 80);
+    actx.fillStyle = '#fff';
+    actx.font = '14px Arial';
+    actx.fillText('Data Layer', 270, 310);
+    actx.font = '12px Arial';
+    actx.fillText('PostgreSQL | Redis Cache | S3 Storage', 210, 335);
+    
+    // Arrows
+    actx.strokeStyle = '#666';
+    actx.lineWidth = 2;
+    
+    // Arrow 1
+    actx.beginPath();
+    actx.moveTo(300, 140);
+    actx.lineTo(300, 170);
+    actx.lineTo(295, 165);
+    actx.moveTo(300, 170);
+    actx.lineTo(305, 165);
+    actx.stroke();
+    
+    // Arrow 2
+    actx.beginPath();
+    actx.moveTo(300, 250);
+    actx.lineTo(300, 280);
+    actx.lineTo(295, 275);
+    actx.moveTo(300, 280);
+    actx.lineTo(305, 275);
+    actx.stroke();
+    </script>
+    
+    <h2>Data Design: The Information Highway</h2>
+    
+    <p>Data is the lifeblood of your application. This section is like designing the circulatory system - how information flows, where it's stored, and how it's structured.</p>
+    
+    <div class="mermaid">
+    erDiagram
+        USER ||--o{ ORDER : places
+        USER {
+            int user_id PK
+            string name
+            string email
+            string phone
+            datetime created_at
+        }
+        ORDER ||--|{ ORDER_ITEM : contains
+        ORDER {
+            int order_id PK
+            int user_id FK
+            int restaurant_id FK
+            decimal total_amount
+            string status
+            datetime order_time
+        }
+        RESTAURANT ||--o{ ORDER : receives
+        RESTAURANT {
+            int restaurant_id PK
+            string name
+            string address
+            float rating
+            boolean is_active
+        }
+        ORDER_ITEM {
+            int item_id PK
+            int order_id FK
+            int menu_item_id FK
+            int quantity
+            decimal price
+        }
+    </div>
+    
+    <h2>Interface Design: The User's Window</h2>
+    
+    <p>Interfaces are like doors and windows in a building - they're how users interact with your system. This includes APIs, user interfaces, and system integrations.</p>
+    
+    <canvas id="interfaceCanvas" width="600" height="350"></canvas>
+    
+    <script>
+    const intCanvas = document.getElementById('interfaceCanvas');
+    const ictx = intCanvas.getContext('2d');
+    
+    // Background
+    ictx.fillStyle = '#f5f5f5';
+    ictx.fillRect(0, 0, 600, 350);
+    
+    // Mobile Interface
+    ictx.fillStyle = '#333';
+    ictx.fillRect(50, 50, 150, 250);
+    ictx.fillStyle = '#fff';
+    ictx.fillRect(60, 80, 130, 200);
+    ictx.fillStyle = '#4CAF50';
+    ictx.fillRect(70, 100, 110, 40);
+    ictx.fillStyle = '#2196F3';
+    ictx.fillRect(70, 150, 110, 40);
+    ictx.fillStyle = '#FF9800';
+    ictx.fillRect(70, 200, 110, 40);
+    
+    // API Box
+    ictx.fillStyle = '#9C27B0';
+    ictx.fillRect(250, 100, 100, 150);
+    ictx.fillStyle = '#fff';
+    ictx.font = '14px Arial';
+    ictx.fillText('REST API', 270, 130);
+    ictx.font = '10px Arial';
+    ictx.fillText('GET /orders', 260, 160);
+    ictx.fillText('POST /orders', 260, 180);
+    ictx.fillText('PUT /orders/:id', 260, 200);
+    ictx.fillText('DELETE /orders/:id', 255, 220);
+    
+    // External Services
+    ictx.fillStyle = '#607D8B';
+    ictx.fillRect(400, 50, 150, 60);
+    ictx.fillRect(400, 130, 150, 60);
+    ictx.fillRect(400, 210, 150, 60);
+    
+    ictx.fillStyle = '#fff';
+    ictx.font = '12px Arial';
+    ictx.fillText('Payment Gateway', 430, 85);
+    ictx.fillText('Maps Service', 440, 165);
+    ictx.fillText('SMS Service', 445, 245);
+    
+    // Connecting lines
+    ictx.strokeStyle = '#666';
+    ictx.setLineDash([5, 5]);
+    ictx.beginPath();
+    ictx.moveTo(200, 175);
+    ictx.lineTo(250, 175);
+    ictx.moveTo(350, 175);
+    ictx.lineTo(400, 80);
+    ictx.moveTo(350, 175);
+    ictx.lineTo(400, 160);
+    ictx.moveTo(350, 175);
+    ictx.lineTo(400, 240);
+    ictx.stroke();
+    
+    ictx.setLineDash([]);
+    ictx.fillStyle = '#333';
+    ictx.font = '14px Arial';
+    ictx.fillText('Mobile App', 90, 320);
+    ictx.fillText('API Layer', 270, 320);
+    ictx.fillText('External Services', 430, 320);
+    </script>
+    
+    <h2>The Living Document Philosophy</h2>
+    
+    <p>Remember: A design document is like a garden - it needs regular care and updates. As your project grows and changes, so should your documentation. It's not a museum piece to be admired from afar, but a working tool that gets dirty in the trenches with you.</p>
+    
+    <div class="mermaid">
+    graph LR
+        A[Initial Design] --> B[Development Insights]
+        B --> C[Update Document]
+        C --> D[New Requirements]
+        D --> E[Refine Design]
+        E --> B
+        
+        style C fill:#90EE90
+        style E fill:#90EE90
+    </div>
+    
+    <h3>Pro Tip: The Restaurant Menu Approach</h3>
+    
+    <p>Make your design document like a good restaurant menu - organized, easy to scan, with enough detail to make informed decisions, but not so much that it overwhelms. Each section should serve a purpose, just like each menu category helps diners find what they're looking for.</p>
+    
+    <p><em>Next, we'll dive deep into writing effective system overviews that capture the essence of your project without drowning readers in technical jargon.</em></p>
+</body>
+</html>

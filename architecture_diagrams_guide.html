@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creating Effective Architecture Diagrams</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="icon" href="/favicon.png">
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true });
+    </script>
+</head>
+<body>
+    <h1>Creating Effective Architecture Diagrams</h1>
+    
+    <p>Architecture diagrams are the blueprints of the software world. Just as an architect wouldn't build a skyscraper without detailed plans, we shouldn't build complex systems without clear visual representations. Let's master the art of drawing diagrams that actually communicate!</p>
+    
+    <h2>The Language of Shapes</h2>
+    
+    <p>Like traffic signs that use universal symbols, architecture diagrams have a visual vocabulary that everyone should understand:</p>
+    
+    <canvas id="shapesCanvas" width="600" height="400"></canvas>
+    
+    <script>
+    const shapesCanvas = document.getElementById('shapesCanvas');
+    const sctx = shapesCanvas.getContext('2d');
+    
+    // Background
+    sctx.fillStyle = '#f5f5f5';
+    sctx.fillRect(0, 0, 600, 400);
+    
+    // Title
+    sctx.fillStyle = '#333';
+    sctx.font = '16px Arial';
+    sctx.fillText('Common Architecture Symbols', 200, 30);
+    
+    // Rectangle - Component/Service
+    sctx.fillStyle = '#4CAF50';
+    sctx.fillRect(50, 60, 100, 60);
+    sctx.fillStyle = '#333';
+    sctx.font = '12px Arial';
+    sctx.fillText('Component', 70, 95);
+    sctx.fillText('Service/Module', 60, 140);
+    
+    // Cylinder - Database
+    sctx.fillStyle = '#2196F3';
+    sctx.beginPath();
+    sctx.ellipse(250, 70, 40, 15, 0, 0, 2 * Math.PI);
+    sctx.fill();
+    sctx.fillRect(210, 70, 80, 40);
+    sctx.beginPath();
+    sctx.ellipse(250, 110, 40, 15, 0, 0, 2 * Math.PI);
+    sctx.fill();
+    sctx.fillStyle = '#fff';
+    sctx.fillText('Database', 225, 95);
+    sctx.fillStyle = '#333';
+    sctx.fillText('Data Store', 225, 140);
+    
+    // Cloud - External Service
+    sctx.fillStyle = '#9C27B0';
+    sctx.beginPath();
+    sctx.arc(420, 80, 25, 0, 2 * Math.PI);
+    sctx.arc(450, 80, 25, 0, 2 * Math.PI);
+    sctx.arc(440, 65, 20, 0, 2 * Math.PI);
+    sctx.arc(470, 90, 20, 0, 2 * Math.PI);
+    sctx.arc(410, 90, 20, 0, 2 * Math.PI);
+    sctx.fill();
+    sctx.fillStyle = '#fff';
+    sctx.fillText('External', 420, 85);
+    sctx.fillStyle = '#333';
+    sctx.fillText('Cloud Service', 410, 140);
+    
+    // Diamond - Decision Point
+    sctx.fillStyle = '#FF9800';
+    sctx.beginPath();
+    sctx.moveTo(100, 200);
+    sctx.lineTo(150, 230);
+    sctx.lineTo(100, 260);
+    sctx.lineTo(50, 230);
+    sctx.closePath();
+    sctx.fill();
+    sctx.fillStyle = '#fff';
+    sctx.fillText('Decision', 75, 235);
+    sctx.fillStyle = '#333';
+    sctx.fillText('Gateway/Router', 55, 280);
+    
+    // Circle - Interface
+    sctx.fillStyle = '#E91E63';
+    sctx.beginPath();
+    sctx.arc(250, 230, 30, 0, 2 * Math.PI);
+    sctx.fill();
+    sctx.fillStyle = '#fff';
+    sctx.fillText('Interface', 225, 235);
+    sctx.fillStyle = '#333';
+    sctx.fillText('API/Port', 225, 280);
+    
+    // Queue symbol
+    sctx.fillStyle = '#607D8B';
+    sctx.fillRect(380, 200, 120, 10);
+    sctx.fillRect(380, 220, 120, 10);
+    sctx.fillRect(380, 240, 120, 10);
+    sctx.beginPath();
+    sctx.moveTo(500, 225);
+    sctx.lineTo(520, 215);
+    sctx.lineTo(520, 235);
+    sctx.closePath();
+    sctx.fill();
+    sctx.fillStyle = '#333';
+    sctx.fillText('Message Queue', 400, 280);
+    
+    // Legend box
+    sctx.strokeStyle = '#999';
+    sctx.lineWidth = 2;
+    sctx.setLineDash([5, 5]);
+    sctx.strokeRect(30, 320, 540, 60);
+    sctx.setLineDash([]);
+    
+    sctx.fillStyle = '#666';
+    sctx.font = '11px Arial';
+    sctx.fillText('Pro Tip: Consistency is key! Pick a symbol set and stick with it throughout your documentation.', 50, 350);
+    sctx.fillText('Your team should be able to "read" your diagrams like a familiar language.', 50, 365);
+    </script>
+    
+    <h2>The C4 Model: Zoom Into Your Architecture</h2>
+    
+    <p>The C4 model is like Google Maps for your architecture - you can zoom from a satellite view down to street level. It provides four levels of detail:</p>
+    
+    <div class="mermaid">
+    graph TD
+        A[Level 1: Context] --> B[Level 2: Container]
+        B --> C[Level 3: Component]
+        C --> D[Level 4: Code]
+        
+        A --> E[Who uses the system?]
+        B --> F[What are the major pieces?]
+        C --> G[How do containers work internally?]
+        D --> H[How is the code structured?]
+        
+        style A fill:#e3f2fd
+        style B fill:#bbdefb
+        style C fill:#90caf9
+        style D fill:#64b5f6
+    </div>
+    
+    <h2>Real Example: E-Learning Platform</h2>
+    
+    <h3>Level 1: System Context Diagram</h3>
+    
+    <div class="mermaid">
+    graph TB
+        Student[Student<br/>Uses platform to learn]
+        Teacher[Teacher<br/>Creates courses]
+        Admin[Administrator<br/>Manages platform]
+        
+        System[E-Learning Platform<br/>Online education system]
+        
+        Email[Email Service<br/>SendGrid]
+        Payment[Payment Gateway<br/>Stripe]
+        Storage[Cloud Storage<br/>AWS S3]
+        
+        Student --> System
+        Teacher --> System
+        Admin --> System
+        
+        System --> Email
+        System --> Payment
+        System --> Storage
+        
+        style System fill:#4CAF50,stroke:#333,stroke-width:4px
+        style Student fill:#e3f2fd
+        style Teacher fill:#e3f2fd
+        style Admin fill:#e3f2fd
+        style Email fill:#fff3e0
+        style Payment fill:#fff3e0
+        style Storage fill:#fff3e0
+    </div>
+    
+    <h3>Level 2: Container Diagram</h3>
+    
+    <canvas id="containerCanvas" width="600" height="500"></canvas>
+    
+    <script>
+    const containerCanvas = document.getElementById('containerCanvas');
+    const cctx = containerCanvas.getContext('2d');
+    
+    // Background
+    cctx.fillStyle = '#f9f9f9';
+    cctx.fillRect(0, 0, 600, 500);
+    
+    // System boundary
+    cctx.strokeStyle = '#333';
+    cctx.lineWidth = 2;
+    cctx.setLineDash([10, 5]);
+    cctx.strokeRect(50, 50, 500, 400);
+    cctx.setLineDash([]);
+    
+    cctx.fillStyle = '#333';
+    cctx.font = '14px Arial';
+    cctx.fillText('E-Learning Platform', 240, 40);
+    
+    // Web Application
+    cctx.fillStyle = '#4CAF50';
+    cctx.fillRect(100, 80, 120, 80);
+    cctx.fillStyle = '#fff';
+    cctx.font = '12px Arial';
+    cctx.fillText('Web Application', 125, 110);
+    cctx.font = '10px Arial';
+    cctx.fillText('React SPA', 140, 130);
+    cctx.fillText('Port: 3000', 140, 145);
+    
+    // API Gateway
+    cctx.fillStyle = '#2196F3';
+    cctx.fillRect(300, 80, 120, 80);
+    cctx.fillStyle = '#fff';
+    cctx.font = '12px Arial';
+    cctx.fillText('API Gateway', 335, 110);
+    cctx.font = '10px Arial';
+    cctx.fillText('Node.js/Express', 325, 130);
+    cctx.fillText('Port: 8080', 340, 145);
+    
+    // Course Service
+    cctx.fillStyle = '#FF9800';
+    cctx.fillRect(100, 200, 120, 80);
+    cctx.fillStyle = '#fff';
+    cctx.font = '12px Arial';
+    cctx.fillText('Course Service', 125, 230);
+    cctx.font = '10px Arial';
+    cctx.fillText('Python/FastAPI', 125, 250);
+    cctx.fillText('Port: 8081', 140, 265);
+    
+    // User Service
+    cctx.fillStyle = '#9C27B0';
+    cctx.fillRect(300, 200, 120, 80);
+    cctx.fillStyle = '#fff';
+    cctx.font = '12px Arial';
+    cctx.fillText('User Service', 335, 230);
+    cctx.font = '10px Arial';
+    cctx.fillText('Java/Spring', 335, 250);
+    cctx.fillText('Port: 8082', 340, 265);
+    
+    // Database
+    cctx.fillStyle = '#607D8B';
+    // Draw cylinder for database
+    cctx.beginPath();
+    cctx.ellipse(260, 340, 60, 20, 0, 0, 2 * Math.PI);
+    cctx.fill();
+    cctx.fillRect(200, 340, 120, 50);
+    cctx.beginPath();
+    cctx.ellipse(260, 390, 60, 20, 0, 0, 2 * Math.PI);
+    cctx.fill();
+    cctx.fillStyle = '#fff';
+    cctx.font = '12px Arial';
+    cctx.fillText('PostgreSQL', 225, 370);
+    
+    // Connections
+    cctx.strokeStyle = '#666';
+    cctx.lineWidth = 2;
+    
+    // Web to API
+    cctx.beginPath();
+    cctx.moveTo(220, 120);
+    cctx.lineTo(300, 120);
+    drawArrow(cctx, 300, 120);
+    cctx.stroke();
+    
+    // API to Services
+    cctx.beginPath();
+    cctx.moveTo(360, 160);
+    cctx.lineTo(360, 180);
+    cctx.lineTo(160, 180);
+    cctx.lineTo(160, 200);
+    drawArrow(cctx, 160, 200);
+    cctx.stroke();
+    
+    cctx.beginPath();
+    cctx.moveTo(360, 160);
+    cctx.lineTo(360, 200);
+    drawArrow(cctx, 360, 200);
+    cctx.stroke();
+    
+    // Services to DB
+    cctx.beginPath();
+    cctx.moveTo(160, 280);
+    cctx.lineTo(160, 310);
+    cctx.lineTo(220, 310);
+    cctx.lineTo(220, 340);
+    drawArrow(cctx, 220, 340);
+    cctx.stroke();
+    
+    cctx.beginPath();
+    cctx.moveTo(360, 280);
+    cctx.lineTo(360, 310);
+    cctx.lineTo(300, 310);
+    cctx.lineTo(300, 340);
+    drawArrow(cctx, 300, 340);
+    cctx.stroke();
+    
+    // External users
+    cctx.fillStyle = '#E91E63';
+    cctx.beginPath();
+    cctx.arc(160, 20, 15, 0, 2 * Math.PI);
+    cctx.fill();
+    cctx.fillStyle = '#333';
+    cctx.font = '11px Arial';
+    cctx.fillText('Users', 180, 25);
+    
+    // Arrow from users
+    cctx.strokeStyle = '#666';
+    cctx.beginPath();
+    cctx.moveTo(160, 35);
+    cctx.lineTo(160, 80);
+    drawArrow(cctx, 160, 80);
+    cctx.stroke();
+    
+    function drawArrow(ctx, x, y) {
+        ctx.lineTo(x - 5, y - 5);
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + 5, y - 5);
+    }
+    </script>
+    
+    <h2>The Story Your Diagram Should Tell</h2>
+    
+    <p>A great architecture diagram is like a comic strip - it should tell a story that flows naturally from panel to panel:</p>
+    
+    <canvas id="storyCanvas" width="600" height="250"></canvas>
+    
+    <script>
+    const storyCanvas = document.getElementById('storyCanvas');
+    const stctx = storyCanvas.getContext('2d');
+    
+    // Background
+    stctx.fillStyle = '#fff';
+    stctx.fillRect(0, 0, 600, 250);
+    
+    // Comic panels
+    const panels = [
+        {x: 20, y: 50, title: 'User Action', color: '#4CAF50'},
+        {x: 160, y: 50, title: 'System Response', color: '#2196F3'},
+        {x: 300, y: 50, title: 'Data Flow', color: '#FF9800'},
+        {x: 440, y: 50, title: 'Result', color: '#9C27B0'}
+    ];
+    
+    panels.forEach((panel, index) => {
+        // Panel border
+        stctx.strokeStyle = '#333';
+        stctx.lineWidth = 2;
+        stctx.strokeRect(panel.x, panel.y, 120, 150);
+        
+        // Panel content
+        stctx.fillStyle = panel.color;
+        stctx.fillRect(panel.x + 10, panel.y + 40, 100, 60);
+        
+        // Title
+        stctx.fillStyle = '#333';
+        stctx.font = '12px Arial';
+        stctx.fillText(panel.title, panel.x + 30, panel.y + 20);
+        
+        // Arrow to next panel
+        if (index < panels.length - 1) {
+            stctx.strokeStyle = '#666';
+            stctx.beginPath();
+            stctx.moveTo(panel.x + 120, panel.y + 75);
+            stctx.lineTo(panel.x + 140, panel.y + 75);
+            stctx.lineTo(panel.x + 135, panel.y + 70);
+            stctx.moveTo(panel.x + 140, panel.y + 75);
+            stctx.lineTo(panel.x + 135, panel.y + 80);
+            stctx.stroke();
+        }
+    });
+    
+    stctx.font = '14px Arial';
+    stctx.fillText('Your diagram should flow like a story!', 200, 230);
+    </script>
+    
+    <h2>Common Anti-Patterns to Avoid</h2>
+    
+    <div class="mermaid">
+    graph TD
+        A[Bad Architecture Diagrams] --> B[Spaghetti Syndrome]
+        A --> C[Box Explosion]
+        A --> D[Missing Legend]
+        A --> E[Inconsistent Notation]
+        
+        B --> F[Too many crossing lines]
+        C --> G[Too much detail at once]
+        D --> H[Symbols without explanation]
+        E --> I[Mixed diagram styles]
+        
+        style B fill:#ffcccc
+        style C fill:#ffcccc
+        style D fill:#ffcccc
+        style E fill:#ffcccc
+    </div>
+    
+    <h2>The Golden Rules of Diagramming</h2>
+    
+    <div style="background-color: #fffacd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3>Remember These Principles</h3>
+        
+        <p><strong>1. One Diagram, One Story:</strong> Each diagram should have a single, clear purpose. Don't try to show everything at once.</p>
+        
+        <p><strong>2. Progressive Disclosure:</strong> Start high-level and zoom in. Like peeling an onion, reveal complexity layer by layer.</p>
+        
+        <p><strong>3. Consistent Visual Language:</strong> Use the same shapes, colors, and styles throughout all your diagrams.</p>
+        
+        <p><strong>4. Label Everything:</strong> Every box, line, and arrow should have a clear label. No guessing games!</p>
+        
+        <p><strong>5. Show Data Flow:</strong> Use arrows to show how information moves through your system.</p>
+        
+        <p><strong>6. Include a Legend:</strong> Always provide a key explaining your symbols and conventions.</p>
+    </div>
+    
+    <h2>Tools of the Trade</h2>
+    
+    <div class="mermaid">
+    mindmap
+      root((Diagramming Tools))
+        Code-Based
+          Mermaid
+          PlantUML
+          Graphviz
+        Visual Tools
+          draw.io
+          Lucidchart
+          Figma
+        Specialized
+          C4 with Structurizr
+          ArchiMate
+          AWS/Azure Tools
+        Choosing Factors
+          Team Skills
+          Version Control
+          Collaboration Needs
+          Complexity Level
+</div>
+    
+    <h2>Exercise: Spot the Improvements</h2>
+    
+    <p>Look at these two versions of the same system. The second applies all our principles:</p>
+    
+    <canvas id="comparisonCanvas" width="600" height="300"></canvas>
+    
+    <script>
+    const compCanvas = document.getElementById('comparisonCanvas');
+    const cmctx = compCanvas.getContext('2d');
+    
+    // Background
+    cmctx.fillStyle = '#f5f5f5';
+    cmctx.fillRect(0, 0, 600, 300);
+    
+    // Before section
+    cmctx.fillStyle = '#ffebee';
+    cmctx.fillRect(10, 10, 280, 280);
+    cmctx.fillStyle = '#333';
+    cmctx.font = '14px Arial';
+    cmctx.fillText('Before: Confusing', 110, 30);
+    
+    // Draw messy diagram
+    cmctx.strokeStyle = '#666';
+    cmctx.lineWidth = 1;
+    // Random boxes
+    cmctx.fillStyle = '#ccc';
+    cmctx.fillRect(30, 60, 40, 40);
+    cmctx.fillRect(100, 80, 40, 40);
+    cmctx.fillRect(180, 60, 40, 40);
+    cmctx.fillRect(80, 150, 40, 40);
+    cmctx.fillRect(150, 180, 40, 40);
+    
+    // Messy lines
+    cmctx.beginPath();
+    cmctx.moveTo(50, 80);
+    cmctx.lineTo(100, 100);
+    cmctx.lineTo(80, 170);
+    cmctx.lineTo(150, 200);
+    cmctx.lineTo(200, 80);
+    cmctx.stroke();
+    
+    // After section
+    cmctx.fillStyle = '#e8f5e9';
+    cmctx.fillRect(310, 10, 280, 280);
+    cmctx.fillStyle = '#333';
+    cmctx.font = '14px Arial';
+    cmctx.fillText('After: Clear', 420, 30);
+    
+    // Draw organized diagram
+    // User
+    cmctx.fillStyle = '#4CAF50';
+    cmctx.beginPath();
+    cmctx.arc(450, 70, 20, 0, 2 * Math.PI);
+    cmctx.fill();
+    cmctx.fillStyle = '#fff';
+    cmctx.font = '10px Arial';
+    cmctx.fillText('User', 440, 75);
+    
+    // API
+    cmctx.fillStyle = '#2196F3';
+    cmctx.fillRect(410, 120, 80, 40);
+    cmctx.fillStyle = '#fff';
+    cmctx.fillText('API', 440, 145);
+    
+    // Services
+    cmctx.fillStyle = '#FF9800';
+    cmctx.fillRect(340, 200, 60, 40);
+    cmctx.fillRect(420, 200, 60, 40);
+    cmctx.fillRect(500, 200, 60, 40);
+    cmctx.fillStyle = '#fff';
+    cmctx.fillText('Auth', 355, 225);
+    cmctx.fillText('Data', 435, 225);
+    cmctx.fillText('Email', 513, 225);
+    
+    // Clean arrows
+    cmctx.strokeStyle = '#333';
+    cmctx.lineWidth = 2;
+    cmctx.beginPath();
+    cmctx.moveTo(450, 90);
+    cmctx.lineTo(450, 120);
+    cmctx.stroke();
+    
+    cmctx.beginPath();
+    cmctx.moveTo(450, 160);
+    cmctx.lineTo(450, 180);
+    cmctx.moveTo(450, 180);
+    cmctx.lineTo(370, 200);
+    cmctx.moveTo(450, 180);
+    cmctx.lineTo(450, 200);
+    cmctx.moveTo(450, 180);
+    cmctx.lineTo(530, 200);
+    cmctx.stroke();
+    </script>
+    
+    <p><em>Next, we'll dive into data design and modeling - showing how to document your database schemas and data flows effectively.</em></p>
+</body>
+</html>
