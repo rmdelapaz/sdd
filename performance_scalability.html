@@ -3,522 +3,924 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Performance and Scalability Considerations</title>
-    <link rel="stylesheet" href="/styles/main.css">
-    <link rel="icon" href="/favicon.png">
+    <meta name="description" content="Document performance and scalability in your SDD — from vertical vs horizontal scaling and caching strategies to database optimization, load testing, performance budgets, and scalability patterns.">
+    <meta name="author" content="Ray De La Paz">
+    <title>Performance and Scalability - SDD Tutorial</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Mermaid — theme-aware via course-enhancements.js -->
     <script type="module">
-      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-      mermaid.initialize({ startOnLoad: true });
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        window.__mermaid = mermaid;
+        const isDark = localStorage.getItem('theme') === 'dark' ||
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: isDark ? 'dark' : 'default',
+            themeVariables: isDark
+                ? { primaryColor: '#334155', primaryTextColor: '#e2e8f0', primaryBorderColor: '#6366f1', lineColor: '#94a3b8', secondaryColor: '#1e293b', tertiaryColor: '#0f172a' }
+                : { primaryColor: '#eff6ff', primaryTextColor: '#1e293b', primaryBorderColor: '#3b82f6', lineColor: '#64748b', secondaryColor: '#f8fafc', tertiaryColor: '#f1f5f9' }
+        });
     </script>
 </head>
 <body>
-    <h1>Performance and Scalability Considerations</h1>
-    
-    <p>Building a system without considering performance is like designing a sports car with a lawnmower engine. It might look great, but it won't get you very far! Let's explore how to build systems that are both fast and can grow with your success.</p>
-    
-    <h2>The Highway Analogy</h2>
-    
-    <canvas id="highwayCanvas" width="600" height="400"></canvas>
-    
-    <script>
-    const highwayCanvas = document.getElementById('highwayCanvas');
-    const hctx = highwayCanvas.getContext('2d');
-    
-    // Background
-    hctx.fillStyle = '#87CEEB';
-    hctx.fillRect(0, 0, 600, 200);
-    hctx.fillStyle = '#90EE90';
-    hctx.fillRect(0, 200, 600, 200);
-    
-    // Single lane road (poor scalability)
-    hctx.fillStyle = '#696969';
-    hctx.fillRect(50, 250, 200, 40);
-    hctx.strokeStyle = '#FFD700';
-    hctx.lineWidth = 2;
-    hctx.setLineDash([20, 10]);
-    hctx.beginPath();
-    hctx.moveTo(50, 270);
-    hctx.lineTo(250, 270);
-    hctx.stroke();
-    
-    // Traffic jam
-    for(let i = 0; i < 8; i++) {
-        hctx.fillStyle = i % 2 === 0 ? '#FF0000' : '#0000FF';
-        hctx.fillRect(60 + i * 20, 260, 15, 20);
-    }
-    
-    // Multi-lane highway (good scalability)
-    hctx.setLineDash([]);
-    hctx.fillStyle = '#696969';
-    hctx.fillRect(350, 220, 200, 100);
-    
-    // Lane markers
-    hctx.strokeStyle = '#FFD700';
-    hctx.setLineDash([20, 10]);
-    for(let i = 1; i < 4; i++) {
-        hctx.beginPath();
-        hctx.moveTo(350, 220 + i * 25);
-        hctx.lineTo(550, 220 + i * 25);
-        hctx.stroke();
-    }
-    
-    // Free flowing traffic
-    const lanes = [230, 255, 280, 305];
-    const colors = ['#FF0000', '#0000FF', '#00FF00', '#FFD700'];
-    for(let lane = 0; lane < 4; lane++) {
-        for(let i = 0; i < 3; i++) {
-            hctx.fillStyle = colors[lane];
-            hctx.fillRect(370 + i * 60, lanes[lane], 15, 20);
-        }
-    }
-    
-    // Labels
-    hctx.setLineDash([]);
-    hctx.fillStyle = '#333';
-    hctx.font = '14px Arial';
-    hctx.fillText('Single Thread', 120, 350);
-    hctx.fillText('= Bottleneck', 125, 370);
-    
-    hctx.fillText('Parallel Processing', 410, 350);
-    hctx.fillText('= High Throughput', 415, 370);
-    
-    // Performance metrics
-    hctx.fillStyle = '#FF0000';
-    hctx.font = '12px Arial';
-    hctx.fillText('⚠️ 100 req/sec max', 90, 220);
-    
-    hctx.fillStyle = '#00FF00';
-    hctx.fillText('✓ 10,000 req/sec', 410, 190);
-    </script>
-    
-    <h2>Vertical vs Horizontal Scaling: Growing Up vs Growing Out</h2>
-    
-    <div class="mermaid">
-    graph TB
-        subgraph "Vertical Scaling (Scale Up)"
-            S1[Small Server<br/>2 CPU, 4GB RAM] --> S2[Medium Server<br/>8 CPU, 16GB RAM]
-            S2 --> S3[Large Server<br/>32 CPU, 64GB RAM]
-            S3 --> S4[Monster Server<br/>128 CPU, 256GB RAM]
-            S4 --> LIMIT1[Hardware Limits!]
-        end
-        
-        subgraph "Horizontal Scaling (Scale Out)"
-            H1[Server 1] --> LB[Load Balancer]
-            H2[Server 2] --> LB
-            H3[Server 3] --> LB
-            H4[Server N...] --> LB
-            LB --> SCALE[Infinite Scale!]
-        end
-        
-        style S1 fill:#ffccbc
-        style S2 fill:#ffab91
-        style S3 fill:#ff8a65
-        style S4 fill:#ff7043
-        style LIMIT1 fill:#ff5252
-        
-        style H1 fill:#c5e1a5
-        style H2 fill:#c5e1a5
-        style H3 fill:#c5e1a5
-        style H4 fill:#c5e1a5
-        style SCALE fill:#4caf50
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
+
+    <div class="progress-indicator" role="progressbar" aria-label="Page scroll progress">
+        <div class="progress-bar"></div>
     </div>
-    
-    <h2>Performance Metrics: What Gets Measured Gets Managed</h2>
-    
-    <canvas id="metricsCanvas" width="600" height="350"></canvas>
-    
-    <script>
-    const metricsCanvas = document.getElementById('metricsCanvas');
-    const mctx = metricsCanvas.getContext('2d');
-    
-    // Background
-    mctx.fillStyle = '#f5f5f5';
-    mctx.fillRect(0, 0, 600, 350);
-    
-    // Title
-    mctx.fillStyle = '#333';
-    mctx.font = '16px Arial';
-    mctx.fillText('Key Performance Indicators', 200, 30);
-    
-    // Metric cards
-    const metrics = [
-        {x: 50, y: 60, title: 'Response Time', value: '< 200ms', color: '#4CAF50', desc: 'Time to first byte'},
-        {x: 220, y: 60, title: 'Throughput', value: '1000 RPS', color: '#2196F3', desc: 'Requests per second'},
-        {x: 390, y: 60, title: 'Error Rate', value: '< 0.1%', color: '#FF9800', desc: 'Failed requests'},
-        {x: 50, y: 190, title: 'CPU Usage', value: '< 70%', color: '#9C27B0', desc: 'Processing power'},
-        {x: 220, y: 190, title: 'Memory', value: '< 80%', color: '#E91E63', desc: 'RAM utilization'},
-        {x: 390, y: 190, title: 'Uptime', value: '99.9%', color: '#00BCD4', desc: 'Availability'}
-    ];
-    
-    metrics.forEach(metric => {
-        // Card background
-        mctx.fillStyle = metric.color;
-        mctx.fillRect(metric.x, metric.y, 150, 100);
-        
-        // White content area
-        mctx.fillStyle = '#fff';
-        mctx.fillRect(metric.x + 5, metric.y + 30, 140, 65);
-        
-        // Title
-        mctx.fillStyle = '#fff';
-        mctx.font = '12px Arial';
-        mctx.fillText(metric.title, metric.x + 40, metric.y + 20);
-        
-        // Value
-        mctx.fillStyle = metric.color;
-        mctx.font = '20px Arial';
-        mctx.fillText(metric.value, metric.x + 30, metric.y + 60);
-        
-        // Description
-        mctx.fillStyle = '#666';
-        mctx.font = '10px Arial';
-        mctx.fillText(metric.desc, metric.x + 35, metric.y + 80);
-    });
-    
-    // Performance equation
-    mctx.fillStyle = '#333';
-    mctx.font = '14px Arial';
-    mctx.fillText('Performance = Speed × Reliability × Efficiency', 150, 320);
-    </script>
-    
-    <h2>Caching Strategy: The Memory Game</h2>
-    
-    <div class="mermaid">
-    graph LR
-        Client[Client Request] --> Cache{Cache Check}
-        Cache -->|Hit| CacheData[Return Cached Data<br/>1ms]
-        Cache -->|Miss| App[Application Server]
-        App --> DB[(Database<br/>50ms)]
-        DB --> App
-        App --> UpdateCache[Update Cache]
-        UpdateCache --> Response[Return to Client]
-        
-        subgraph "Cache Layers"
-            L1[Browser Cache<br/>0ms]
-            L2[CDN Cache<br/>10ms]
-            L3[Redis Cache<br/>1ms]
-            L4[Application Cache<br/>0.1ms]
-        end
-        
-        style CacheData fill:#4caf50
-        style Cache fill:#2196f3
-        style L1 fill:#e8f5e9
-        style L2 fill:#e3f2fd
-        style L3 fill:#fff3e0
-        style L4 fill:#fce4ec
-    </div>
-    
-    <h2>Real-World Example: Video Streaming Platform</h2>
-    
-    <div style="background-color: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3>Scaling Netflix-Style Architecture</h3>
-        
-        <div class="mermaid">
-        graph TB
-            subgraph "Edge Layer"
-                CDN1[CDN POP 1]
-                CDN2[CDN POP 2]
-                CDN3[CDN POP N...]
-            end
-            
-            subgraph "API Gateway"
-                GW[API Gateway<br/>Rate Limiting]
-            end
-            
-            subgraph "Microservices"
-                USER[User Service]
-                VIDEO[Video Service]
-                REC[Recommendation Service]
-                TRANS[Transcoding Service]
-            end
-            
-            subgraph "Data Layer"
-                CACHE[(Redis Cluster)]
-                DB[(Cassandra)]
-                S3[Object Storage]
-            end
-            
-            CDN1 --> GW
-            CDN2 --> GW
-            CDN3 --> GW
-            
-            GW --> USER
-            GW --> VIDEO
-            GW --> REC
-            
-            USER --> CACHE
-            VIDEO --> CACHE
-            REC --> DB
-            TRANS --> S3
-            
-            style CDN1 fill:#4caf50
-            style CDN2 fill:#4caf50
-            style CDN3 fill:#4caf50
-            style CACHE fill:#ff9800
-        </graph>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">SDD Tutorial</a>
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-expanded="false" aria-controls="nav-links">☰</button>
+            <div class="nav-links" id="nav-links">
+                <a href="index.html">Home</a>
+                <a href="index.html#modules">All Lessons</a>
+                <span class="nav-divider"></span>
+                <a href="https://rays-home.netlify.app/">Ray's House of Fun</a>
+                <a href="https://rays-home.netlify.app/contact">Contact</a>
+                <button id="theme-toggle" aria-label="Toggle dark/light mode">🌙</button>
+            </div>
         </div>
-        
-        <h4>Performance Strategies Used:</h4>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
         <ul>
-            <li>📍 <strong>Edge Caching:</strong> Content served from nearest location</li>
-            <li>🔄 <strong>Adaptive Bitrate:</strong> Quality adjusts to bandwidth</li>
-            <li>📊 <strong>Predictive Caching:</strong> Pre-load likely next episodes</li>
-            <li>⚡ <strong>Async Processing:</strong> Transcoding happens in background</li>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#modules">Quality</a></li>
+            <li aria-current="page">Lesson 8: Performance &amp; Scalability</li>
         </ul>
-    </div>
-    
-    <h2>Database Optimization: The Art of Speed</h2>
-    
-    <canvas id="dbOptCanvas" width="600" height="400"></canvas>
-    
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <div class="container">
+            <header>
+                <h1>⚡ Lesson 8: Performance and Scalability Considerations</h1>
+                <p class="lead">Building a system without considering performance is like designing a sports car with a lawnmower engine — it might look great, but it won't get you very far! Your SDD needs to document how your system handles load today and how it will grow tomorrow. Performance is a feature, not a fix.</p>
+
+                <div class="card card-info">
+                    <h2>🎯 Learning Objectives</h2>
+                    <p>By the end of this lesson, you will be able to:</p>
+                    <ul>
+                        <li>Explain the difference between vertical and horizontal scaling and when to use each</li>
+                        <li>Identify and document key performance metrics (latency, throughput, error rate, utilization)</li>
+                        <li>Design a multi-layer caching strategy and document it in your SDD</li>
+                        <li>Apply database optimization techniques and explain their trade-offs</li>
+                        <li>Create a performance budget with measurable targets</li>
+                        <li>Choose the right scalability pattern for your architecture (microservices, event-driven, CQRS)</li>
+                        <li>Plan and document a load testing strategy</li>
+                    </ul>
+                    <p><strong>Estimated Time:</strong> 30 minutes</p>
+                </div>
+            </header>
+
+            <!-- Table of Contents -->
+            <details class="card toc-card" open>
+                <summary>
+                    <h2 style="display:inline; margin:0;">📑 In This Lesson</h2>
+                </summary>
+                <nav aria-label="Table of Contents">
+                    <ol>
+                        <li><a href="#highway" class="toc-link">The Highway Analogy</a></li>
+                        <li><a href="#scaling" class="toc-link">Vertical vs Horizontal Scaling</a></li>
+                        <li><a href="#metrics" class="toc-link">Performance Metrics</a></li>
+                        <li><a href="#caching" class="toc-link">Caching Strategy</a></li>
+                        <li><a href="#streaming" class="toc-link">Real-World Example: Video Streaming</a></li>
+                        <li><a href="#database" class="toc-link">Database Optimization</a></li>
+                        <li><a href="#testing" class="toc-link">Load Testing &amp; Performance Budgets</a></li>
+                        <li><a href="#patterns" class="toc-link">Scalability Patterns &amp; Golden Rules</a></li>
+                    </ol>
+                </nav>
+            </details>
+
+            <!-- Section 1: Highway Analogy -->
+            <section id="highway">
+                <h2>The Highway Analogy</h2>
+                <p>Imagine two roads connecting the same two cities. One is a single-lane country road — every car has to wait behind the one in front of it. The other is a multi-lane highway where traffic flows in parallel. That's the difference between a system that processes requests one at a time and one designed for concurrency. Your SDD should document expected traffic patterns and how the system handles them.</p>
+
+                <canvas id="highwayCanvas" width="600" height="400"></canvas>
+
+                <div class="card card-warning">
+                    <h4>⚠️ Concurrency ≠ Parallelism</h4>
+                    <p>Concurrency means dealing with multiple things at once (like a single chef juggling multiple orders). Parallelism means doing multiple things at once (like multiple chefs each working an order). Your SDD should specify which approach your system uses and why — async I/O (concurrency) and multi-threaded workers (parallelism) have very different resource profiles and failure modes.</p>
+                </div>
+
+                <div class="card card-info">
+                    <h4>📖 The Numbers That Matter</h4>
+                    <p>Single-threaded request processing typically tops out around 100–500 requests per second, depending on response complexity. A well-designed async or multi-threaded system can handle 10,000+ requests per second on the same hardware. The difference isn't luck — it's architecture, and architecture starts in the SDD.</p>
+                </div>
+            </section>
+
+            <!-- Section 2: Scaling -->
+            <section id="scaling">
+                <h2>Vertical vs Horizontal Scaling: Growing Up vs Growing Out</h2>
+                <p><strong>Vertical scaling</strong> means adding more power to a single machine — more CPU, more RAM, faster disks. It's simple, but it has a hard ceiling: eventually you hit hardware limits and the cost curve goes exponential. <strong>Horizontal scaling</strong> means adding more machines behind a load balancer. It's more complex, but it scales virtually without limit. Your SDD should document which strategy you're using and at what point you'd switch.</p>
+
+                <div class="mermaid">
+                graph TB
+                    subgraph "Vertical Scaling (Scale Up)"
+                        S1[Small Server<br/>2 CPU, 4GB RAM] --> S2[Medium Server<br/>8 CPU, 16GB RAM]
+                        S2 --> S3[Large Server<br/>32 CPU, 64GB RAM]
+                        S3 --> S4[Monster Server<br/>128 CPU, 256GB RAM]
+                        S4 --> LIMIT1[Hardware Limits!]
+                    end
+
+                    subgraph "Horizontal Scaling (Scale Out)"
+                        H1[Server 1] --> LB[Load Balancer]
+                        H2[Server 2] --> LB
+                        H3[Server 3] --> LB
+                        H4[Server N...] --> LB
+                        LB --> SCALE[Infinite Scale!]
+                    end
+
+                    style S1 fill:#ffccbc
+                    style S2 fill:#ffab91
+                    style S3 fill:#ff8a65
+                    style S4 fill:#ff7043
+                    style LIMIT1 fill:#ff5252
+
+                    style H1 fill:#c5e1a5
+                    style H2 fill:#c5e1a5
+                    style H3 fill:#c5e1a5
+                    style H4 fill:#c5e1a5
+                    style SCALE fill:#4caf50
+                </div>
+
+                <div class="card card-accent">
+                    <h4>💡 When to Scale Up vs Scale Out</h4>
+                    <p><strong>Scale Up</strong> when: your bottleneck is CPU-bound computation (video encoding, ML inference), you need strong consistency guarantees, or your application isn't designed for distributed state. It's the right first move for many early-stage systems.</p>
+                    <p><strong>Scale Out</strong> when: you need high availability (surviving server failures), your workload is stateless or can use shared state (Redis, distributed DB), or your traffic is unpredictable and you need elastic scaling. This is the long-term strategy for most web applications.</p>
+                </div>
+
+                <div class="card card-danger">
+                    <h4>🚫 The "We'll Scale Later" Trap</h4>
+                    <p>Scaling out requires <em>stateless</em> application design — no sticky sessions, no local file storage, no in-memory caches that can't be shared. If you design with local state and try to add horizontal scaling later, you'll end up rewriting core infrastructure under pressure. Document your scaling strategy in the SDD from day one, even if you start with a single server.</p>
+                </div>
+            </section>
+
+            <!-- Section 3: Metrics -->
+            <section id="metrics">
+                <h2>Performance Metrics: What Gets Measured Gets Managed</h2>
+                <p>You can't optimize what you don't measure. Your SDD should define specific, measurable performance targets for each metric — not vague aspirations like "fast" or "reliable," but concrete numbers with measurement methodology.</p>
+
+                <canvas id="metricsCanvas" width="600" height="350"></canvas>
+
+                <div class="card card-warning">
+                    <h4>⚠️ Averages Lie — Use Percentiles</h4>
+                    <p>An average response time of 200ms might hide the fact that 1% of your users are waiting 5 seconds. Always document p50 (median), p95, and p99 latency targets in your SDD. The p99 is what your worst-off users actually experience — and they're often your most active or most important users. Netflix famously tracks p99.9 because even 0.1% of their user base is millions of people.</p>
+                </div>
+
+                <div class="card card-accent">
+                    <h4>💡 The Four Golden Signals</h4>
+                    <p>Google's Site Reliability Engineering book identifies four golden signals that every SDD should define targets for:</p>
+                    <p><strong>Latency:</strong> How long requests take (separate successful from failed — a fast error is still a problem).</p>
+                    <p><strong>Traffic:</strong> How much demand your system is handling (requests/sec, concurrent connections, data volume).</p>
+                    <p><strong>Errors:</strong> The rate of requests that fail (HTTP 5xx, timeouts, incorrect results).</p>
+                    <p><strong>Saturation:</strong> How "full" your system is (CPU, memory, disk, network). At what utilization does performance degrade?</p>
+                </div>
+            </section>
+
+            <!-- Section 4: Caching -->
+            <section id="caching">
+                <h2>Caching Strategy: The Memory Game</h2>
+                <p>Caching is the single most impactful performance optimization you can make. The idea is simple: store frequently accessed data closer to where it's needed so you don't repeat expensive computations or database queries. Your SDD should document each cache layer, its TTL, its invalidation strategy, and what happens on a cache miss.</p>
+
+                <div class="mermaid">
+                graph LR
+                    Client[Client Request] --> Cache{Cache Check}
+                    Cache -->|Hit| CacheData[Return Cached Data<br/>1ms]
+                    Cache -->|Miss| App[Application Server]
+                    App --> DB[(Database<br/>50ms)]
+                    DB --> App
+                    App --> UpdateCache[Update Cache]
+                    UpdateCache --> Response[Return to Client]
+
+                    subgraph "Cache Layers"
+                        L1[Browser Cache<br/>0ms]
+                        L2[CDN Cache<br/>10ms]
+                        L3[Redis Cache<br/>1ms]
+                        L4[Application Cache<br/>0.1ms]
+                    end
+
+                    style CacheData fill:#4caf50
+                    style Cache fill:#2196f3
+                    style L1 fill:#e8f5e9
+                    style L2 fill:#e3f2fd
+                    style L3 fill:#fff3e0
+                    style L4 fill:#fce4ec
+                </div>
+
+                <div class="card card-accent">
+                    <h4>💡 Cache Invalidation: The Hard Problem</h4>
+                    <p>There's a famous joke: "There are only two hard things in computer science — cache invalidation and naming things." The joke persists because it's true. Every caching decision involves a trade-off between freshness and speed. Document these patterns in your SDD:</p>
+                    <p><strong>TTL-based:</strong> Set an expiration time. Simple but may serve stale data. Good for: product catalogs, blog posts, configuration.</p>
+                    <p><strong>Write-through:</strong> Update the cache every time you update the database. Consistent but slower writes. Good for: user profiles, account settings.</p>
+                    <p><strong>Write-behind:</strong> Update the cache immediately, write to DB asynchronously. Fast but risky — data loss if the queue fails. Good for: analytics events, view counts.</p>
+                    <p><strong>Event-driven:</strong> Publish an event when data changes; subscribers invalidate their caches. Best consistency but requires event infrastructure. Good for: inventory, pricing.</p>
+                </div>
+
+                <div class="card card-danger">
+                    <h4>🚫 The "Cache Everything" Anti-Pattern</h4>
+                    <p>Caching data that changes frequently or is unique per user (like personalized search results) can actually <em>hurt</em> performance: you pay the cost of cache writes and lookups but almost never get a hit. Only cache data with a high read-to-write ratio. A good rule of thumb: if the data changes more often than it's read, don't cache it.</p>
+                </div>
+            </section>
+
+            <!-- Section 5: Real-World Example -->
+            <section id="streaming">
+                <h2>Real-World Example: Video Streaming Platform</h2>
+                <p>Video streaming platforms like Netflix represent one of the most demanding performance challenges in software — serving terabytes of data per second to millions of concurrent users with near-zero buffering. Let's see how a Netflix-style architecture uses every performance technique we've discussed.</p>
+
+                <div class="card card-accent">
+                    <h3>Scaling Netflix-Style Architecture</h3>
+
+                    <div class="mermaid">
+                    graph TB
+                        subgraph "Edge Layer"
+                            CDN1[CDN POP 1]
+                            CDN2[CDN POP 2]
+                            CDN3[CDN POP N...]
+                        end
+
+                        subgraph "API Gateway"
+                            GW[API Gateway<br/>Rate Limiting]
+                        end
+
+                        subgraph "Microservices"
+                            USER[User Service]
+                            VIDEO[Video Service]
+                            REC[Recommendation Service]
+                            TRANS[Transcoding Service]
+                        end
+
+                        subgraph "Data Layer"
+                            CACHE[(Redis Cluster)]
+                            DB[(Cassandra)]
+                            S3[Object Storage]
+                        end
+
+                        CDN1 --> GW
+                        CDN2 --> GW
+                        CDN3 --> GW
+
+                        GW --> USER
+                        GW --> VIDEO
+                        GW --> REC
+
+                        USER --> CACHE
+                        VIDEO --> CACHE
+                        REC --> DB
+                        TRANS --> S3
+
+                        style CDN1 fill:#4caf50
+                        style CDN2 fill:#4caf50
+                        style CDN3 fill:#4caf50
+                        style CACHE fill:#ff9800
+                    </div>
+                </div>
+
+                <div class="card card-success">
+                    <h4>✅ Performance Strategies Used</h4>
+                    <p><strong>Edge Caching (CDN POPs):</strong> Content is served from the nearest geographic location. A user in Tokyo gets video from a Tokyo data center, not from Virginia. Document your CDN strategy and which content is cached at the edge.</p>
+                    <p><strong>Adaptive Bitrate Streaming:</strong> The client dynamically adjusts video quality based on available bandwidth — no buffering, no manual quality switching. This is a design decision that belongs in the SDD.</p>
+                    <p><strong>Predictive Caching:</strong> Machine learning pre-loads episodes you're likely to watch next. The content is already on your device before you click "Next Episode."</p>
+                    <p><strong>Async Processing:</strong> Video transcoding (converting raw uploads into multiple formats and resolutions) happens in background workers, not in the request path. Users don't wait for transcoding to complete.</p>
+                </div>
+
+                <div class="card card-info">
+                    <h4>📖 Why This Matters for Your SDD</h4>
+                    <p>You're not building Netflix, but the principles apply at every scale. Even a small application benefits from CDN caching, async background jobs, and geographic awareness. Your SDD should document these decisions explicitly — future developers need to know <em>why</em> the architecture looks the way it does, not just <em>what</em> it looks like.</p>
+                </div>
+            </section>
+
+            <!-- Section 6: Database Optimization -->
+            <section id="database">
+                <h2>Database Optimization: The Art of Speed</h2>
+                <p>Database queries are almost always the bottleneck in web applications. A single unoptimized query can bring an entire system to its knees under load. Your SDD should document your indexing strategy, query patterns, and optimization targets.</p>
+
+                <canvas id="dbOptCanvas" width="600" height="400"></canvas>
+
+                <div class="card card-accent">
+                    <h4>💡 The Optimization Checklist</h4>
+                    <p><strong>Indexing:</strong> Add B-tree indexes on columns used in WHERE, JOIN, and ORDER BY clauses. But don't over-index — every index slows down writes and consumes disk space. Document which indexes exist and why.</p>
+                    <p><strong>Select Only What You Need:</strong> <code>SELECT *</code> is the most common performance mistake. It fetches every column, even if you only need two. Use explicit column lists.</p>
+                    <p><strong>Avoid N+1 Queries:</strong> Fetching a list of 100 items, then making a separate query for each item's details = 101 queries. Use JOINs or batch fetching. This pattern is the #1 performance killer in ORM-based applications.</p>
+                    <p><strong>Use EXPLAIN:</strong> Every major database has a query execution plan tool. Use it to verify your queries are using indexes, not doing full table scans. Document expected query plans for critical paths.</p>
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ The Read Replica Trap</h4>
+                    <p>Read replicas are a powerful tool — send reads to replicas, writes to the primary. But replicas have <strong>replication lag</strong>: a user who just updated their profile might see stale data if the next page load hits a replica that hasn't caught up. Document your consistency model in the SDD: is it eventual consistency? If so, what's the maximum acceptable lag? What operations require strong consistency (reading from the primary)?</p>
+                </div>
+
+                <div class="card card-danger">
+                    <h4>🚫 The "We'll Optimize When It's Slow" Fallacy</h4>
+                    <p>By the time your database is slow in production, you're in crisis mode. The time to optimize is during design. Set query time budgets (no query over 100ms), identify which tables will grow fastest, and plan your sharding or partitioning strategy before you have a million rows. An ounce of SDD planning prevents a pound of 3 AM pages.</p>
+                </div>
+            </section>
+
+            <!-- Section 7: Load Testing & Performance Budgets -->
+            <section id="testing">
+                <h2>Load Testing: Stress Testing Your System</h2>
+                <p>Load testing tells you where your system breaks <em>before</em> your users find out. Your SDD should document what type of load testing you perform, how often, and what the acceptance criteria are.</p>
+
+                <div class="mermaid">
+                graph TD
+                    A[Load Testing Strategy] --> B[Baseline Test]
+                    A --> C[Stress Test]
+                    A --> D[Spike Test]
+                    A --> E[Endurance Test]
+
+                    B --> B1[Normal load<br/>100 users]
+                    C --> C1[Breaking point<br/>10,000 users]
+                    D --> D1[Sudden surge<br/>100 → 5000 users]
+                    E --> E1[Extended period<br/>1000 users/24hrs]
+
+                    B1 --> M1[Response time?]
+                    C1 --> M2[Max capacity?]
+                    D1 --> M3[Recovery time?]
+                    E1 --> M4[Memory leaks?]
+
+                    style B fill:#4caf50
+                    style C fill:#ff9800
+                    style D fill:#f44336
+                    style E fill:#2196f3
+                </div>
+
+                <div class="card card-accent">
+                    <h4>💡 What Each Test Type Reveals</h4>
+                    <p><strong>Baseline Test:</strong> Establishes normal performance — response times, throughput, and resource usage at expected daily traffic. This is your "everything is fine" benchmark.</p>
+                    <p><strong>Stress Test:</strong> Gradually increases load until the system breaks. The goal isn't to prevent breaking — it's to know <em>where</em> it breaks so you can set autoscaling triggers and capacity alerts.</p>
+                    <p><strong>Spike Test:</strong> Simulates sudden traffic bursts (a viral tweet, a flash sale). Tests autoscaling speed and whether the system degrades gracefully or crashes completely.</p>
+                    <p><strong>Endurance Test (Soak Test):</strong> Runs sustained load for hours or days. Catches memory leaks, connection pool exhaustion, and disk space accumulation that only appear over time.</p>
+                </div>
+
+                <div class="card card-info">
+                    <h4>📖 Tools to Document in Your SDD</h4>
+                    <p>Popular load testing tools include <strong>k6</strong> (scriptable, developer-friendly), <strong>Locust</strong> (Python-based, distributed), <strong>Gatling</strong> (Scala-based, detailed reports), and <strong>Apache JMeter</strong> (GUI-based, legacy standard). Your SDD should specify which tool, how tests are configured, and how results are stored for comparison across releases.</p>
+                </div>
+
+                <h2>Performance Budget: Speed as a Feature</h2>
+                <p>A performance budget is a set of hard limits on metrics that matter to users. If a change would break the budget, it doesn't ship. This turns performance from a vague goal into an enforceable quality gate.</p>
+
+                <div class="card card-warning">
+                    <h3>Performance Budget Example</h3>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Budget</th>
+                                <th>Current</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Page Load Time</td>
+                                <td>&lt; 3s</td>
+                                <td>2.1s</td>
+                                <td>✅ Pass</td>
+                            </tr>
+                            <tr>
+                                <td>Time to Interactive</td>
+                                <td>&lt; 5s</td>
+                                <td>4.2s</td>
+                                <td>✅ Pass</td>
+                            </tr>
+                            <tr>
+                                <td>Bundle Size</td>
+                                <td>&lt; 200KB</td>
+                                <td>245KB</td>
+                                <td>❌ Fail</td>
+                            </tr>
+                            <tr>
+                                <td>API Response (p95)</td>
+                                <td>&lt; 100ms</td>
+                                <td>87ms</td>
+                                <td>✅ Pass</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <p><strong>Action Required:</strong> Reduce JavaScript bundle size by 45KB through code splitting and tree shaking. Budget violations block deployment until resolved.</p>
+                </div>
+
+                <div class="card card-danger">
+                    <h4>🚫 Budget Without Enforcement Is Wishful Thinking</h4>
+                    <p>A performance budget only works if it's automated. Add Lighthouse CI, bundlesize, or similar tools to your CI/CD pipeline so that budget violations fail the build. A performance budget that lives only in a document and is never checked is just decoration.</p>
+                </div>
+            </section>
+
+            <!-- Section 8: Scalability Patterns & Golden Rules -->
+            <section id="patterns">
+                <h2>Scalability Patterns: Building for Growth</h2>
+                <p>Scalability patterns are architectural recipes for handling growth. Each pattern solves a different scaling problem, and your SDD should document which patterns you're using, why, and where the boundaries are.</p>
+
+                <canvas id="patternsCanvas" width="600" height="300"></canvas>
+
+                <div class="card card-accent">
+                    <h4>💡 Choosing the Right Pattern</h4>
+                    <p><strong>Microservices:</strong> Each service scales independently based on its own load. The user service can have 10 instances while the payment service only needs 2. Best when teams are also independent and deploy separately. Overhead: service discovery, network latency, distributed tracing.</p>
+                    <p><strong>Event-Driven:</strong> Producers publish events; consumers process them asynchronously. Decouples components so a slow consumer doesn't block a fast producer. Best for workflows where order processing, notifications, and analytics don't all need to happen in the same request.</p>
+                    <p><strong>CQRS (Command Query Responsibility Segregation):</strong> Separate the write model (commands) from the read model (queries). Allows each side to be optimized and scaled independently — reads often outnumber writes 100:1, so the read side can use denormalized views and aggressive caching.</p>
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ Don't Over-Architect</h4>
+                    <p>Microservices, event sourcing, and CQRS are powerful — but they add significant complexity. A monolith that handles your current load with room to grow is better than a distributed system that's harder to debug than the problems it solves. Document your <em>scaling triggers</em> in the SDD: "We'll extract the recommendation engine into a separate service when recommendation queries exceed 30% of database load."</p>
+                </div>
+
+                <h2>The Golden Rules of Performance</h2>
+
+                <div class="card card-success">
+                    <h3>✅ Performance Commandments for Your SDD</h3>
+                    <p><strong>Measure first, optimize second.</strong> Don't guess where the bottlenecks are — profile, trace, and instrument. Developers are notoriously bad at predicting what's slow.</p>
+                    <p><strong>Cache everything reasonable.</strong> But document your invalidation strategy and accept that cache invalidation is genuinely hard.</p>
+                    <p><strong>Database queries are expensive.</strong> Optimize queries, add indexes wisely, and batch where possible. Every round trip to the database costs milliseconds.</p>
+                    <p><strong>Async when possible.</strong> Don't block the request thread on I/O operations. Email sending, image processing, report generation — all of these belong in background workers.</p>
+                    <p><strong>Minimize payload size.</strong> Compress responses (gzip/brotli), paginate results, and send only the fields the client actually needs.</p>
+                    <p><strong>Set performance budgets.</strong> Make speed a feature, not an afterthought. Automate enforcement in CI/CD.</p>
+                    <p><strong>Plan for 10× growth.</strong> Design systems that can scale beyond current needs without a rewrite. Document the path from 1× to 10× to 100× in your SDD.</p>
+                    <p><strong>Monitor production.</strong> Real users do unexpected things. Synthetic tests are necessary but not sufficient — use APM tools (Datadog, New Relic, Grafana) to observe real behavior.</p>
+                    <p><strong>Fail fast.</strong> Quick timeouts prevent cascade failures. A circuit breaker that returns an error in 50ms is better than a hanging request that ties up resources for 30 seconds.</p>
+                    <p><strong>Optimize the critical path.</strong> Focus on what users experience most. The login flow and main dashboard matter more than the admin settings page.</p>
+                </div>
+
+                <p>In the next lesson, we'll explore <strong>testing strategies and quality assurance</strong> — because fast systems that don't work correctly are just very efficient at failing!</p>
+
+                <div class="card card-accent text-center" style="padding: var(--spacing-xl);">
+                    <h3>💡 Key Takeaway</h3>
+                    <p>Performance is not something you bolt on after launch — it's a design discipline that starts in the SDD. Document your scaling strategy, your performance targets (with percentiles, not averages), your caching layers, and your database optimization plan. A system that's fast at 100 users but collapses at 10,000 is a system that was never designed for success.</p>
+                </div>
+            </section>
+
+            <!-- Lesson Navigation -->
+            <nav class="lesson-nav" aria-label="Lesson Navigation">
+                <a href="security_considerations.html" class="prev-lesson">← Previous: Lesson 7 — Security</a>
+                <a href="index.html" class="home-link">🏠 Course Home</a>
+                <a href="testing_quality_assurance.html" class="next-lesson">Next: Lesson 9 — Testing &amp; QA →</a>
+            </nav>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>&copy; 2026 Ray De La Paz / PetalFawnStudio. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="https://rays-home.netlify.app/">Ray's House of Fun</a>
+            <a href="https://rays-home.netlify.app/contact">Contact</a>
+            <a href="#" id="print-button">Print Page</a>
+        </div>
+        <p><small>Press <kbd>?</kbd> for keyboard shortcuts</small></p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/clipboard.js"></script>
+    <script src="js/course-enhancements.js"></script>
+
+    <!-- Theme-aware Canvas Drawing -->
     <script>
-    const dbCanvas = document.getElementById('dbOptCanvas');
-    const dctx = dbCanvas.getContext('2d');
-    
-    // Background
-    dctx.fillStyle = '#f9f9f9';
-    dctx.fillRect(0, 0, 600, 400);
-    
-    // Before optimization
-    dctx.fillStyle = '#ffcccc';
-    dctx.fillRect(50, 50, 220, 300);
-    dctx.fillStyle = '#333';
-    dctx.font = '14px Arial';
-    dctx.fillText('Before Optimization', 110, 30);
-    
-    // Slow query visual
-    dctx.fillStyle = '#d32f2f';
-    dctx.fillRect(70, 80, 180, 40);
-    dctx.fillStyle = '#fff';
-    dctx.font = '11px Arial';
-    dctx.fillText('SELECT * FROM users', 100, 100);
-    dctx.fillText('WHERE name LIKE "%john%"', 85, 110);
-    
-    // Performance bar
-    dctx.fillStyle = '#ffab91';
-    dctx.fillRect(70, 140, 180, 30);
-    dctx.fillStyle = '#333';
-    dctx.fillText('Full table scan: 5000ms', 100, 160);
-    
-    // Problems
-    dctx.font = '10px Arial';
-    dctx.fillText('❌ No indexes', 80, 200);
-    dctx.fillText('❌ SELECT *', 80, 220);
-    dctx.fillText('❌ Leading wildcard', 80, 240);
-    dctx.fillText('❌ No query plan', 80, 260);
-    
-    // After optimization
-    dctx.fillStyle = '#ccffcc';
-    dctx.fillRect(330, 50, 220, 300);
-    dctx.fillStyle = '#333';
-    dctx.font = '14px Arial';
-    dctx.fillText('After Optimization', 390, 30);
-    
-    // Optimized query
-    dctx.fillStyle = '#4caf50';
-    dctx.fillRect(350, 80, 180, 40);
-    dctx.fillStyle = '#fff';
-    dctx.font = '11px Arial';
-    dctx.fillText('SELECT id, name, email', 370, 100);
-    dctx.fillText('FROM users WHERE idx_name', 360, 110);
-    
-    // Performance bar
-    dctx.fillStyle = '#81c784';
-    dctx.fillRect(350, 140, 180, 30);
-    dctx.fillStyle = '#333';
-    dctx.fillText('Index scan: 50ms', 395, 160);
-    
-    // Improvements
-    dctx.font = '10px Arial';
-    dctx.fillText('✓ B-tree index on name', 360, 200);
-    dctx.fillText('✓ Specific columns', 360, 220);
-    dctx.fillText('✓ Query optimization', 360, 240);
-    dctx.fillText('✓ Execution plan analyzed', 360, 260);
-    
-    // Speedup indicator
-    dctx.fillStyle = '#2196f3';
-    dctx.font = '20px Arial';
-    dctx.fillText('100x', 275, 180);
-    dctx.fillText('faster!', 270, 205);
-    
-    // Arrow
-    dctx.strokeStyle = '#2196f3';
-    dctx.lineWidth = 3;
-    dctx.beginPath();
-    dctx.moveTo(270, 200);
-    dctx.lineTo(330, 200);
-    dctx.stroke();
+    // ── Highway Canvas ───────────────────────────────────────────
+    // Single-thread bottleneck vs parallel processing throughput
+    window.registerCanvas('highwayCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.sky || C.bg;
+        ctx.fillRect(0, 0, w, h * 0.55);
+        ctx.fillStyle = C.grass || C.accent1;
+        ctx.globalAlpha = 0.25;
+        ctx.fillRect(0, h * 0.55, w, h * 0.45);
+        ctx.globalAlpha = 1;
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Processing Models: Sequential vs Parallel', w / 2, 22);
+
+        // ── Left: Single Lane (bottleneck) ──
+        var lx = w * 0.25;
+        ctx.fillStyle = C.road || C.muted;
+        ctx.fillRect(lx - 110, h * 0.5, 220, 45);
+        // Dashed center line
+        ctx.strokeStyle = C.highlight || '#FFD700';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([15, 8]);
+        ctx.beginPath();
+        ctx.moveTo(lx - 110, h * 0.5 + 22);
+        ctx.lineTo(lx + 110, h * 0.5 + 22);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Traffic jam (cars packed tight)
+        var carColors = [C.danger, C.accent2, C.accent4, C.accent1, C.danger, C.accent3, C.accent2, C.accent4];
+        for (var i = 0; i < 8; i++) {
+            ctx.fillStyle = carColors[i];
+            var cx = lx - 95 + i * 25;
+            ctx.beginPath();
+            ctx.roundRect(cx, h * 0.5 + 10, 20, 24, 4);
+            ctx.fill();
+        }
+
+        // Label
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('Single Thread', lx, h * 0.82);
+        ctx.font = '11px Arial';
+        ctx.fillStyle = C.danger;
+        ctx.fillText('⚠ Bottleneck: ~100 req/sec', lx, h * 0.9);
+
+        // ── Right: Multi-Lane Highway ──
+        var rx = w * 0.75;
+        ctx.fillStyle = C.road || C.muted;
+        ctx.fillRect(rx - 110, h * 0.38, 220, 120);
+        // Lane dividers
+        ctx.strokeStyle = C.highlight || '#FFD700';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([15, 8]);
+        for (var lane = 1; lane < 4; lane++) {
+            ctx.beginPath();
+            ctx.moveTo(rx - 110, h * 0.38 + lane * 30);
+            ctx.lineTo(rx + 110, h * 0.38 + lane * 30);
+            ctx.stroke();
+        }
+        ctx.setLineDash([]);
+
+        // Cars flowing freely (spaced out in 4 lanes)
+        var laneColors = [C.accent1, C.accent2, C.accent3, C.accent4];
+        for (var ln = 0; ln < 4; ln++) {
+            for (var c = 0; c < 3; c++) {
+                ctx.fillStyle = laneColors[ln];
+                var carX = rx - 90 + c * 65;
+                var carY = h * 0.38 + 3 + ln * 30;
+                ctx.beginPath();
+                ctx.roundRect(carX, carY, 20, 24, 4);
+                ctx.fill();
+            }
+        }
+
+        // Label
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('Parallel Processing', rx, h * 0.82);
+        ctx.font = '11px Arial';
+        ctx.fillStyle = C.accent1;
+        ctx.fillText('✓ High Throughput: 10,000+ req/sec', rx, h * 0.9);
+
+        // VS divider
+        ctx.fillStyle = C.textLight;
+        ctx.font = 'bold 16px Arial';
+        ctx.fillText('VS', w / 2, h * 0.55);
+
+        ctx.textAlign = 'start';
+    });
+
+    // ── Metrics Canvas ───────────────────────────────────────────
+    // Six KPI metric cards in a 3×2 grid
+    window.registerCanvas('metricsCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Key Performance Indicators', w / 2, 24);
+
+        var metrics = [
+            { title: 'Response Time', value: '< 200ms',  desc: 'Time to first byte',  color: C.accent1 },
+            { title: 'Throughput',    value: '1000 RPS',  desc: 'Requests per second',  color: C.accent2 },
+            { title: 'Error Rate',    value: '< 0.1%',    desc: 'Failed requests',      color: C.accent4 },
+            { title: 'CPU Usage',     value: '< 70%',     desc: 'Processing capacity',  color: C.accent3 },
+            { title: 'Memory',        value: '< 80%',     desc: 'RAM utilization',      color: C.accent5 || C.danger },
+            { title: 'Uptime',        value: '99.9%',     desc: 'Availability (SLA)',   color: C.highlight || C.accent2 }
+        ];
+
+        var cols = 3, rows = 2;
+        var cardW = (w - 80) / cols;
+        var cardH = 100;
+        var padX = 25, padY = 45;
+
+        metrics.forEach(function(m, idx) {
+            var col = idx % cols;
+            var row = Math.floor(idx / cols);
+            var x = padX + col * (cardW + 10);
+            var y = padY + row * (cardH + 15);
+
+            // Card header
+            ctx.fillStyle = m.color;
+            ctx.beginPath();
+            ctx.roundRect(x, y, cardW, cardH, 6);
+            ctx.fill();
+
+            // White body
+            ctx.fillStyle = C.card;
+            ctx.fillRect(x + 4, y + 28, cardW - 8, cardH - 32);
+
+            // Title
+            ctx.fillStyle = C.card;
+            ctx.font = 'bold 11px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(m.title, x + cardW / 2, y + 18);
+
+            // Value
+            ctx.fillStyle = m.color;
+            ctx.font = 'bold 18px Arial';
+            ctx.fillText(m.value, x + cardW / 2, y + 58);
+
+            // Description
+            ctx.fillStyle = C.textLight;
+            ctx.font = '10px Arial';
+            ctx.fillText(m.desc, x + cardW / 2, y + 80);
+        });
+
+        // Equation at bottom
+        ctx.fillStyle = C.text;
+        ctx.font = '13px Arial';
+        ctx.fillText('Performance = Speed × Reliability × Efficiency', w / 2, h - 18);
+
+        ctx.textAlign = 'start';
+    });
+
+    // ── Database Optimization Canvas ─────────────────────────────
+    // Before/After split: unoptimized query vs optimized query
+    window.registerCanvas('dbOptCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        var half = w / 2;
+
+        // ── Before (left) ──
+        ctx.fillStyle = C.danger;
+        ctx.globalAlpha = 0.1;
+        ctx.fillRect(15, 40, half - 30, h - 70);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = C.danger;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(15, 40, half - 30, h - 70);
+
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 13px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Before Optimization', half / 2, 28);
+
+        // Bad query box
+        ctx.fillStyle = C.danger;
+        ctx.beginPath();
+        ctx.roundRect(30, 60, half - 60, 50, 6);
+        ctx.fill();
+        ctx.fillStyle = C.card;
+        ctx.font = '11px monospace';
+        ctx.fillText('SELECT * FROM users', half / 2, 82);
+        ctx.fillText('WHERE name LIKE "%john%"', half / 2, 98);
+
+        // Slow bar
+        ctx.fillStyle = C.danger;
+        ctx.globalAlpha = 0.3;
+        ctx.fillRect(30, 125, half - 60, 28);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = C.danger;
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('Full table scan: 5000ms', half / 2, 144);
+
+        // Problems
+        ctx.fillStyle = C.text;
+        ctx.font = '11px Arial';
+        ctx.textAlign = 'start';
+        var problems = ['❌ No indexes on name column', '❌ SELECT * fetches all columns', '❌ Leading wildcard kills index', '❌ No EXPLAIN analysis done'];
+        problems.forEach(function(p, i) {
+            ctx.fillText(p, 35, 185 + i * 22);
+        });
+
+        // ── After (right) ──
+        ctx.fillStyle = C.accent1;
+        ctx.globalAlpha = 0.1;
+        ctx.fillRect(half + 15, 40, half - 30, h - 70);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = C.accent1;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(half + 15, 40, half - 30, h - 70);
+
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 13px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('After Optimization', half + half / 2, 28);
+
+        // Good query box
+        ctx.fillStyle = C.accent1;
+        ctx.beginPath();
+        ctx.roundRect(half + 30, 60, half - 60, 50, 6);
+        ctx.fill();
+        ctx.fillStyle = C.card;
+        ctx.font = '11px monospace';
+        ctx.fillText('SELECT id, name, email', half + half / 2, 82);
+        ctx.fillText('FROM users WHERE name = ?', half + half / 2, 98);
+
+        // Fast bar
+        ctx.fillStyle = C.accent1;
+        ctx.globalAlpha = 0.3;
+        ctx.fillRect(half + 30, 125, half - 60, 28);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = C.accent1;
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('Index scan: 50ms', half + half / 2, 144);
+
+        // Improvements
+        ctx.fillStyle = C.text;
+        ctx.font = '11px Arial';
+        ctx.textAlign = 'start';
+        var fixes = ['✓ B-tree index on name column', '✓ Select only needed columns', '✓ Parameterized exact match', '✓ Execution plan verified'];
+        fixes.forEach(function(f, i) {
+            ctx.fillText(f, half + 35, 185 + i * 22);
+        });
+
+        // Center speedup badge
+        ctx.fillStyle = C.accent2;
+        ctx.beginPath();
+        ctx.arc(half, h * 0.55, 30, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = C.card;
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('100×', half, h * 0.55 + 6);
+
+        // Arrow
+        ctx.strokeStyle = C.accent2;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(half + 30, h * 0.55);
+        ctx.lineTo(half + 50, h * 0.55);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(half + 50, h * 0.55);
+        ctx.lineTo(half + 44, h * 0.55 - 5);
+        ctx.moveTo(half + 50, h * 0.55);
+        ctx.lineTo(half + 44, h * 0.55 + 5);
+        ctx.stroke();
+
+        ctx.textAlign = 'start';
+    });
+
+    // ── Scalability Patterns Canvas ──────────────────────────────
+    // Three patterns side by side: Microservices, Event-Driven, CQRS
+    window.registerCanvas('patternsCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Scalability Patterns', w / 2, 22);
+
+        var third = w / 3;
+
+        // ── Pattern 1: Microservices ──
+        var p1x = third * 0.5;
+        ctx.fillStyle = C.accent1;
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('Microservices', p1x, 50);
+
+        var boxes = ['User MS', 'Order MS', 'Payment MS'];
+        boxes.forEach(function(b, i) {
+            var bx = p1x - 45, by = 65 + i * 55;
+            ctx.fillStyle = C.accent1;
+            ctx.beginPath();
+            ctx.roundRect(bx, by, 90, 42, 6);
+            ctx.fill();
+            ctx.fillStyle = C.card;
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(b, p1x, by + 25);
+        });
+
+        ctx.fillStyle = C.textLight;
+        ctx.font = '10px Arial';
+        ctx.fillText('Scale independently', p1x, h - 20);
+
+        // ── Pattern 2: Event-Driven ──
+        var p2x = third * 1.5;
+        ctx.fillStyle = C.accent2;
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('Event-Driven', p2x, 50);
+
+        // Central event bus
+        ctx.fillStyle = C.accent2;
+        ctx.beginPath();
+        ctx.arc(p2x, h * 0.5, 35, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = C.card;
+        ctx.font = '10px Arial';
+        ctx.fillText('Event', p2x, h * 0.5 - 5);
+        ctx.fillText('Bus', p2x, h * 0.5 + 10);
+
+        // Publishers (left) and Subscribers (right)
+        for (var i = 0; i < 3; i++) {
+            var py = 70 + i * 60;
+            // Pub
+            ctx.fillStyle = C.accent2;
+            ctx.globalAlpha = 0.6;
+            ctx.beginPath();
+            ctx.roundRect(p2x - third * 0.42, py, 50, 28, 4);
+            ctx.fill();
+            // Sub
+            ctx.beginPath();
+            ctx.roundRect(p2x + third * 0.42 - 50, py, 50, 28, 4);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Arrows pub → bus
+            ctx.strokeStyle = C.border;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(p2x - third * 0.42 + 50, py + 14);
+            ctx.lineTo(p2x - 35, h * 0.5);
+            ctx.stroke();
+            // bus → sub
+            ctx.beginPath();
+            ctx.moveTo(p2x + 35, h * 0.5);
+            ctx.lineTo(p2x + third * 0.42 - 50, py + 14);
+            ctx.stroke();
+        }
+
+        ctx.fillStyle = C.textLight;
+        ctx.font = '10px Arial';
+        ctx.fillText('Async & decoupled', p2x, h - 20);
+
+        // ── Pattern 3: CQRS ──
+        var p3x = third * 2.5;
+        ctx.fillStyle = C.accent4;
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('CQRS', p3x, 50);
+
+        // Split box
+        var bw = third * 0.75, bh = 90;
+        var bx = p3x - bw / 2, by = 70;
+        ctx.fillStyle = C.accent4;
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, 6);
+        ctx.fill();
+
+        // Divider
+        ctx.strokeStyle = C.card;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(p3x, by);
+        ctx.lineTo(p3x, by + bh);
+        ctx.stroke();
+
+        ctx.fillStyle = C.card;
+        ctx.font = 'bold 11px Arial';
+        ctx.fillText('Commands', bx + bw * 0.25, by + bh / 2 - 6);
+        ctx.font = '9px Arial';
+        ctx.fillText('(Writes)', bx + bw * 0.25, by + bh / 2 + 10);
+
+        ctx.font = 'bold 11px Arial';
+        ctx.fillText('Queries', bx + bw * 0.75, by + bh / 2 - 6);
+        ctx.font = '9px Arial';
+        ctx.fillText('(Reads)', bx + bw * 0.75, by + bh / 2 + 10);
+
+        // Separate DB icons
+        ctx.fillStyle = C.accent4;
+        ctx.globalAlpha = 0.5;
+        ctx.beginPath();
+        ctx.ellipse(bx + bw * 0.25, by + bh + 30, 20, 8, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillRect(bx + bw * 0.25 - 20, by + bh + 30, 40, 20);
+        ctx.beginPath();
+        ctx.ellipse(bx + bw * 0.25, by + bh + 50, 20, 8, 0, 0, 2 * Math.PI);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.ellipse(bx + bw * 0.75, by + bh + 30, 20, 8, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillRect(bx + bw * 0.75 - 20, by + bh + 30, 40, 20);
+        ctx.beginPath();
+        ctx.ellipse(bx + bw * 0.75, by + bh + 50, 20, 8, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        ctx.fillStyle = C.textLight;
+        ctx.font = '10px Arial';
+        ctx.fillText('Read/Write separation', p3x, h - 20);
+
+        // Bottom arrow
+        ctx.strokeStyle = C.accent1;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(w * 0.1, h - 40);
+        ctx.lineTo(w * 0.9, h - 40);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = C.accent1;
+        ctx.font = '11px Arial';
+        ctx.fillText('All patterns enable horizontal scaling →', w / 2, h - 45);
+
+        ctx.textAlign = 'start';
+    });
     </script>
-    
-    <h2>Load Testing: Stress Testing Your System</h2>
-    
-    <div class="mermaid">
-    graph TD
-        A[Load Testing Strategy] --> B[Baseline Test]
-        A --> C[Stress Test]
-        A --> D[Spike Test]
-        A --> E[Endurance Test]
-        
-        B --> B1[Normal load<br/>100 users]
-        C --> C1[Breaking point<br/>10,000 users]
-        D --> D1[Sudden surge<br/>100 → 5000 users]
-        E --> E1[Extended period<br/>1000 users/24hrs]
-        
-        B1 --> M1[Response time?]
-        C1 --> M2[Max capacity?]
-        D1 --> M3[Recovery time?]
-        E1 --> M4[Memory leaks?]
-        
-        style B fill:#4caf50
-        style C fill:#ff9800
-        style D fill:#f44336
-        style E fill:#2196f3
-    </div>
-    
-    <h2>Performance Budget: Speed as a Feature</h2>
-    
-    <div style="background-color: #fff3e0; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3>Performance Budget Example</h3>
-        
-        <table style="width: 100%; border-collapse: collapse;">
-            <tr style="background-color: #ffb74d;">
-                <th style="padding: 10px; border: 1px solid #e65100;">Metric</th>
-                <th style="padding: 10px; border: 1px solid #e65100;">Budget</th>
-                <th style="padding: 10px; border: 1px solid #e65100;">Current</th>
-                <th style="padding: 10px; border: 1px solid #e65100;">Status</th>
-            </tr>
-            <tr>
-                <td style="padding: 10px; border: 1px solid #ddd;">Page Load Time</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">< 3s</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">2.1s</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">✅ Pass</td>
-            </tr>
-            <tr>
-                <td style="padding: 10px; border: 1px solid #ddd;">Time to Interactive</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">< 5s</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">4.2s</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">✅ Pass</td>
-            </tr>
-            <tr>
-                <td style="padding: 10px; border: 1px solid #ddd;">Bundle Size</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">< 200KB</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">245KB</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">❌ Fail</td>
-            </tr>
-            <tr>
-                <td style="padding: 10px; border: 1px solid #ddd;">API Response Time</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">< 100ms</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">87ms</td>
-                <td style="padding: 10px; border: 1px solid #ddd;">✅ Pass</td>
-            </tr>
-        </table>
-        
-        <p style="margin-top: 15px;"><strong>Action Required:</strong> Reduce JavaScript bundle size by 45KB through code splitting and tree shaking.</p>
-    </div>
-    
-    <h2>Scalability Patterns: Building for Growth</h2>
-    
-    <canvas id="patternsCanvas" width="600" height="300"></canvas>
-    
-    <script>
-    const patCanvas = document.getElementById('patternsCanvas');
-    const pctx = patCanvas.getContext('2d');
-    
-    // Background
-    pctx.fillStyle = '#f5f5f5';
-    pctx.fillRect(0, 0, 600, 300);
-    
-    // Pattern 1: Microservices
-    pctx.fillStyle = '#4CAF50';
-    pctx.fillRect(30, 50, 80, 60);
-    pctx.fillRect(30, 120, 80, 60);
-    pctx.fillRect(30, 190, 80, 60);
-    pctx.fillStyle = '#fff';
-    pctx.font = '10px Arial';
-    pctx.fillText('User MS', 50, 85);
-    pctx.fillText('Order MS', 48, 155);
-    pctx.fillText('Payment MS', 42, 225);
-    
-    pctx.fillStyle = '#333';
-    pctx.font = '12px Arial';
-    pctx.fillText('Microservices', 35, 30);
-    pctx.font = '10px Arial';
-    pctx.fillText('Scale independently', 25, 270);
-    
-    // Pattern 2: Event-Driven
-    pctx.fillStyle = '#2196F3';
-    pctx.beginPath();
-    pctx.arc(270, 150, 40, 0, 2 * Math.PI);
-    pctx.fill();
-    pctx.fillStyle = '#fff';
-    pctx.font = '10px Arial';
-    pctx.fillText('Event Bus', 245, 155);
-    
-    // Publishers/Subscribers
-    for(let i = 0; i < 3; i++) {
-        pctx.fillStyle = '#64B5F6';
-        pctx.fillRect(180, 60 + i * 70, 50, 30);
-        pctx.fillRect(310, 60 + i * 70, 50, 30);
-    }
-    
-    pctx.fillStyle = '#333';
-    pctx.font = '12px Arial';
-    pctx.fillText('Event-Driven', 235, 30);
-    pctx.font = '10px Arial';
-    pctx.fillText('Async & decoupled', 230, 270);
-    
-    // Pattern 3: CQRS
-    pctx.fillStyle = '#FF9800';
-    pctx.fillRect(420, 60, 150, 80);
-    pctx.strokeStyle = '#E65100';
-    pctx.lineWidth = 2;
-    pctx.beginPath();
-    pctx.moveTo(495, 60);
-    pctx.lineTo(495, 140);
-    pctx.stroke();
-    
-    pctx.fillStyle = '#fff';
-    pctx.font = '10px Arial';
-    pctx.fillText('Commands', 435, 100);
-    pctx.fillText('Queries', 515, 100);
-    
-    pctx.fillStyle = '#333';
-    pctx.font = '12px Arial';
-    pctx.fillText('CQRS Pattern', 460, 30);
-    pctx.font = '10px Arial';
-    pctx.fillText('Read/Write separation', 440, 270);
-    
-    // Arrows showing benefits
-    pctx.strokeStyle = '#4CAF50';
-    pctx.lineWidth = 2;
-    pctx.beginPath();
-    pctx.moveTo(70, 280);
-    pctx.lineTo(270, 280);
-    pctx.lineTo(470, 280);
-    pctx.stroke();
-    
-    pctx.fillStyle = '#4CAF50';
-    pctx.font = '11px Arial';
-    pctx.fillText('Enables horizontal scaling →', 220, 295);
-    </script>
-    
-    <h2>The Golden Rules of Performance</h2>
-    
-    <div style="background-color: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3>Performance Commandments</h3>
-        
-        <p>🚀 <strong>Measure First, Optimize Second:</strong> Don't guess where the bottlenecks are</p>
-        <p>💾 <strong>Cache Everything Reasonable:</strong> But remember cache invalidation is hard</p>
-        <p>📊 <strong>Database Queries are Expensive:</strong> Optimize queries, add indexes wisely</p>
-        <p>🔄 <strong>Async When Possible:</strong> Don't block on I/O operations</p>
-        <p>📦 <strong>Minimize Payload Size:</strong> Compress, paginate, and send only what's needed</p>
-        <p>🎯 <strong>Set Performance Budgets:</strong> Make speed a feature, not an afterthought</p>
-        <p>📈 <strong>Plan for 10x Growth:</strong> Design systems that can scale beyond current needs</p>
-        <p>🔍 <strong>Monitor Production:</strong> Real users do unexpected things</p>
-        <p>⚡ <strong>Fail Fast:</strong> Quick timeouts prevent cascade failures</p>
-        <p>🔧 <strong>Optimize the Critical Path:</strong> Focus on what users experience most</p>
-    </div>
-    
-    <p><em>Next, we'll explore testing strategies and quality assurance - because fast systems that don't work correctly are just very efficient at failing!</em></p>
 </body>
 </html>

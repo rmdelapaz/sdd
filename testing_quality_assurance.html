@@ -3,519 +3,854 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testing Strategies and Quality Assurance</title>
-    <link rel="stylesheet" href="/styles/main.css">
-    <link rel="icon" href="/favicon.png">
+    <meta name="description" content="Document testing strategies and quality assurance in your SDD — from the testing pyramid and TDD to quality gates, bug lifecycle, performance testing, and continuous quality practices.">
+    <meta name="author" content="Ray De La Paz">
+    <title>Testing &amp; Quality Assurance - SDD Tutorial</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Mermaid — theme-aware via course-enhancements.js -->
     <script type="module">
-      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-      mermaid.initialize({ startOnLoad: true });
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        window.__mermaid = mermaid;
+        const isDark = localStorage.getItem('theme') === 'dark' ||
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: isDark ? 'dark' : 'default',
+            themeVariables: isDark
+                ? { primaryColor: '#334155', primaryTextColor: '#e2e8f0', primaryBorderColor: '#6366f1', lineColor: '#94a3b8', secondaryColor: '#1e293b', tertiaryColor: '#0f172a' }
+                : { primaryColor: '#eff6ff', primaryTextColor: '#1e293b', primaryBorderColor: '#3b82f6', lineColor: '#64748b', secondaryColor: '#f8fafc', tertiaryColor: '#f1f5f9' }
+        });
     </script>
 </head>
 <body>
-    <h1>Testing Strategies and Quality Assurance</h1>
-    
-    <p>Testing is like a safety net for trapeze artists - you hope you'll never need it, but you'd be foolish to perform without it. Let's explore how to build comprehensive testing strategies that catch bugs before your users do!</p>
-    
-    <h2>The Testing Pyramid: A Balanced Diet</h2>
-    
-    <canvas id="pyramidCanvas" width="600" height="400"></canvas>
-    
-    <script>
-    const pyramidCanvas = document.getElementById('pyramidCanvas');
-    const pctx = pyramidCanvas.getContext('2d');
-    
-    // Background
-    pctx.fillStyle = '#f5f5f5';
-    pctx.fillRect(0, 0, 600, 400);
-    
-    // Title
-    pctx.fillStyle = '#333';
-    pctx.font = '16px Arial';
-    pctx.fillText('The Testing Pyramid', 230, 30);
-    
-    // Draw pyramid
-    pctx.fillStyle = '#4CAF50';
-    pctx.beginPath();
-    pctx.moveTo(300, 80);
-    pctx.lineTo(480, 320);
-    pctx.lineTo(120, 320);
-    pctx.closePath();
-    pctx.fill();
-    
-    // Pyramid layers
-    pctx.strokeStyle = '#333';
-    pctx.lineWidth = 2;
-    
-    // E2E layer
-    pctx.beginPath();
-    pctx.moveTo(250, 140);
-    pctx.lineTo(350, 140);
-    pctx.stroke();
-    
-    // Integration layer
-    pctx.beginPath();
-    pctx.moveTo(200, 210);
-    pctx.lineTo(400, 210);
-    pctx.stroke();
-    
-    // Labels
-    pctx.fillStyle = '#fff';
-    pctx.font = '14px Arial';
-    pctx.fillText('E2E', 285, 115);
-    pctx.fillText('Integration', 265, 180);
-    pctx.fillText('Unit Tests', 270, 270);
-    
-    // Percentages and details
-    pctx.fillStyle = '#333';
-    pctx.font = '12px Arial';
-    
-    // E2E details
-    pctx.fillText('10%', 380, 115);
-    pctx.fillText('Slow, Expensive', 380, 130);
-    pctx.fillText('UI workflows', 380, 145);
-    
-    // Integration details
-    pctx.fillText('20%', 430, 180);
-    pctx.fillText('Medium speed', 430, 195);
-    pctx.fillText('API, Database', 430, 210);
-    
-    // Unit details
-    pctx.fillText('70%', 480, 270);
-    pctx.fillText('Fast, Cheap', 480, 285);
-    pctx.fillText('Business logic', 480, 300);
-    
-    // Cost/Time arrow
-    pctx.strokeStyle = '#FF5722';
-    pctx.lineWidth = 3;
-    pctx.beginPath();
-    pctx.moveTo(50, 100);
-    pctx.lineTo(50, 300);
-    pctx.stroke();
-    
-    // Arrow heads
-    pctx.beginPath();
-    pctx.moveTo(50, 100);
-    pctx.lineTo(45, 110);
-    pctx.lineTo(55, 110);
-    pctx.closePath();
-    pctx.fill();
-    
-    pctx.beginPath();
-    pctx.moveTo(50, 300);
-    pctx.lineTo(45, 290);
-    pctx.lineTo(55, 290);
-    pctx.closePath();
-    pctx.fill();
-    
-    pctx.fillStyle = '#FF5722';
-    pctx.font = '11px Arial';
-    pctx.fillText('Cost', 20, 95);
-    pctx.fillText('Speed', 15, 310);
-    
-    // Examples
-    pctx.fillStyle = '#666';
-    pctx.font = '10px Arial';
-    pctx.fillText('• Full user journey', 120, 360);
-    pctx.fillText('• Service interactions', 250, 360);
-    pctx.fillText('• Function validation', 380, 360);
-    </script>
-    
-    <h2>Types of Testing: The Complete Toolkit</h2>
-    
-    <div class="mermaid">
-    mindmap
-      root((Testing Types))
-        Functional
-          Unit Testing
-          Integration Testing
-          System Testing
-          Acceptance Testing
-        Non-Functional
-          Performance Testing
-          Security Testing
-          Usability Testing
-          Compatibility Testing
-        Specialized
-          Regression Testing
-          Smoke Testing
-          Sanity Testing
-          Exploratory Testing
-        Automated
-          CI/CD Pipeline
-          Test Scripts
-          Monitoring
-          Alerts
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
+
+    <div class="progress-indicator" role="progressbar" aria-label="Page scroll progress">
+        <div class="progress-bar"></div>
     </div>
-    
-    <h2>Test-Driven Development: Write Tests First</h2>
-    
-    <canvas id="tddCanvas" width="600" height="300"></canvas>
-    
-    <script>
-    const tddCanvas = document.getElementById('tddCanvas');
-    const tctx = tddCanvas.getContext('2d');
-    
-    // Background
-    tctx.fillStyle = '#f9f9f9';
-    tctx.fillRect(0, 0, 600, 300);
-    
-    // TDD Cycle
-    const centerX = 300;
-    const centerY = 150;
-    const radius = 80;
-    
-    // Draw cycle circles
-    const steps = [
-        {angle: 0, color: '#f44336', label: 'Red', desc: 'Write failing test'},
-        {angle: 120, color: '#4CAF50', label: 'Green', desc: 'Make test pass'},
-        {angle: 240, color: '#2196F3', label: 'Refactor', desc: 'Improve code'}
-    ];
-    
-    steps.forEach((step, index) => {
-        const angleRad = (step.angle - 90) * Math.PI / 180;
-        const x = centerX + Math.cos(angleRad) * radius;
-        const y = centerY + Math.sin(angleRad) * radius;
-        
-        // Circle
-        tctx.fillStyle = step.color;
-        tctx.beginPath();
-        tctx.arc(x, y, 40, 0, 2 * Math.PI);
-        tctx.fill();
-        
-        // Label
-        tctx.fillStyle = '#fff';
-        tctx.font = '14px Arial';
-        tctx.fillText(step.label, x - 20, y + 5);
-        
-        // Description
-        tctx.fillStyle = '#333';
-        tctx.font = '11px Arial';
-        tctx.fillText(step.desc, x - 40, y + 60);
-        
-        // Arrow to next
-        const nextAngle = (steps[(index + 1) % 3].angle - 90) * Math.PI / 180;
-        const nextX = centerX + Math.cos(nextAngle) * radius;
-        const nextY = centerY + Math.sin(nextAngle) * radius;
-        
-        const startX = x + Math.cos(nextAngle) * 40;
-        const startY = y + Math.sin(nextAngle) * 40;
-        const endX = nextX - Math.cos(nextAngle) * 40;
-        const endY = nextY - Math.sin(nextAngle) * 40;
-        
-        tctx.strokeStyle = '#666';
-        tctx.lineWidth = 2;
-        tctx.beginPath();
-        tctx.moveTo(startX, startY);
-        tctx.lineTo(endX, endY);
-        tctx.stroke();
-        
-        // Arrowhead
-        const arrowAngle = Math.atan2(endY - startY, endX - startX);
-        tctx.beginPath();
-        tctx.moveTo(endX, endY);
-        tctx.lineTo(endX - 10 * Math.cos(arrowAngle - Math.PI/6), endY - 10 * Math.sin(arrowAngle - Math.PI/6));
-        tctx.moveTo(endX, endY);
-        tctx.lineTo(endX - 10 * Math.cos(arrowAngle + Math.PI/6), endY - 10 * Math.sin(arrowAngle + Math.PI/6));
-        tctx.stroke();
-    });
-    
-    // Center text
-    tctx.fillStyle = '#333';
-    tctx.font = '16px Arial';
-    tctx.fillText('TDD', centerX - 15, centerY + 5);
-    
-    // Title
-    tctx.font = '18px Arial';
-    tctx.fillText('Test-Driven Development Cycle', 180, 30);
-    </script>
-    
-    <h2>Real-World Example: E-Commerce Testing Strategy</h2>
-    
-    <div style="background-color: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3>Comprehensive Test Suite for Online Store</h3>
-        
-        <div class="mermaid">
-        graph TD
-            A[User Story: Checkout Process] --> B[Unit Tests]
-            A --> C[Integration Tests]
-            A --> D[E2E Tests]
-            
-            B --> B1[Calculate total price]
-            B --> B2[Apply discount codes]
-            B --> B3[Validate credit card]
-            B --> B4[Check inventory]
-            
-            C --> C1[Payment gateway API]
-            C --> C2[Inventory database]
-            C --> C3[Email service]
-            C --> C4[Shipping API]
-            
-            D --> D1[Complete purchase flow]
-            D --> D2[Guest checkout]
-            D --> D3[Multiple items]
-            D --> D4[Error handling]
-            
-            style B fill:#4CAF50
-            style C fill:#2196F3
-            style D fill:#FF9800
-        </graph>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">SDD Tutorial</a>
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-expanded="false" aria-controls="nav-links">☰</button>
+            <div class="nav-links" id="nav-links">
+                <a href="index.html">Home</a>
+                <a href="index.html#modules">All Lessons</a>
+                <span class="nav-divider"></span>
+                <a href="https://rays-home.netlify.app/">Ray's House of Fun</a>
+                <a href="https://rays-home.netlify.app/contact">Contact</a>
+                <button id="theme-toggle" aria-label="Toggle dark/light mode">🌙</button>
+            </div>
         </div>
-        
-        <h4>Test Coverage Example:</h4>
-        <pre style="background: #263238; color: #aed581; padding: 15px; border-radius: 5px;">
-// Unit Test Example
+    </nav>
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#modules">Quality</a></li>
+            <li aria-current="page">Lesson 9: Testing &amp; Quality Assurance</li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <div class="container">
+            <header>
+                <h1>🧪 Lesson 9: Testing Strategies and Quality Assurance</h1>
+                <p class="lead">Testing is like a safety net for trapeze artists — you hope you'll never need it, but you'd be foolish to perform without it. A system that's fast and scalable but incorrect is just very efficient at delivering wrong answers. Your SDD should document <em>what</em> you test, <em>how</em> you test it, and <em>when</em> tests block deployment.</p>
+
+                <div class="card card-info">
+                    <h2>🎯 Learning Objectives</h2>
+                    <p>By the end of this lesson, you will be able to:</p>
+                    <ul>
+                        <li>Explain the testing pyramid and how to balance unit, integration, and E2E tests</li>
+                        <li>Apply the Red-Green-Refactor cycle of test-driven development (TDD)</li>
+                        <li>Design a comprehensive test strategy for a real-world feature</li>
+                        <li>Set up quality gates in a CI/CD pipeline and define pass/fail criteria</li>
+                        <li>Document the bug lifecycle from discovery through resolution</li>
+                        <li>Interpret load testing results and identify breaking points</li>
+                        <li>Embed quality assurance as a team-wide responsibility in your SDD</li>
+                    </ul>
+                    <p><strong>Estimated Time:</strong> 30 minutes</p>
+                </div>
+            </header>
+
+            <!-- Table of Contents -->
+            <details class="card toc-card" open>
+                <summary>
+                    <h2 style="display:inline; margin:0;">📑 In This Lesson</h2>
+                </summary>
+                <nav aria-label="Table of Contents">
+                    <ol>
+                        <li><a href="#pyramid" class="toc-link">The Testing Pyramid</a></li>
+                        <li><a href="#types" class="toc-link">Types of Testing</a></li>
+                        <li><a href="#tdd" class="toc-link">Test-Driven Development</a></li>
+                        <li><a href="#ecommerce" class="toc-link">Real-World Example: E-Commerce</a></li>
+                        <li><a href="#gates" class="toc-link">Quality Gates</a></li>
+                        <li><a href="#bugs" class="toc-link">Bug Tracking &amp; Lifecycle</a></li>
+                        <li><a href="#perf" class="toc-link">Performance Testing</a></li>
+                        <li><a href="#quality" class="toc-link">Continuous Quality &amp; Best Practices</a></li>
+                    </ol>
+                </nav>
+            </details>
+
+            <!-- Section 1: Testing Pyramid -->
+            <section id="pyramid">
+                <h2>The Testing Pyramid: A Balanced Diet</h2>
+                <p>The testing pyramid is the most important mental model in software testing. The idea is simple: you should have <strong>many</strong> fast, cheap unit tests at the base, <strong>some</strong> integration tests in the middle, and <strong>few</strong> slow, expensive end-to-end tests at the top. An inverted pyramid (lots of E2E, few unit tests) is slow, fragile, and expensive to maintain.</p>
+
+                <canvas id="pyramidCanvas" width="600" height="400"></canvas>
+
+                <div class="card card-accent">
+                    <h4>💡 Why the Pyramid Shape Matters</h4>
+                    <p><strong>Unit tests (70%):</strong> Test individual functions and classes in isolation. They run in milliseconds, so you can have thousands. They pinpoint exactly what broke. Write these for every piece of business logic.</p>
+                    <p><strong>Integration tests (20%):</strong> Test how components work together — API endpoints hitting a real database, service-to-service calls, message queue consumers. Slower but catch interface mismatches that unit tests miss.</p>
+                    <p><strong>E2E tests (10%):</strong> Simulate real user workflows through the entire system — clicking buttons, filling forms, completing purchases. Invaluable but slow and brittle. Reserve these for critical business paths only.</p>
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ The Ice Cream Cone Anti-Pattern</h4>
+                    <p>Many teams accidentally build an "ice cream cone" — heavy on manual testing and E2E, light on unit tests. This is a trap: E2E tests take minutes to run, break when unrelated UI changes happen, and give vague failure messages ("the checkout page is broken" vs. "the tax calculation returns NaN for zero-quantity items"). Document your target ratio in the SDD and enforce it.</p>
+                </div>
+            </section>
+
+            <!-- Section 2: Types of Testing -->
+            <section id="types">
+                <h2>Types of Testing: The Complete Toolkit</h2>
+                <p>Different types of tests catch different types of bugs. Your SDD should specify which types of testing apply to your system and who's responsible for each.</p>
+
+                <div class="mermaid">
+                mindmap
+                  root((Testing Types))
+                    Functional
+                      Unit Testing
+                      Integration Testing
+                      System Testing
+                      Acceptance Testing
+                    Non-Functional
+                      Performance Testing
+                      Security Testing
+                      Usability Testing
+                      Compatibility Testing
+                    Specialized
+                      Regression Testing
+                      Smoke Testing
+                      Sanity Testing
+                      Exploratory Testing
+                    Automated
+                      CI/CD Pipeline
+                      Test Scripts
+                      Monitoring
+                      Alerts
+                </div>
+
+                <div class="card card-info">
+                    <h4>📖 The Ones That Matter Most for Your SDD</h4>
+                    <p><strong>Regression testing</strong> verifies that new changes don't break existing functionality. It's the reason you write tests — so you can refactor with confidence. Your CI pipeline should run the full regression suite on every pull request.</p>
+                    <p><strong>Smoke testing</strong> is a quick sanity check after deployment: can users log in? Does the homepage load? Does the API return 200? If smoke tests fail, roll back immediately. Document your smoke test checklist in the SDD.</p>
+                    <p><strong>Exploratory testing</strong> is unscripted, creative testing by humans who try to break things in ways automated tests don't anticipate. Schedule these regularly — automated tests only catch bugs you've imagined.</p>
+                </div>
+
+                <div class="card card-danger">
+                    <h4>🚫 "We Don't Have Time to Write Tests"</h4>
+                    <p>This is the most expensive sentence in software development. Teams that skip tests spend 2–5x more time debugging in production, fixing regressions, and manually verifying every change. Tests aren't overhead — they're an investment that pays compound interest. Every bug caught in CI is a bug that never reaches your users, your support team, or your 3 AM on-call rotation.</p>
+                </div>
+            </section>
+
+            <!-- Section 3: TDD -->
+            <section id="tdd">
+                <h2>Test-Driven Development: Write Tests First</h2>
+                <p>TDD flips the traditional workflow: instead of writing code and then testing it, you write a failing test first, then write just enough code to make it pass, then refactor. This three-step cycle — <strong>Red → Green → Refactor</strong> — produces code that's testable by design and has complete coverage from the start.</p>
+
+                <canvas id="tddCanvas" width="600" height="300"></canvas>
+
+                <div class="card card-accent">
+                    <h4>💡 The Three Steps in Detail</h4>
+                    <p><strong>Red — Write a failing test:</strong> Define what the code <em>should</em> do before you write it. The test fails because the feature doesn't exist yet. This forces you to think about the interface before the implementation.</p>
+                    <p><strong>Green — Make it pass:</strong> Write the simplest code that makes the test pass. Don't over-engineer, don't add features the test doesn't require. Just make the red turn green.</p>
+                    <p><strong>Refactor — Improve the code:</strong> Now that you have a passing test as a safety net, clean up the implementation. Extract functions, remove duplication, improve naming. The test ensures you don't break anything while improving.</p>
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ TDD Isn't All-or-Nothing</h4>
+                    <p>You don't have to use TDD for everything. It's most valuable for complex business logic (pricing calculations, permission systems, state machines) where getting it wrong has real consequences. For exploratory prototypes, simple CRUD, or UI layout code, writing tests after is perfectly fine. Document your team's TDD policy in the SDD: which areas require TDD and which don't.</p>
+                </div>
+            </section>
+
+            <!-- Section 4: E-Commerce Example -->
+            <section id="ecommerce">
+                <h2>Real-World Example: E-Commerce Testing Strategy</h2>
+                <p>Let's see how the testing pyramid applies to a real feature — the checkout process of an online store. Notice how each test level catches different kinds of bugs, and the most critical business logic (price calculation, discount codes) gets the heaviest unit test coverage.</p>
+
+                <div class="card card-accent">
+                    <h3>Comprehensive Test Suite for Online Store</h3>
+
+                    <div class="mermaid">
+                    graph TD
+                        A[User Story: Checkout Process] --> B[Unit Tests]
+                        A --> C[Integration Tests]
+                        A --> D[E2E Tests]
+
+                        B --> B1[Calculate total price]
+                        B --> B2[Apply discount codes]
+                        B --> B3[Validate credit card]
+                        B --> B4[Check inventory]
+
+                        C --> C1[Payment gateway API]
+                        C --> C2[Inventory database]
+                        C --> C3[Email service]
+                        C --> C4[Shipping API]
+
+                        D --> D1[Complete purchase flow]
+                        D --> D2[Guest checkout]
+                        D --> D3[Multiple items]
+                        D --> D4[Error handling]
+
+                        style B fill:#4CAF50
+                        style C fill:#2196F3
+                        style D fill:#FF9800
+                    </div>
+                </div>
+
+                <div class="card card-info">
+                    <h4>📖 Test Coverage Example</h4>
+                    <pre><code>// Unit Test Example
 describe('ShoppingCart', () => {
   it('should calculate total with tax', () => {
     const cart = new ShoppingCart();
     cart.addItem({ price: 100, quantity: 2 });
     cart.addItem({ price: 50, quantity: 1 });
-    
+
     expect(cart.getSubtotal()).toBe(250);
     expect(cart.getTotalWithTax(0.08)).toBe(270);
   });
-  
+
   it('should apply percentage discount', () => {
     const cart = new ShoppingCart();
     cart.addItem({ price: 100, quantity: 1 });
     cart.applyDiscount('SAVE20', 0.20);
-    
+
     expect(cart.getTotal()).toBe(80);
   });
-});</pre>
-    </div>
-    
-    <h2>Quality Gates: The Checkpoint System</h2>
-    
-    <canvas id="gatesCanvas" width="600" height="350"></canvas>
-    
-    <script>
-    const gatesCanvas = document.getElementById('gatesCanvas');
-    const gctx = gatesCanvas.getContext('2d');
-    
-    // Background
-    gctx.fillStyle = '#f5f5f5';
-    gctx.fillRect(0, 0, 600, 350);
-    
-    // Pipeline
-    gctx.fillStyle = '#ddd';
-    gctx.fillRect(50, 150, 500, 60);
-    
-    // Gates
-    const gates = [
-        {x: 100, name: 'Linting', metric: 'No errors', color: '#4CAF50'},
-        {x: 200, name: 'Unit Tests', metric: '> 80%', color: '#2196F3'},
-        {x: 300, name: 'Integration', metric: 'All pass', color: '#FF9800'},
-        {x: 400, name: 'Security', metric: 'No vulns', color: '#9C27B0'},
-        {x: 500, name: 'Deploy', metric: 'Ready!', color: '#00BCD4'}
-    ];
-    
-    gates.forEach((gate, index) => {
-        // Gate post
-        gctx.fillStyle = gate.color;
-        gctx.fillRect(gate.x - 5, 120, 10, 120);
-        
-        // Gate sign
-        gctx.fillRect(gate.x - 40, 80, 80, 40);
-        gctx.fillStyle = '#fff';
-        gctx.font = '11px Arial';
-        gctx.fillText(gate.name, gate.x - 30, 100);
-        gctx.font = '9px Arial';
-        gctx.fillText(gate.metric, gate.x - 25, 112);
-        
-        // Status indicator
-        if (index < 3) {
-            gctx.fillStyle = '#4CAF50';
-            gctx.beginPath();
-            gctx.arc(gate.x, 180, 15, 0, 2 * Math.PI);
-            gctx.fill();
-            gctx.fillStyle = '#fff';
-            gctx.fillText('✓', gate.x - 5, 185);
-        } else if (index === 3) {
-            gctx.fillStyle = '#f44336';
-            gctx.beginPath();
-            gctx.arc(gate.x, 180, 15, 0, 2 * Math.PI);
-            gctx.fill();
-            gctx.fillStyle = '#fff';
-            gctx.fillText('✗', gate.x - 5, 185);
-        } else {
-            gctx.fillStyle = '#ccc';
-            gctx.beginPath();
-            gctx.arc(gate.x, 180, 15, 0, 2 * Math.PI);
-            gctx.fill();
-            gctx.fillStyle = '#fff';
-            gctx.fillText('?', gate.x - 4, 185);
-        }
-    });
-    
-    // Code flow
-    gctx.fillStyle = '#333';
-    gctx.beginPath();
-    gctx.arc(30, 180, 10, 0, 2 * Math.PI);
-    gctx.fill();
-    gctx.font = '12px Arial';
-    gctx.fillText('Code', 15, 210);
-    
-    // Blocked at security
-    gctx.strokeStyle = '#f44336';
-    gctx.lineWidth = 3;
-    gctx.beginPath();
-    gctx.moveTo(380, 160);
-    gctx.lineTo(420, 200);
-    gctx.moveTo(420, 160);
-    gctx.lineTo(380, 200);
-    gctx.stroke();
-    
-    gctx.fillStyle = '#f44336';
-    gctx.font = '14px Arial';
-    gctx.fillText('Blocked: Security vulnerability detected!', 150, 280);
-    
-    // Title
-    gctx.fillStyle = '#333';
-    gctx.font = '16px Arial';
-    gctx.fillText('Quality Gates in CI/CD Pipeline', 200, 30);
-    </script>
-    
-    <h2>Testing Best Practices: The Golden Rules</h2>
-    
-    <div style="background-color: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3>Testing Commandments</h3>
-        
-        <p>📝 <strong>Test Names Should Tell a Story:</strong> <code>test_user_can_checkout_with_valid_credit_card</code></p>
-        <p>🎯 <strong>One Assertion Per Test:</strong> Each test should verify one specific behavior</p>
-        <p>🔄 <strong>Tests Should Be Independent:</strong> Order shouldn't matter, no shared state</p>
-        <p>⚡ <strong>Fast Tests Get Run More:</strong> Mock external dependencies in unit tests</p>
-        <p>🤖 <strong>Automate Everything Possible:</strong> If you do it twice, automate it</p>
-        <p>📊 <strong>Measure Code Coverage:</strong> But remember 100% coverage ≠ bug-free</p>
-        <p>🎭 <strong>Test Happy Path and Edge Cases:</strong> What happens with null, "", -1?</p>
-        <p>🔍 <strong>Test Data Should Be Realistic:</strong> Use production-like data sets</p>
-        <p>🚨 <strong>Failing Tests Should Be Clear:</strong> Good error messages save debugging time</p>
-        <p>🔧 <strong>Maintain Your Tests:</strong> Delete obsolete tests, refactor along with code</p>
-    </div>
-    
-    <h2>Bug Tracking: The Issue Lifecycle</h2>
-    
-    <div class="mermaid">
-    stateDiagram-v2
-        [*] --> Reported: Bug Found
-        Reported --> Triaged: Assign Priority
-        Triaged --> InProgress: Developer Assigned
-        InProgress --> InReview: Fix Submitted
-        InReview --> Testing: Code Review Passed
-        Testing --> Resolved: Tests Pass
-        Testing --> InProgress: Tests Fail
-        Resolved --> Closed: Verified in Production
-        Closed --> [*]
-        
-        Reported --> Duplicate: Already Reported
-        Duplicate --> [*]
-        
-        Reported --> WontFix: Not a Bug
-        WontFix --> [*]
-    </div>
-    
-    <h2>Performance Testing: Speed Under Pressure</h2>
-    
-    <canvas id="perfTestCanvas" width="600" height="300"></canvas>
-    
-    <script>
-    const perfCanvas = document.getElementById('perfTestCanvas');
-    const perfctx = perfCanvas.getContext('2d');
-    
-    // Background
-    perfctx.fillStyle = '#f9f9f9';
-    perfctx.fillRect(0, 0, 600, 300);
-    
-    // Graph axes
-    perfctx.strokeStyle = '#333';
-    perfctx.lineWidth = 2;
-    perfctx.beginPath();
-    perfctx.moveTo(60, 250);
-    perfctx.lineTo(550, 250);
-    perfctx.moveTo(60, 250);
-    perfctx.lineTo(60, 50);
-    perfctx.stroke();
-    
-    // Labels
-    perfctx.fillStyle = '#333';
-    perfctx.font = '12px Arial';
-    perfctx.fillText('Response Time (ms)', 10, 30);
-    perfctx.fillText('Concurrent Users', 250, 280);
-    
-    // Response time curve
-    perfctx.strokeStyle = '#f44336';
-    perfctx.lineWidth = 3;
-    perfctx.beginPath();
-    perfctx.moveTo(60, 200);
-    
-    // Exponential curve
-    for(let x = 60; x <= 500; x += 10) {
-        const users = (x - 60) * 2;
-        const responseTime = 200 - (150 * Math.exp(-users/200));
-        const y = 250 - responseTime;
-        perfctx.lineTo(x, y);
-    }
-    perfctx.stroke();
-    
-    // Acceptable threshold
-    perfctx.strokeStyle = '#4CAF50';
-    perfctx.lineWidth = 2;
-    perfctx.setLineDash([10, 5]);
-    perfctx.beginPath();
-    perfctx.moveTo(60, 150);
-    perfctx.lineTo(550, 150);
-    perfctx.stroke();
-    
-    perfctx.fillStyle = '#4CAF50';
-    perfctx.font = '11px Arial';
-    perfctx.fillText('Acceptable threshold (200ms)', 400, 145);
-    
-    // Breaking point
-    perfctx.setLineDash([]);
-    perfctx.strokeStyle = '#ff9800';
-    perfctx.beginPath();
-    perfctx.moveTo(280, 50);
-    perfctx.lineTo(280, 250);
-    perfctx.stroke();
-    
-    perfctx.fillStyle = '#ff9800';
-    perfctx.fillText('Breaking point', 290, 70);
-    perfctx.fillText('(500 users)', 295, 85);
-    
-    // Title
-    perfctx.fillStyle = '#333';
-    perfctx.font = '16px Arial';
-    perfctx.fillText('Load Testing Results', 230, 30);
-    </script>
-    
-    <h2>Continuous Quality: Building Quality In</h2>
-    
-    <div style="background-color: #fff3e0; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3>Quality is Everyone's Responsibility</h3>
-        
-        <div class="mermaid">
-        graph LR
-            A[Developer] --> Q{Quality}
-            B[Tester] --> Q
-            C[Designer] --> Q
-            D[Product Owner] --> Q
-            E[DevOps] --> Q
-            
-            Q --> F[Great Product]
-            
-            A --> A1[Clean code]
-            B --> B1[Test coverage]
-            C --> C1[Usability]
-            D --> D1[Clear requirements]
-            E --> E1[Reliable deployment]
-            
-            style Q fill:#FFD700
-            style F fill:#4CAF50
-        </graph>
+});</code></pre>
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ Don't Forget the Edge Cases</h4>
+                    <p>The happy path is the easy part. The bugs live in the edges: what happens when a discount code is applied to an empty cart? When the payment gateway times out? When a user adds 10,000 of an item with 3 in stock? When the price changes between adding to cart and checkout? Document your edge case testing strategy in the SDD — these are the scenarios that cause real-world failures.</p>
+                </div>
+            </section>
+
+            <!-- Section 5: Quality Gates -->
+            <section id="gates">
+                <h2>Quality Gates: The Checkpoint System</h2>
+                <p>Quality gates are automated checkpoints in your CI/CD pipeline that code must pass before it can proceed. Think of them as bouncers at a club — each one checks for something specific, and if you fail any check, you don't get in. The power of quality gates is that they're <strong>automatic and non-negotiable</strong>.</p>
+
+                <canvas id="gatesCanvas" width="600" height="350"></canvas>
+
+                <div class="card card-accent">
+                    <h4>💡 Defining Quality Gates in Your SDD</h4>
+                    <p>Your SDD should specify each quality gate, its pass/fail criteria, and what happens on failure:</p>
+                    <p><strong>Gate 1 — Linting &amp; Formatting:</strong> Zero lint errors, consistent code style. Pass criteria: <code>eslint --max-warnings 0</code> exits clean.</p>
+                    <p><strong>Gate 2 — Unit Tests:</strong> All pass, coverage above threshold. Pass criteria: >80% line coverage, >90% branch coverage on business logic.</p>
+                    <p><strong>Gate 3 — Integration Tests:</strong> All API and database tests pass. Pass criteria: 100% pass rate, no flaky tests (flaky = auto-quarantined).</p>
+                    <p><strong>Gate 4 — Security Scan:</strong> No critical or high vulnerabilities. Pass criteria: SAST clean, dependency audit clean, no secrets in code.</p>
+                    <p><strong>Gate 5 — Deploy:</strong> All previous gates pass. Includes smoke tests in staging before promoting to production.</p>
+                </div>
+
+                <div class="card card-danger">
+                    <h4>🚫 The "Skip CI" Escape Hatch</h4>
+                    <p>Every CI system has a way to skip checks (commit messages like <code>[skip ci]</code>, manual overrides). Teams under deadline pressure will use it. Your SDD should document when skipping is acceptable (never for production, maybe for documentation-only changes) and who has override authority. A quality gate that can be casually bypassed is no gate at all.</p>
+                </div>
+            </section>
+
+            <!-- Section 6: Bug Tracking -->
+            <section id="bugs">
+                <h2>Bug Tracking: The Issue Lifecycle</h2>
+                <p>A consistent bug lifecycle ensures that every issue is tracked from discovery through resolution. Your SDD should document the states a bug can be in, who's responsible at each stage, and what the criteria are for transitioning between states.</p>
+
+                <div class="mermaid">
+                stateDiagram-v2
+                    [*] --> Reported: Bug Found
+                    Reported --> Triaged: Assign Priority
+                    Triaged --> InProgress: Developer Assigned
+                    InProgress --> InReview: Fix Submitted
+                    InReview --> Testing: Code Review Passed
+                    Testing --> Resolved: Tests Pass
+                    Testing --> InProgress: Tests Fail
+                    Resolved --> Closed: Verified in Production
+                    Closed --> [*]
+
+                    Reported --> Duplicate: Already Reported
+                    Duplicate --> [*]
+
+                    Reported --> WontFix: Not a Bug
+                    WontFix --> [*]
+                </div>
+
+                <div class="card card-accent">
+                    <h4>💡 Priority vs Severity: Know the Difference</h4>
+                    <p><strong>Severity</strong> is how bad the bug is technically: critical (system crash), high (major feature broken), medium (feature degraded), low (cosmetic issue).</p>
+                    <p><strong>Priority</strong> is how urgently it needs fixing: a low-severity typo on the CEO's presentation might be high-priority; a critical crash in an unused admin page might be low-priority.</p>
+                    <p>Your SDD should define your severity levels with examples, and establish SLAs for each: critical bugs fixed within 4 hours, high within 24 hours, medium within one sprint, low in the backlog.</p>
+                </div>
+
+                <div class="card card-info">
+                    <h4>📖 What Makes a Good Bug Report</h4>
+                    <p>A bug report that says "checkout is broken" wastes everyone's time. Document your required fields in the SDD: <strong>steps to reproduce</strong> (exact click path), <strong>expected behavior</strong>, <strong>actual behavior</strong>, <strong>environment</strong> (browser, OS, user role), <strong>screenshots or logs</strong>, and <strong>frequency</strong> (always, intermittent, once). A good bug report cuts debugging time from hours to minutes.</p>
+                </div>
+            </section>
+
+            <!-- Section 7: Performance Testing -->
+            <section id="perf">
+                <h2>Performance Testing: Speed Under Pressure</h2>
+                <p>Performance testing measures how your system behaves under load — not just whether it works, but whether it works <em>fast enough</em>. The chart below shows a typical load test result: response time stays flat under normal load, then rises sharply as you approach the system's capacity, eventually hitting a breaking point where performance degrades unacceptably.</p>
+
+                <canvas id="perfTestCanvas" width="600" height="300"></canvas>
+
+                <div class="card card-accent">
+                    <h4>💡 Reading Load Test Results</h4>
+                    <p><strong>Flat zone (0–300 users):</strong> Response time is stable — the system has headroom. This is your comfortable operating range.</p>
+                    <p><strong>Degradation zone (300–500 users):</strong> Response time starts climbing. The system is still functional but getting stressed. Set autoscaling triggers here.</p>
+                    <p><strong>Breaking point (500+ users):</strong> Response time exceeds your acceptable threshold (e.g., 200ms). Beyond this point, users experience unacceptable delays, timeouts, or errors. Document this number in your SDD — it's your system's capacity ceiling.</p>
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ Test with Realistic Data</h4>
+                    <p>A load test against an empty database is meaningless. Your production database has millions of rows, complex indexes, and real query patterns. Use production-sized data sets (anonymized), realistic user behavior models (not just hammering one endpoint), and actual network conditions. A system that handles 10,000 requests/sec against 100 rows might collapse at 1,000 requests/sec against 10 million rows.</p>
+                </div>
+            </section>
+
+            <!-- Section 8: Continuous Quality & Best Practices -->
+            <section id="quality">
+                <h2>Continuous Quality: Building Quality In</h2>
+                <p>Quality isn't a phase — it's a practice that every team member contributes to. Developers write clean code and tests, testers design test strategies and explore edge cases, designers ensure usability, product owners write clear requirements, and DevOps ensures reliable deployments. Your SDD should document everyone's quality responsibilities.</p>
+
+                <div class="mermaid">
+                graph LR
+                    A[Developer] --> Q{Quality}
+                    B[Tester] --> Q
+                    C[Designer] --> Q
+                    D[Product Owner] --> Q
+                    E[DevOps] --> Q
+
+                    Q --> F[Great Product]
+
+                    A --> A1[Clean code]
+                    B --> B1[Test coverage]
+                    C --> C1[Usability]
+                    D --> D1[Clear requirements]
+                    E --> E1[Reliable deployment]
+
+                    style Q fill:#FFD700
+                    style F fill:#4CAF50
+                </div>
+
+                <h2>Testing Best Practices: The Golden Rules</h2>
+
+                <div class="card card-success">
+                    <h3>✅ Testing Commandments for Your SDD</h3>
+                    <p><strong>Test names should tell a story.</strong> <code>test_user_can_checkout_with_valid_credit_card</code> tells you exactly what broke. <code>test_checkout_3</code> tells you nothing.</p>
+                    <p><strong>One assertion per test.</strong> Each test should verify one specific behavior. When a test with 15 assertions fails, you don't know which behavior is broken without reading the whole test.</p>
+                    <p><strong>Tests should be independent.</strong> Order shouldn't matter, no shared state between tests. If test B depends on test A running first, you have a fragile suite that will break in mysterious ways.</p>
+                    <p><strong>Fast tests get run more.</strong> Mock external dependencies (APIs, databases, file systems) in unit tests. A test suite that takes 30 minutes to run will be skipped "just this once" — which becomes always.</p>
+                    <p><strong>Automate everything possible.</strong> If you do it twice, automate it. Manual testing doesn't scale and doesn't repeat identically.</p>
+                    <p><strong>Measure coverage, but don't worship it.</strong> 80% coverage with well-designed tests beats 100% coverage that tests implementation details. Coverage tells you what's <em>not</em> tested — it doesn't tell you if the tests are any good.</p>
+                    <p><strong>Test the happy path and the edge cases.</strong> What happens with null, empty strings, negative numbers, maximum values, concurrent access, network failures? The bugs always live at the boundaries.</p>
+                    <p><strong>Use realistic test data.</strong> <code>test_user_1</code> with email <code>test@test.com</code> won't reveal the bug that occurs with Unicode names, long email addresses, or special characters.</p>
+                    <p><strong>Failing tests should be clear.</strong> A message like <code>Expected 270 but got 250</code> with context like "tax calculation for two-item cart" saves 30 minutes of debugging. Invest in good error messages.</p>
+                    <p><strong>Maintain your tests.</strong> Delete obsolete tests, refactor test code along with production code, quarantine flaky tests. Dead tests erode trust in the entire suite.</p>
+                </div>
+
+                <div class="card card-danger">
+                    <h4>🚫 The "Tests Are Green So We're Fine" Fallacy</h4>
+                    <p>Passing tests only prove the <em>absence of the bugs you've imagined</em>. They can't prove the absence of bugs you haven't thought of. This is why exploratory testing, chaos engineering, and production monitoring exist. Your SDD should document all three layers: automated tests (catching known failure modes), human testing (catching unimagined failures), and production observability (catching everything else).</p>
+                </div>
+
+                <p>Congratulations — you've completed the comprehensive journey through software design documentation! From system overviews and architecture diagrams to security, performance, and testing, your SDD is the blueprint that turns good intentions into great software.</p>
+
+                <div class="card card-accent text-center" style="padding: var(--spacing-xl);">
+                    <h3>💡 Key Takeaway</h3>
+                    <p>Quality isn't just about finding bugs — it's about preventing them from happening in the first place. Your SDD's testing section should document the testing pyramid ratio, your quality gates with pass/fail criteria, your TDD policy, your bug severity definitions with SLAs, and your performance testing targets. Great documentation is a living artifact that evolves with your project. The best time to write tests was at the start. The second-best time is now.</p>
+                </div>
+            </section>
+
+            <!-- Lesson Navigation -->
+            <nav class="lesson-nav" aria-label="Lesson Navigation">
+                <a href="performance_scalability.html" class="prev-lesson">← Previous: Lesson 8 — Performance</a>
+                <a href="index.html" class="home-link">🏠 Course Home</a>
+            </nav>
         </div>
-        
-        <p><strong>Remember:</strong> Quality isn't just about finding bugs - it's about preventing them from happening in the first place!</p>
-    </div>
-    
-    <p><em>Congratulations! You've completed the comprehensive journey through software design documentation. Remember, great documentation is a living artifact that evolves with your project!</em></p>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>&copy; 2026 Ray De La Paz / PetalFawnStudio. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="https://rays-home.netlify.app/">Ray's House of Fun</a>
+            <a href="https://rays-home.netlify.app/contact">Contact</a>
+            <a href="#" id="print-button">Print Page</a>
+        </div>
+        <p><small>Press <kbd>?</kbd> for keyboard shortcuts</small></p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/clipboard.js"></script>
+    <script src="js/course-enhancements.js"></script>
+
+    <!-- Theme-aware Canvas Drawing -->
+    <script>
+    // ── Pyramid Canvas ───────────────────────────────────────────
+    // Testing pyramid: Unit (base) → Integration → E2E (top)
+    window.registerCanvas('pyramidCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('The Testing Pyramid', w / 2, 24);
+
+        // Pyramid dimensions
+        var tipX = w * 0.48, tipY = 70;
+        var baseLeft = w * 0.18, baseRight = w * 0.78, baseY = 310;
+
+        // Helper: x at a given y along the pyramid edge
+        function leftEdge(y) { return tipX + (baseLeft - tipX) * ((y - tipY) / (baseY - tipY)); }
+        function rightEdge(y) { return tipX + (baseRight - tipX) * ((y - tipY) / (baseY - tipY)); }
+
+        // Layer boundaries
+        var e2eBot = 155;    // E2E bottom / Integration top
+        var intBot = 230;    // Integration bottom / Unit top
+
+        // Unit Tests (bottom — green)
+        ctx.fillStyle = C.accent1;
+        ctx.beginPath();
+        ctx.moveTo(leftEdge(intBot), intBot);
+        ctx.lineTo(baseLeft, baseY);
+        ctx.lineTo(baseRight, baseY);
+        ctx.lineTo(rightEdge(intBot), intBot);
+        ctx.closePath();
+        ctx.fill();
+
+        // Integration Tests (middle — blue)
+        ctx.fillStyle = C.accent2;
+        ctx.beginPath();
+        ctx.moveTo(leftEdge(e2eBot), e2eBot);
+        ctx.lineTo(leftEdge(intBot), intBot);
+        ctx.lineTo(rightEdge(intBot), intBot);
+        ctx.lineTo(rightEdge(e2eBot), e2eBot);
+        ctx.closePath();
+        ctx.fill();
+
+        // E2E Tests (top — amber/accent4)
+        ctx.fillStyle = C.accent4;
+        ctx.beginPath();
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(leftEdge(e2eBot), e2eBot);
+        ctx.lineTo(rightEdge(e2eBot), e2eBot);
+        ctx.closePath();
+        ctx.fill();
+
+        // Layer divider lines
+        ctx.strokeStyle = C.bg;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(leftEdge(e2eBot), e2eBot);
+        ctx.lineTo(rightEdge(e2eBot), e2eBot);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(leftEdge(intBot), intBot);
+        ctx.lineTo(rightEdge(intBot), intBot);
+        ctx.stroke();
+
+        // Layer labels
+        ctx.fillStyle = C.card;
+        ctx.font = 'bold 13px Arial';
+        ctx.fillText('E2E', tipX, 120);
+        ctx.fillText('Integration', tipX, 195);
+        ctx.fillText('Unit Tests', tipX, 275);
+
+        // Right-side detail boxes
+        ctx.textAlign = 'start';
+        ctx.font = '11px Arial';
+        var details = [
+            { y: 100, pct: '10%', speed: 'Slow, Expensive', what: 'UI workflows', color: C.accent4 },
+            { y: 180, pct: '20%', speed: 'Medium speed', what: 'API, Database', color: C.accent2 },
+            { y: 260, pct: '70%', speed: 'Fast, Cheap', what: 'Business logic', color: C.accent1 }
+        ];
+        details.forEach(function(d) {
+            var dx = rightEdge(d.y) + 15;
+            ctx.fillStyle = d.color;
+            ctx.font = 'bold 13px Arial';
+            ctx.fillText(d.pct, dx, d.y);
+            ctx.fillStyle = C.text;
+            ctx.font = '11px Arial';
+            ctx.fillText(d.speed, dx, d.y + 16);
+            ctx.fillStyle = C.textLight;
+            ctx.font = '10px Arial';
+            ctx.fillText(d.what, dx, d.y + 30);
+        });
+
+        // Left: Cost/Speed arrow
+        var arrowX = w * 0.08;
+        ctx.strokeStyle = C.danger;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(arrowX, 80);
+        ctx.lineTo(arrowX, 300);
+        ctx.stroke();
+        // Top arrowhead (cost — up)
+        ctx.fillStyle = C.danger;
+        ctx.beginPath();
+        ctx.moveTo(arrowX, 80);
+        ctx.lineTo(arrowX - 6, 92);
+        ctx.lineTo(arrowX + 6, 92);
+        ctx.closePath();
+        ctx.fill();
+        // Bottom arrowhead (speed — down)
+        ctx.beginPath();
+        ctx.moveTo(arrowX, 300);
+        ctx.lineTo(arrowX - 6, 288);
+        ctx.lineTo(arrowX + 6, 288);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = C.danger;
+        ctx.font = '10px Arial';
+        ctx.fillText('Cost ↑', arrowX - 18, 72);
+        ctx.fillText('Speed ↓', arrowX - 20, 318);
+
+        // Bottom examples
+        ctx.fillStyle = C.textLight;
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Full user journey', w * 0.25, h - 30);
+        ctx.fillText('Service interactions', w * 0.5, h - 30);
+        ctx.fillText('Function validation', w * 0.75, h - 30);
+
+        ctx.textAlign = 'start';
+    });
+
+    // ── TDD Canvas ───────────────────────────────────────────────
+    // Red-Green-Refactor cycle with three connected circles
+    window.registerCanvas('tddCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Test-Driven Development Cycle', w / 2, 24);
+
+        var cx = w / 2, cy = h * 0.52;
+        var radius = 75;
+
+        var steps = [
+            { angle: -90,  color: C.danger,  label: 'Red',      desc: 'Write failing test' },
+            { angle: 30,   color: C.accent1, label: 'Green',    desc: 'Make test pass' },
+            { angle: 150,  color: C.accent2, label: 'Refactor', desc: 'Improve code' }
+        ];
+
+        // Draw connecting arrows first (behind circles)
+        steps.forEach(function(step, i) {
+            var next = steps[(i + 1) % 3];
+            var aRad = step.angle * Math.PI / 180;
+            var nRad = next.angle * Math.PI / 180;
+            var sx = cx + Math.cos(aRad) * radius;
+            var sy = cy + Math.sin(aRad) * radius;
+            var nx = cx + Math.cos(nRad) * radius;
+            var ny = cy + Math.sin(nRad) * radius;
+
+            // Direction from current to next
+            var dx = nx - sx, dy = ny - sy;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            var ux = dx / dist, uy = dy / dist;
+
+            var startX = sx + ux * 40;
+            var startY = sy + uy * 40;
+            var endX = nx - ux * 40;
+            var endY = ny - uy * 40;
+
+            ctx.strokeStyle = C.border;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+
+            // Arrowhead
+            var aa = Math.atan2(endY - startY, endX - startX);
+            ctx.beginPath();
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(endX - 10 * Math.cos(aa - Math.PI / 6), endY - 10 * Math.sin(aa - Math.PI / 6));
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(endX - 10 * Math.cos(aa + Math.PI / 6), endY - 10 * Math.sin(aa + Math.PI / 6));
+            ctx.stroke();
+        });
+
+        // Draw circles and labels
+        steps.forEach(function(step) {
+            var aRad = step.angle * Math.PI / 180;
+            var x = cx + Math.cos(aRad) * radius;
+            var y = cy + Math.sin(aRad) * radius;
+
+            // Circle
+            ctx.fillStyle = step.color;
+            ctx.beginPath();
+            ctx.arc(x, y, 38, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Label inside
+            ctx.fillStyle = C.card;
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(step.label, x, y + 5);
+
+            // Description outside
+            ctx.fillStyle = C.text;
+            ctx.font = '11px Arial';
+            var descY = step.angle === -90 ? y - 48 : y + 55;
+            ctx.fillText(step.desc, x, descY);
+        });
+
+        // Center label
+        ctx.fillStyle = C.textLight;
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('TDD', cx, cy + 5);
+
+        ctx.textAlign = 'start';
+    });
+
+    // ── Quality Gates Canvas ─────────────────────────────────────
+    // CI/CD pipeline with 5 gate checkpoints, one blocked
+    window.registerCanvas('gatesCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Quality Gates in CI/CD Pipeline', w / 2, 24);
+
+        // Pipeline track
+        var trackY = 155, trackH = 55;
+        ctx.fillStyle = C.muted || C.border;
+        ctx.globalAlpha = 0.3;
+        ctx.fillRect(40, trackY, w - 80, trackH);
+        ctx.globalAlpha = 1;
+
+        var gates = [
+            { name: 'Linting',      metric: 'No errors',  color: C.accent1, status: 'pass' },
+            { name: 'Unit Tests',   metric: '> 80%',      color: C.accent2, status: 'pass' },
+            { name: 'Integration',  metric: 'All pass',   color: C.accent4, status: 'pass' },
+            { name: 'Security',     metric: 'No vulns',   color: C.accent3, status: 'fail' },
+            { name: 'Deploy',       metric: 'Ready!',     color: C.highlight || C.accent5, status: 'pending' }
+        ];
+
+        var gateSpacing = (w - 100) / (gates.length - 1);
+
+        // Code ball at start
+        ctx.fillStyle = C.text;
+        ctx.beginPath();
+        ctx.arc(28, trackY + trackH / 2, 10, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = C.text;
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Code', 28, trackY + trackH + 20);
+
+        gates.forEach(function(gate, i) {
+            var gx = 60 + i * gateSpacing;
+            var midY = trackY + trackH / 2;
+
+            // Gate post
+            ctx.fillStyle = gate.color;
+            ctx.fillRect(gx - 3, trackY - 30, 6, trackH + 60);
+
+            // Sign
+            ctx.fillStyle = gate.color;
+            ctx.beginPath();
+            ctx.roundRect(gx - 45, trackY - 70, 90, 38, 6);
+            ctx.fill();
+            ctx.fillStyle = C.card;
+            ctx.font = 'bold 11px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(gate.name, gx, trackY - 55);
+            ctx.font = '9px Arial';
+            ctx.fillText(gate.metric, gx, trackY - 40);
+
+            // Status indicator
+            var statusColor;
+            var statusIcon;
+            if (gate.status === 'pass') {
+                statusColor = C.accent1;
+                statusIcon = '✓';
+            } else if (gate.status === 'fail') {
+                statusColor = C.danger;
+                statusIcon = '✗';
+            } else {
+                statusColor = C.muted || C.border;
+                statusIcon = '?';
+            }
+            ctx.fillStyle = statusColor;
+            ctx.beginPath();
+            ctx.arc(gx, midY, 16, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = C.card;
+            ctx.font = '14px Arial';
+            ctx.fillText(statusIcon, gx, midY + 5);
+        });
+
+        // Blocked X at Security gate
+        var secX = 60 + 3 * gateSpacing;
+        ctx.strokeStyle = C.danger;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(secX - 24, trackY + trackH / 2 - 24);
+        ctx.lineTo(secX + 24, trackY + trackH / 2 + 24);
+        ctx.moveTo(secX + 24, trackY + trackH / 2 - 24);
+        ctx.lineTo(secX - 24, trackY + trackH / 2 + 24);
+        ctx.stroke();
+
+        // Blocked message
+        ctx.fillStyle = C.danger;
+        ctx.font = 'bold 13px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Blocked: Security vulnerability detected!', w / 2, h - 40);
+
+        ctx.textAlign = 'start';
+    });
+
+    // ── Performance Test Canvas ──────────────────────────────────
+    // Load test results chart: response time vs concurrent users
+    window.registerCanvas('perfTestCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Load Testing Results', w / 2, 24);
+
+        // Axes
+        var axisLeft = 70, axisRight = w - 30;
+        var axisTop = 45, axisBottom = h - 55;
+
+        ctx.strokeStyle = C.text;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(axisLeft, axisBottom);
+        ctx.lineTo(axisRight, axisBottom);
+        ctx.moveTo(axisLeft, axisBottom);
+        ctx.lineTo(axisLeft, axisTop);
+        ctx.stroke();
+
+        // Axis labels
+        ctx.fillStyle = C.text;
+        ctx.font = '11px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Concurrent Users', (axisLeft + axisRight) / 2, h - 10);
+        ctx.save();
+        ctx.translate(18, (axisTop + axisBottom) / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('Response Time (ms)', 0, 0);
+        ctx.restore();
+
+        // Tick marks on X axis
+        ctx.font = '9px Arial';
+        ctx.fillStyle = C.textLight;
+        var userTicks = [0, 100, 200, 300, 400, 500, 600, 700, 800];
+        userTicks.forEach(function(u) {
+            var x = axisLeft + (u / 800) * (axisRight - axisLeft);
+            ctx.beginPath();
+            ctx.moveTo(x, axisBottom);
+            ctx.lineTo(x, axisBottom + 5);
+            ctx.stroke();
+            ctx.textAlign = 'center';
+            ctx.fillText(u.toString(), x, axisBottom + 16);
+        });
+
+        // Tick marks on Y axis
+        var timeTicks = [0, 100, 200, 300, 400];
+        timeTicks.forEach(function(t) {
+            var y = axisBottom - (t / 400) * (axisBottom - axisTop);
+            ctx.beginPath();
+            ctx.strokeStyle = C.text;
+            ctx.moveTo(axisLeft - 5, y);
+            ctx.lineTo(axisLeft, y);
+            ctx.stroke();
+            ctx.textAlign = 'end';
+            ctx.fillText(t + 'ms', axisLeft - 8, y + 4);
+        });
+
+        // Acceptable threshold line (200ms)
+        var thresholdY = axisBottom - (200 / 400) * (axisBottom - axisTop);
+        ctx.strokeStyle = C.accent1;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 5]);
+        ctx.beginPath();
+        ctx.moveTo(axisLeft, thresholdY);
+        ctx.lineTo(axisRight, thresholdY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = C.accent1;
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'end';
+        ctx.fillText('Acceptable (200ms)', axisRight, thresholdY - 6);
+
+        // Response time curve (exponential growth)
+        ctx.strokeStyle = C.danger;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        var firstPoint = true;
+        for (var u = 0; u <= 800; u += 5) {
+            // Model: stays ~50ms until ~300, then rises exponentially
+            var rt = 50 + 2 * Math.pow(1.007, u) + (u > 300 ? Math.pow((u - 300) / 8, 2) : 0);
+            if (rt > 420) rt = 420; // cap for display
+            var x = axisLeft + (u / 800) * (axisRight - axisLeft);
+            var y = axisBottom - (rt / 400) * (axisBottom - axisTop);
+            if (firstPoint) { ctx.moveTo(x, y); firstPoint = false; }
+            else { ctx.lineTo(x, y); }
+        }
+        ctx.stroke();
+
+        // Breaking point vertical line at ~500 users
+        var bpX = axisLeft + (500 / 800) * (axisRight - axisLeft);
+        ctx.strokeStyle = C.accent4;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(bpX, axisTop);
+        ctx.lineTo(bpX, axisBottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = C.accent4;
+        ctx.font = 'bold 11px Arial';
+        ctx.textAlign = 'start';
+        ctx.fillText('Breaking point', bpX + 8, axisTop + 16);
+        ctx.font = '10px Arial';
+        ctx.fillText('(500 users)', bpX + 8, axisTop + 30);
+
+        // Zone labels
+        ctx.globalAlpha = 0.08;
+        ctx.fillStyle = C.accent1;
+        ctx.fillRect(axisLeft, axisTop, bpX - axisLeft, axisBottom - axisTop);
+        ctx.fillStyle = C.danger;
+        ctx.fillRect(bpX, axisTop, axisRight - bpX, axisBottom - axisTop);
+        ctx.globalAlpha = 1;
+
+        ctx.textAlign = 'start';
+    });
+    </script>
 </body>
 </html>

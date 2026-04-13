@@ -3,194 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Introduction to Software Design Documents</title>
-    <link rel="stylesheet" href="/styles/main.css">
-    <link rel="icon" href="/favicon.png">
+    <meta name="description" content="Learn what a Software Design Document is, why it matters, and how it prevents costly project failures — using real-world analogies and interactive diagrams.">
+    <meta name="author" content="Ray De La Paz">
+    <title>Introduction to Software Design Documents - SDD Tutorial</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Mermaid — theme-aware via course-enhancements.js -->
     <script type="module">
-      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-      mermaid.initialize({ startOnLoad: true });
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        window.__mermaid = mermaid;
+        const isDark = localStorage.getItem('theme') === 'dark' ||
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: isDark ? 'dark' : 'default',
+            themeVariables: isDark
+                ? { primaryColor: '#334155', primaryTextColor: '#e2e8f0', primaryBorderColor: '#6366f1', lineColor: '#94a3b8', secondaryColor: '#1e293b', tertiaryColor: '#0f172a' }
+                : { primaryColor: '#eff6ff', primaryTextColor: '#1e293b', primaryBorderColor: '#3b82f6', lineColor: '#64748b', secondaryColor: '#f8fafc', tertiaryColor: '#f1f5f9' }
+        });
     </script>
 </head>
 <body>
-    <h1>What is a Software Design Document?</h1>
-    
-    <p>Imagine you're about to build your dream house. Would you start laying bricks without a blueprint? Of course not! A Software Design Document (SDD) is like the architectural blueprint for your software project.</p>
-    
-    <h2>The Kitchen Recipe Analogy</h2>
-    
-    <p>Think of an SDD as a master recipe for a complex dish. Just as a recipe tells you:</p>
-    <ul>
-        <li>What ingredients you need (components and technologies)</li>
-        <li>How to prepare them (implementation details)</li>
-        <li>In what order to combine them (system architecture)</li>
-        <li>What the final dish should taste like (requirements and goals)</li>
-    </ul>
-    
-    <h2>Why Do We Need Design Documents?</h2>
-    
-    <div class="mermaid">
-    graph TD
-        A[No Design Document] --> B[Confusion]
-        A --> C[Miscommunication]
-        A --> D[Wasted Time]
-        A --> E[Technical Debt]
-        
-        F[With Design Document] --> G[Clear Vision]
-        F --> H[Team Alignment]
-        F --> I[Efficient Development]
-        F --> J[Better Architecture]
-        
-        style A fill:#ffcccc
-        style F fill:#ccffcc
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
+
+    <div class="progress-indicator" role="progressbar" aria-label="Page scroll progress">
+        <div class="progress-bar"></div>
     </div>
-    
-    <h2>Real-World Example: The E-Commerce Platform</h2>
-    
-    <p>Let's say you're building an online shopping platform like a mini-Amazon. Without a design document, your team might:</p>
-    
-    <canvas id="chaosCanvas" width="600" height="400"></canvas>
-    
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">SDD Tutorial</a>
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-expanded="false" aria-controls="nav-links">☰</button>
+            <div class="nav-links" id="nav-links">
+                <a href="index.html">Home</a>
+                <a href="index.html#modules">All Lessons</a>
+                <span class="nav-divider"></span>
+                <a href="https://rays-home.netlify.app/">Ray's House of Fun</a>
+                <a href="https://rays-home.netlify.app/contact">Contact</a>
+                <button id="theme-toggle" aria-label="Toggle dark/light mode">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#modules">Foundation</a></li>
+            <li aria-current="page">Lesson 1: Introduction</li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <div class="container">
+            <header>
+                <h1>📝 Lesson 1: What Is a Software Design Document?</h1>
+                <p class="lead">Discover why design documents are the single most important artifact you'll create before writing a line of code — and how the right blueprint saves teams weeks of rework.</p>
+
+                <div class="card card-info">
+                    <h2>🎯 Learning Objectives</h2>
+                    <p>By the end of this lesson, you will be able to:</p>
+                    <ul>
+                        <li>Explain the purpose and value of a Software Design Document (SDD)</li>
+                        <li>Describe three real-world analogies that illuminate SDD concepts</li>
+                        <li>Identify the consequences of skipping the design phase</li>
+                        <li>List the qualities that separate a great SDD from a mediocre one</li>
+                    </ul>
+                    <p><strong>Estimated Time:</strong> 20 minutes</p>
+                </div>
+            </header>
+
+            <!-- Table of Contents -->
+            <details class="card toc-card" open>
+                <summary>
+                    <h2 style="display:inline; margin:0;">📑 In This Lesson</h2>
+                </summary>
+                <nav aria-label="Table of Contents">
+                    <ol>
+                        <li><a href="#blueprint" class="toc-link">The Blueprint Analogy</a></li>
+                        <li><a href="#recipe" class="toc-link">The Kitchen Recipe Analogy</a></li>
+                        <li><a href="#why" class="toc-link">Why Do We Need Design Documents?</a></li>
+                        <li><a href="#real-world" class="toc-link">Real-World Example: E-Commerce Platform</a></li>
+                        <li><a href="#bridge" class="toc-link">The Bridge Builder's Wisdom</a></li>
+                        <li><a href="#great-sdd" class="toc-link">What Makes a Great Design Document?</a></li>
+                        <li><a href="#orchestra" class="toc-link">The Symphony Orchestra Metaphor</a></li>
+                        <li><a href="#next" class="toc-link">Your First Step</a></li>
+                    </ol>
+                </nav>
+            </details>
+
+            <!-- Section 1: Blueprint -->
+            <section id="blueprint">
+                <h2>The Blueprint Analogy</h2>
+                <p>Imagine you're about to build your dream house. Would you start laying bricks without a blueprint? Of course not! A Software Design Document (SDD) is the architectural blueprint for your software project. It captures the big-picture vision, the structural decisions, and the fine-grained details that keep everyone building toward the same goal.</p>
+
+                <p>Just as an architect's blueprint tells the contractor where the load-bearing walls go, your SDD tells developers which components bear the load of your business logic — and where the "plumbing" (APIs, databases, message queues) connects them.</p>
+            </section>
+
+            <!-- Section 2: Kitchen Recipe -->
+            <section id="recipe">
+                <h2>The Kitchen Recipe Analogy</h2>
+                <p>Think of an SDD as a master recipe for a complex dish. Just as a recipe tells you:</p>
+                <ul>
+                    <li><strong>What ingredients you need</strong> — the components and technologies your system requires</li>
+                    <li><strong>How to prepare them</strong> — the implementation details and configuration steps</li>
+                    <li><strong>In what order to combine them</strong> — the system architecture and data flow</li>
+                    <li><strong>What the final dish should taste like</strong> — the requirements, goals, and acceptance criteria</li>
+                </ul>
+
+                <p>Without a recipe, two chefs in the same kitchen might add salt at different stages, use different temperatures, or even make a completely different dish. The same chaos happens in software teams without a design document.</p>
+            </section>
+
+            <!-- Section 3: Why -->
+            <section id="why">
+                <h2>Why Do We Need Design Documents?</h2>
+
+                <div class="mermaid">
+                graph TD
+                    A[No Design Document] --> B[Confusion]
+                    A --> C[Miscommunication]
+                    A --> D[Wasted Time]
+                    A --> E[Technical Debt]
+
+                    F[With Design Document] --> G[Clear Vision]
+                    F --> H[Team Alignment]
+                    F --> I[Efficient Development]
+                    F --> J[Better Architecture]
+
+                    style A fill:#ffcccc
+                    style F fill:#ccffcc
+                </div>
+
+                <p>Studies consistently show that the cost of fixing a defect rises dramatically the later it's found. A design flaw caught in a document review costs minutes; the same flaw caught in production can cost days, dollars, and user trust. The SDD is your cheapest line of defense.</p>
+
+                <div class="card card-warning">
+                    <h4>⚠️ The Real Cost of Skipping Design</h4>
+                    <p>A 2019 report by the Consortium for Information &amp; Software Quality estimated that poor software quality cost the U.S. economy over $2 trillion annually. Much of that stems from architecture and design decisions that were never documented, reviewed, or challenged before code was written.</p>
+                </div>
+            </section>
+
+            <!-- Section 4: Real-World -->
+            <section id="real-world">
+                <h2>Real-World Example: The E-Commerce Platform</h2>
+                <p>Let's say you're building an online shopping platform like a mini-Amazon. Without a design document, your team might each make independent — and incompatible — technology choices:</p>
+
+                <canvas id="chaosCanvas" width="600" height="400"></canvas>
+
+                <p>Developer 1 picks a relational database, Developer 2 goes with NoSQL, and Developer 3 builds a GraphQL layer that assumes neither. Three smart people, zero alignment. The SDD is the conversation that prevents this divergence.</p>
+
+                <div class="card card-success">
+                    <h4>✅ With a Design Document</h4>
+                    <p>The team reviews and agrees on PostgreSQL for transactional data, Redis for caching, and a REST API with a clear versioning strategy. Everyone reads the same page — literally — and builds components that snap together like LEGO bricks.</p>
+                </div>
+            </section>
+
+            <!-- Section 5: Bridge Builder -->
+            <section id="bridge">
+                <h2>The Bridge Builder's Wisdom</h2>
+                <p>A master bridge builder once said: <em>"Measure twice, cut once."</em> In software, we say: <em>"Design thoroughly, code once."</em> An SDD helps you:</p>
+
+                <div class="mermaid">
+                graph LR
+                    A[Identify Problems Early] --> B[Save Development Time]
+                    B --> C[Reduce Bugs]
+                    C --> D[Happy Users]
+                    D --> E[Successful Project]
+
+                    style E fill:#90EE90
+                </div>
+
+                <p>The feedback loop is clear: early design investment pays compound interest throughout the life of the project. It's not about writing more documents — it's about writing the <em>right</em> document before writing code.</p>
+            </section>
+
+            <!-- Section 6: Great SDD -->
+            <section id="great-sdd">
+                <h2>What Makes a Great Design Document?</h2>
+                <p>A great SDD is like a GPS for your development journey. It should be:</p>
+
+                <ul>
+                    <li><strong>Clear:</strong> Like a well-written story, anyone on the team — from the new intern to the VP of Engineering — should be able to understand it.</li>
+                    <li><strong>Complete:</strong> Cover all major aspects of the system. Think of a travel guide that covers attractions, transport, food, and safety — not just the landmarks.</li>
+                    <li><strong>Flexible:</strong> A good plan adapts to change. Your SDD should evolve with the project, not become a museum artifact that nobody updates.</li>
+                    <li><strong>Visual:</strong> Use diagrams like a map uses symbols. A well-placed diagram communicates in seconds what paragraphs of text struggle to convey.</li>
+                    <li><strong>Opinionated:</strong> Great SDDs make decisions and justify them. "We chose PostgreSQL over MongoDB because our data is highly relational and we need ACID guarantees" is far more useful than listing every database that exists.</li>
+                </ul>
+            </section>
+
+            <!-- Section 7: Orchestra -->
+            <section id="orchestra">
+                <h2>The Symphony Orchestra Metaphor</h2>
+                <p>An orchestra without a conductor is just a group of talented people making noise. The design document is your project's conductor — coordinating the frontend violins, the backend brass, the database percussion, and the DevOps woodwinds into a harmonious performance.</p>
+
+                <canvas id="orchestraCanvas" width="600" height="300"></canvas>
+
+                <p>Each section of the orchestra has its own sheet music (component specs), but the conductor's score (the SDD) ensures they all play the same symphony, in the same key, at the same tempo.</p>
+            </section>
+
+            <!-- Section 8: Next Step -->
+            <section id="next">
+                <h2>Your First Step</h2>
+                <p>Creating a software design document is like planting a tree. The best time was at the project's start, but the second-best time is now. In our next lesson, we'll explore the <strong>anatomy of a design document</strong> — what sections it should have, why each one matters, and how they fit together into a coherent whole.</p>
+
+                <div class="card card-accent text-center" style="padding: var(--spacing-xl);">
+                    <h3>💡 Key Takeaway</h3>
+                    <p>A software design document isn't just paperwork — it's your project's North Star, guiding everyone toward the same destination. The time you invest in design is repaid tenfold in code quality, team velocity, and user satisfaction.</p>
+                </div>
+            </section>
+
+            <!-- Lesson Navigation -->
+            <nav class="lesson-nav" aria-label="Lesson Navigation">
+                <span></span>
+                <a href="index.html" class="home-link">🏠 Course Home</a>
+                <a href="sdd_anatomy.html" class="next-lesson">Next: Lesson 2 — Anatomy of an SDD →</a>
+            </nav>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>&copy; 2026 Ray De La Paz / PetalFawnStudio. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="https://rays-home.netlify.app/">Ray's House of Fun</a>
+            <a href="https://rays-home.netlify.app/contact">Contact</a>
+            <a href="#" id="print-button">Print Page</a>
+        </div>
+        <p><small>Press <kbd>?</kbd> for keyboard shortcuts</small></p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/clipboard.js"></script>
+    <script src="js/course-enhancements.js"></script>
+
+    <!-- Theme-aware Canvas Drawing -->
     <script>
-    const chaosCanvas = document.getElementById('chaosCanvas');
-    const ctx = chaosCanvas.getContext('2d');
-    
-    // Draw the chaos scenario
-    ctx.fillStyle = '#f0f0f0';
-    ctx.fillRect(0, 0, 600, 400);
-    
-    // Developer 1
-    ctx.fillStyle = '#ff6b6b';
-    ctx.beginPath();
-    ctx.arc(100, 100, 40, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.fillStyle = '#000';
-    ctx.font = '14px Arial';
-    ctx.fillText('Dev 1: SQL', 70, 160);
-    
-    // Developer 2
-    ctx.fillStyle = '#4ecdc4';
-    ctx.beginPath();
-    ctx.arc(300, 100, 40, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.fillText('Dev 2: NoSQL', 265, 160);
-    
-    // Developer 3
-    ctx.fillStyle = '#45b7d1';
-    ctx.beginPath();
-    ctx.arc(500, 100, 40, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.fillText('Dev 3: GraphQL', 460, 160);
-    
-    // Confusion arrows
-    ctx.strokeStyle = '#ff0000';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]);
-    
-    // Arrow from Dev1 to Dev2
-    ctx.beginPath();
-    ctx.moveTo(140, 100);
-    ctx.lineTo(260, 100);
-    ctx.stroke();
-    
-    // Arrow from Dev2 to Dev3
-    ctx.beginPath();
-    ctx.moveTo(340, 100);
-    ctx.lineTo(460, 100);
-    ctx.stroke();
-    
-    // Arrow from Dev3 to Dev1
-    ctx.beginPath();
-    ctx.moveTo(480, 140);
-    ctx.quadraticCurveTo(300, 250, 120, 140);
-    ctx.stroke();
-    
-    ctx.setLineDash([]);
-    ctx.fillStyle = '#333';
-    ctx.font = '16px Arial';
-    ctx.fillText('Without Design Document: Everyone builds differently!', 150, 300);
-    </script>
-    
-    <h2>The Bridge Builder's Wisdom</h2>
-    
-    <p>A master bridge builder once said: "Measure twice, cut once." In software, we say: "Design thoroughly, code once." An SDD helps you:</p>
-    
-    <div class="mermaid">
-    graph LR
-        A[Identify Problems Early] --> B[Save Development Time]
-        B --> C[Reduce Bugs]
-        C --> D[Happy Users]
-        D --> E[Successful Project]
-        
-        style E fill:#90EE90
-    </div>
-    
-    <h2>What Makes a Great Design Document?</h2>
-    
-    <p>A great SDD is like a GPS for your development journey. It should:</p>
-    
-    <ul>
-        <li><strong>Be Clear:</strong> Like a well-written story, anyone should understand it</li>
-        <li><strong>Be Complete:</strong> Cover all aspects, like a travel guide covers all attractions</li>
-        <li><strong>Be Flexible:</strong> Like a good plan, it can adapt to changes</li>
-        <li><strong>Be Visual:</strong> Use diagrams like a map uses symbols</li>
-    </ul>
-    
-    <h2>The Symphony Orchestra Metaphor</h2>
-    
-    <canvas id="orchestraCanvas" width="600" height="300"></canvas>
-    
-    <script>
-    const orchestraCanvas = document.getElementById('orchestraCanvas');
-    const octx = orchestraCanvas.getContext('2d');
-    
-    // Background
-    octx.fillStyle = '#f5f5f5';
-    octx.fillRect(0, 0, 600, 300);
-    
-    // Conductor (Design Document)
-    octx.fillStyle = '#333';
-    octx.beginPath();
-    octx.arc(300, 50, 30, 0, 2 * Math.PI);
-    octx.fill();
-    octx.fillText('Design Document', 250, 100);
-    octx.fillText('(Conductor)', 265, 115);
-    
-    // Musicians (Team Members)
-    const musicians = [
-        {x: 100, y: 200, label: 'Frontend', color: '#ff6b6b'},
-        {x: 200, y: 200, label: 'Backend', color: '#4ecdc4'},
-        {x: 300, y: 200, label: 'Database', color: '#45b7d1'},
-        {x: 400, y: 200, label: 'DevOps', color: '#96ceb4'},
-        {x: 500, y: 200, label: 'Testing', color: '#dda0dd'}
-    ];
-    
-    musicians.forEach(musician => {
-        // Draw connections to conductor
-        octx.strokeStyle = '#ccc';
-        octx.beginPath();
-        octx.moveTo(300, 80);
-        octx.lineTo(musician.x, musician.y - 20);
-        octx.stroke();
-        
-        // Draw musician
-        octx.fillStyle = musician.color;
-        octx.beginPath();
-        octx.arc(musician.x, musician.y, 20, 0, 2 * Math.PI);
-        octx.fill();
-        
-        octx.fillStyle = '#333';
-        octx.font = '12px Arial';
-        octx.fillText(musician.label, musician.x - 25, musician.y + 40);
+    // ── Chaos Canvas ─────────────────────────────────────────────
+    // Three developers making incompatible technology choices
+    window.registerCanvas('chaosCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Without a Design Document: Everyone Builds Differently!', w/2, 30);
+
+        // Developer circles
+        var devs = [
+            { x: w*0.17, label: 'Dev 1: SQL',     color: C.danger },
+            { x: w*0.50, label: 'Dev 2: NoSQL',   color: C.accent1 },
+            { x: w*0.83, label: 'Dev 3: GraphQL', color: C.accent2 }
+        ];
+        var devY = 120;
+
+        devs.forEach(function(d) {
+            ctx.fillStyle = d.color;
+            ctx.beginPath();
+            ctx.arc(d.x, devY, 40, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Person icon (head)
+            ctx.fillStyle = C.card;
+            ctx.beginPath();
+            ctx.arc(d.x, devY - 10, 12, 0, 2 * Math.PI);
+            ctx.fill();
+            // Body
+            ctx.fillRect(d.x - 8, devY + 2, 16, 18);
+
+            ctx.fillStyle = C.text;
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(d.label, d.x, devY + 65);
+        });
+
+        // Confusion arrows (dashed red)
+        ctx.strokeStyle = C.danger;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+
+        ctx.beginPath();
+        ctx.moveTo(devs[0].x + 40, devY);
+        ctx.lineTo(devs[1].x - 40, devY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(devs[1].x + 40, devY);
+        ctx.lineTo(devs[2].x - 40, devY);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(devs[2].x - 20, devY + 40);
+        ctx.quadraticCurveTo(w/2, devY + 120, devs[0].x + 20, devY + 40);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Question marks
+        ctx.fillStyle = C.danger;
+        ctx.font = 'bold 24px Arial';
+        ctx.fillText('?', (devs[0].x + devs[1].x) / 2, devY - 10);
+        ctx.fillText('?', (devs[1].x + devs[2].x) / 2, devY - 10);
+        ctx.fillText('?', w/2, devY + 100);
+
+        // vs. the aligned team
+        ctx.fillStyle = C.accent1;
+        ctx.fillRect(w*0.1, h - 140, w*0.8, 100);
+        ctx.fillStyle = C.card;
+        ctx.fillRect(w*0.1 + 3, h - 137, w*0.8 - 6, 94);
+
+        ctx.fillStyle = C.accent1;
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText('With a Design Document: One Shared Architecture', w/2, h - 115);
+
+        // Aligned devs
+        ctx.font = '12px Arial';
+        ctx.fillStyle = C.text;
+        var alignedY = h - 80;
+        var teamColors = [C.accent2, C.accent3, C.accent4];
+        for (var i = 0; i < 3; i++) {
+            var ax = w*0.25 + i * (w*0.25);
+            ctx.fillStyle = teamColors[i];
+            ctx.beginPath();
+            ctx.arc(ax, alignedY, 18, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = C.card;
+            ctx.beginPath();
+            ctx.arc(ax, alignedY - 5, 6, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        // Connection line (solid green)
+        ctx.strokeStyle = C.accent1;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(w*0.25 + 18, alignedY);
+        ctx.lineTo(w*0.75 - 18, alignedY);
+        ctx.stroke();
+
+        ctx.fillStyle = C.accent1;
+        ctx.font = '12px Arial';
+        ctx.fillText('PostgreSQL + Redis + REST API v1', w/2, alignedY + 30);
+
+        ctx.textAlign = 'start';
     });
-    
-    octx.font = '14px Arial';
-    octx.fillText('Everyone plays in harmony with a good conductor!', 150, 280);
+
+    // ── Orchestra Canvas ─────────────────────────────────────────
+    // Design document as conductor, team sections as musicians
+    window.registerCanvas('orchestraCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Conductor (Design Document)
+        ctx.fillStyle = C.text;
+        ctx.beginPath();
+        ctx.arc(w/2, 55, 30, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Conductor face
+        ctx.fillStyle = C.card;
+        ctx.beginPath();
+        ctx.arc(w/2, 45, 10, 0, 2 * Math.PI);
+        ctx.fill();
+
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 13px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Design Document', w/2, 105);
+        ctx.font = '11px Arial';
+        ctx.fillStyle = C.textLight;
+        ctx.fillText('(Conductor)', w/2, 120);
+
+        // Musicians
+        var musicians = [
+            { x: w*0.12, label: 'Frontend', color: C.danger },
+            { x: w*0.31, label: 'Backend',  color: C.accent1 },
+            { x: w*0.50, label: 'Database', color: C.accent2 },
+            { x: w*0.69, label: 'DevOps',   color: C.accent3 },
+            { x: w*0.88, label: 'Testing',  color: C.accent4 }
+        ];
+        var mY = 200;
+
+        musicians.forEach(function(m) {
+            // Connection line to conductor
+            ctx.strokeStyle = C.border;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(w/2, 85);
+            ctx.lineTo(m.x, mY - 20);
+            ctx.stroke();
+
+            // Musician circle
+            ctx.fillStyle = m.color;
+            ctx.beginPath();
+            ctx.arc(m.x, mY, 22, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Person icon
+            ctx.fillStyle = C.card;
+            ctx.beginPath();
+            ctx.arc(m.x, mY - 6, 7, 0, 2 * Math.PI);
+            ctx.fill();
+
+            ctx.fillStyle = C.text;
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(m.label, m.x, mY + 42);
+        });
+
+        ctx.fillStyle = C.textLight;
+        ctx.font = '14px Arial';
+        ctx.fillText('Everyone plays in harmony with a good conductor!', w/2, h - 15);
+        ctx.textAlign = 'start';
+    });
     </script>
-    
-    <h2>Your First Step</h2>
-    
-    <p>Creating a software design document is like planting a tree. The best time was at the project's start, but the second-best time is now. In our next lesson, we'll explore the anatomy of a design document - what sections it should have and why each one matters.</p>
-    
-    <p><em>Remember: A software design document isn't just paperwork - it's your project's North Star, guiding everyone toward the same destination.</em></p>
 </body>
 </html>

@@ -3,350 +3,630 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anatomy of a Software Design Document</title>
-    <link rel="stylesheet" href="/styles/main.css">
-    <link rel="icon" href="/favicon.png">
+    <meta name="description" content="Explore every section of a Software Design Document — from the executive summary to testing strategy — using the QuickBite food delivery app as a running example.">
+    <meta name="author" content="Ray De La Paz">
+    <title>Anatomy of a Software Design Document - SDD Tutorial</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Mermaid — theme-aware via course-enhancements.js -->
     <script type="module">
-      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-      mermaid.initialize({ startOnLoad: true });
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        window.__mermaid = mermaid;
+        const isDark = localStorage.getItem('theme') === 'dark' ||
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: isDark ? 'dark' : 'default',
+            themeVariables: isDark
+                ? { primaryColor: '#334155', primaryTextColor: '#e2e8f0', primaryBorderColor: '#6366f1', lineColor: '#94a3b8', secondaryColor: '#1e293b', tertiaryColor: '#0f172a' }
+                : { primaryColor: '#eff6ff', primaryTextColor: '#1e293b', primaryBorderColor: '#3b82f6', lineColor: '#64748b', secondaryColor: '#f8fafc', tertiaryColor: '#f1f5f9' }
+        });
     </script>
 </head>
 <body>
-    <h1>The Anatomy of a Software Design Document</h1>
-    
-    <p>Just like the human body has essential organs that work together, a software design document has key sections that create a complete picture of your system. Let's explore each vital component!</p>
-    
-    <h2>The Complete Structure</h2>
-    
-    <div class="mermaid">
-    graph TD
-        A[Software Design Document] --> B[Executive Summary]
-        A --> C[System Overview]
-        A --> D[Architecture Design]
-        A --> E[Data Design]
-        A --> F[Interface Design]
-        A --> G[Component Design]
-        A --> H[Security Considerations]
-        A --> I[Performance Requirements]
-        A --> J[Testing Strategy]
-        
-        B --> B1[Project Goals]
-        B --> B2[Key Features]
-        B --> B3[Success Metrics]
-        
-        D --> D1[High-Level Architecture]
-        D --> D2[Technology Stack]
-        D --> D3[System Components]
-        
-        style A fill:#f9f,stroke:#333,stroke-width:4px
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
+
+    <div class="progress-indicator" role="progressbar" aria-label="Page scroll progress">
+        <div class="progress-bar"></div>
     </div>
-    
-    <h2>Executive Summary: The Elevator Pitch</h2>
-    
-    <p>Imagine you're in an elevator with your CEO, and you have 30 seconds to explain your project. That's your executive summary! It's the bird's-eye view of your entire system.</p>
-    
-    <canvas id="elevatorCanvas" width="600" height="300"></canvas>
-    
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">SDD Tutorial</a>
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-expanded="false" aria-controls="nav-links">☰</button>
+            <div class="nav-links" id="nav-links">
+                <a href="index.html">Home</a>
+                <a href="index.html#modules">All Lessons</a>
+                <span class="nav-divider"></span>
+                <a href="https://rays-home.netlify.app/">Ray's House of Fun</a>
+                <a href="https://rays-home.netlify.app/contact">Contact</a>
+                <button id="theme-toggle" aria-label="Toggle dark/light mode">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#modules">Foundation</a></li>
+            <li aria-current="page">Lesson 2: Anatomy of an SDD</li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <div class="container">
+            <header>
+                <h1>🔬 Lesson 2: The Anatomy of a Software Design Document</h1>
+                <p class="lead">Just like the human body has essential organs that work together, a software design document has key sections that create a complete picture of your system. Let's explore each vital component!</p>
+
+                <div class="card card-info">
+                    <h2>🎯 Learning Objectives</h2>
+                    <p>By the end of this lesson, you will be able to:</p>
+                    <ul>
+                        <li>Identify the core sections that make up a complete SDD</li>
+                        <li>Explain the purpose of each section — from executive summary to testing strategy</li>
+                        <li>Describe how architecture, data, and interface design work together</li>
+                        <li>Apply the "living document" philosophy to keep your SDD useful over time</li>
+                    </ul>
+                    <p><strong>Estimated Time:</strong> 25 minutes</p>
+                </div>
+            </header>
+
+            <!-- Table of Contents -->
+            <details class="card toc-card" open>
+                <summary>
+                    <h2 style="display:inline; margin:0;">📑 In This Lesson</h2>
+                </summary>
+                <nav aria-label="Table of Contents">
+                    <ol>
+                        <li><a href="#structure" class="toc-link">The Complete Structure</a></li>
+                        <li><a href="#executive-summary" class="toc-link">Executive Summary: The Elevator Pitch</a></li>
+                        <li><a href="#system-overview" class="toc-link">System Overview: The Map of Your Kingdom</a></li>
+                        <li><a href="#architecture" class="toc-link">Architecture Design: The Blueprint</a></li>
+                        <li><a href="#data-design" class="toc-link">Data Design: The Information Highway</a></li>
+                        <li><a href="#interface-design" class="toc-link">Interface Design: The User's Window</a></li>
+                        <li><a href="#living-document" class="toc-link">The Living Document Philosophy</a></li>
+                        <li><a href="#next" class="toc-link">Tying It All Together</a></li>
+                    </ol>
+                </nav>
+            </details>
+
+            <!-- Section 1: The Complete Structure -->
+            <section id="structure">
+                <h2>The Complete Structure</h2>
+                <p>Before we examine each organ in detail, let's look at the full anatomy of a software design document. Think of this as the skeleton — the structural framework that holds everything together. Each section has a specific job, and they all depend on each other.</p>
+
+                <div class="mermaid">
+                graph TD
+                    A[Software Design Document] --> B[Executive Summary]
+                    A --> C[System Overview]
+                    A --> D[Architecture Design]
+                    A --> E[Data Design]
+                    A --> F[Interface Design]
+                    A --> G[Component Design]
+                    A --> H[Security Considerations]
+                    A --> I[Performance Requirements]
+                    A --> J[Testing Strategy]
+
+                    B --> B1[Project Goals]
+                    B --> B2[Key Features]
+                    B --> B3[Success Metrics]
+
+                    D --> D1[High-Level Architecture]
+                    D --> D2[Technology Stack]
+                    D --> D3[System Components]
+                </div>
+
+                <div class="card card-accent">
+                    <h4>💡 Think of It Like a Book</h4>
+                    <p>The executive summary is your dust jacket — the quick hook that tells someone whether to keep reading. The system overview is your table of contents. Architecture, data, and interface design are your core chapters. Security, performance, and testing are the appendices that ensure everything holds up under pressure.</p>
+                </div>
+            </section>
+
+            <!-- Section 2: Executive Summary -->
+            <section id="executive-summary">
+                <h2>Executive Summary: The Elevator Pitch</h2>
+                <p>Imagine you're in an elevator with your CEO, and you have 30 seconds to explain your project. That's your executive summary! It's the bird's-eye view of your entire system — the one page that busy stakeholders will actually read.</p>
+
+                <canvas id="elevatorCanvas" width="600" height="300"></canvas>
+
+                <p>A strong executive summary answers three questions in plain language: <strong>What</strong> are we building? <strong>Why</strong> does it matter? <strong>How</strong> will we know it succeeded?</p>
+
+                <h3>Real-World Example: Food Delivery App</h3>
+
+                <div class="card card-info">
+                    <h4>Executive Summary — QuickBite</h4>
+                    <p><strong>Project:</strong> QuickBite – Food Delivery Platform</p>
+                    <p><strong>Goal:</strong> Connect hungry customers with local restaurants through a seamless mobile experience</p>
+                    <p><strong>Key Features:</strong> Real-time tracking, AI-powered recommendations, 30-minute delivery guarantee</p>
+                    <p><strong>Success Metrics:</strong> 100,000 active users in 6 months, 15% month-over-month growth</p>
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ Common Pitfall</h4>
+                    <p>Many teams skip the executive summary or fill it with jargon. If your summary requires a glossary to understand, it's too technical. Write it for the person who signs the check, not the person who writes the code.</p>
+                </div>
+            </section>
+
+            <!-- Section 3: System Overview -->
+            <section id="system-overview">
+                <h2>System Overview: The Map of Your Kingdom</h2>
+                <p>Think of this section as a map showing all the territories in your software kingdom. It answers: What are we building? Who will use it? How does it fit into the bigger picture? The system overview introduces every actor — human and machine — that touches your system.</p>
+
+                <div class="mermaid">
+                graph LR
+                    subgraph "External World"
+                        U[Users]
+                        R[Restaurants]
+                        D[Delivery Partners]
+                        P[Payment Systems]
+                    end
+
+                    subgraph "Our System"
+                        A[QuickBite Platform]
+                        A1[Mobile App]
+                        A2[Web Portal]
+                        A3[Admin Dashboard]
+                    end
+
+                    U --> A1
+                    R --> A2
+                    D --> A1
+                    A --> P
+                </div>
+
+                <p>Notice how the diagram cleanly separates the outside world from what we control. That boundary is one of the most important decisions in your design — it determines what you build versus what you integrate with.</p>
+
+                <div class="card card-success">
+                    <h4>✅ Pro Tip: Identify Your Actors Early</h4>
+                    <p>List every type of user and external system before you dive into architecture. In QuickBite's case, we have three distinct human actors (customers, restaurants, delivery partners) and one external service (payments). Missing an actor at this stage means missing features later.</p>
+                </div>
+            </section>
+
+            <!-- Section 4: Architecture Design -->
+            <section id="architecture">
+                <h2>Architecture Design: The Blueprint</h2>
+                <p>This is where we get into the "how" — like showing how rooms connect in a house blueprint. The architecture section reveals the technical structure and shows how components communicate. It's the section that developers refer to most often during implementation.</p>
+
+                <canvas id="architectureCanvas" width="600" height="400"></canvas>
+
+                <p>The three-tier pattern above is just one option. Your SDD should explain <em>why</em> you chose a particular architecture — not just <em>what</em> it is. Did you pick microservices for independent scaling? A monolith for simplicity? A serverless approach for cost? Document the reasoning so the next person understands the tradeoffs.</p>
+
+                <div class="card card-info">
+                    <h4>📐 Architecture Decisions to Document</h4>
+                    <ul>
+                        <li><strong>Pattern choice:</strong> Monolith, microservices, serverless, or hybrid — and why</li>
+                        <li><strong>Communication style:</strong> REST, GraphQL, gRPC, message queues</li>
+                        <li><strong>Technology stack:</strong> Languages, frameworks, databases, cloud providers</li>
+                        <li><strong>Deployment model:</strong> Containers, VMs, edge functions</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 5: Data Design -->
+            <section id="data-design">
+                <h2>Data Design: The Information Highway</h2>
+                <p>Data is the lifeblood of your application. This section is like designing the circulatory system — how information flows, where it's stored, and how it's structured. Get the data model right and everything else becomes easier; get it wrong and you'll be refactoring for months.</p>
+
+                <div class="mermaid">
+                erDiagram
+                    USER ||--o{ ORDER : places
+                    USER {
+                        int user_id PK
+                        string name
+                        string email
+                        string phone
+                        datetime created_at
+                    }
+                    ORDER ||--|{ ORDER_ITEM : contains
+                    ORDER {
+                        int order_id PK
+                        int user_id FK
+                        int restaurant_id FK
+                        decimal total_amount
+                        string status
+                        datetime order_time
+                    }
+                    RESTAURANT ||--o{ ORDER : receives
+                    RESTAURANT {
+                        int restaurant_id PK
+                        string name
+                        string address
+                        float rating
+                        boolean is_active
+                    }
+                    ORDER_ITEM {
+                        int item_id PK
+                        int order_id FK
+                        int menu_item_id FK
+                        int quantity
+                        decimal price
+                    }
+                </div>
+
+                <p>Entity-relationship diagrams like this are the bread and butter of data design. They show relationships at a glance: a user <em>places</em> many orders, each order <em>contains</em> many items, and a restaurant <em>receives</em> many orders. These verbs on the relationship lines are surprisingly important — they reveal the business rules hiding inside your schema.</p>
+
+                <div class="card card-warning">
+                    <h4>⚠️ Don't Forget Non-Relational Data</h4>
+                    <p>Not everything belongs in a relational database. Real-time delivery coordinates might live in Redis. User session tokens might sit in an in-memory store. Menu images go in object storage. Your data design should account for <em>all</em> your data — not just the tables.</p>
+                </div>
+            </section>
+
+            <!-- Section 6: Interface Design -->
+            <section id="interface-design">
+                <h2>Interface Design: The User's Window</h2>
+                <p>Interfaces are like doors and windows in a building — they're how users and systems interact with your software. This section covers three kinds of interfaces: the <strong>API layer</strong> that other services call, the <strong>user interface</strong> that humans see, and the <strong>external integrations</strong> that connect you to the outside world.</p>
+
+                <canvas id="interfaceCanvas" width="600" height="350"></canvas>
+
+                <p>Notice how the API layer acts as the gatekeeper between the mobile app and external services. Every request flows through it, which means it's also your best place to enforce authentication, rate limiting, and logging. Good interface design makes these cross-cutting concerns easy to add.</p>
+
+                <div class="card card-info">
+                    <h4>🔌 Key Interface Questions</h4>
+                    <ul>
+                        <li>What endpoints does your API expose, and what HTTP methods do they use?</li>
+                        <li>How will you version your API when breaking changes are inevitable?</li>
+                        <li>What does the error response format look like?</li>
+                        <li>Which third-party services do you depend on, and what are your fallback plans?</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 7: Living Document -->
+            <section id="living-document">
+                <h2>The Living Document Philosophy</h2>
+                <p>A design document is like a garden — it needs regular care and updates. As your project grows and changes, so should your documentation. It's not a museum piece to be admired from afar, but a working tool that gets dirty in the trenches with you.</p>
+
+                <div class="mermaid">
+                graph LR
+                    A[Initial Design] --> B[Development Insights]
+                    B --> C[Update Document]
+                    C --> D[New Requirements]
+                    D --> E[Refine Design]
+                    E --> B
+                </div>
+
+                <p>The loop above is intentional. Great teams treat the SDD as a living feedback cycle: design informs code, code reveals gaps in the design, and the updated design guides the next sprint. If your document is more than two sprints out of date, it's a liability, not an asset.</p>
+
+                <div class="card card-accent">
+                    <h4>🍽️ The Restaurant Menu Approach</h4>
+                    <p>Make your design document like a good restaurant menu — organized, easy to scan, with enough detail to make informed decisions, but not so much that it overwhelms. Each section should serve a purpose, just like each menu category helps diners find what they're looking for.</p>
+                </div>
+            </section>
+
+            <!-- Section 8: Tying It All Together -->
+            <section id="next">
+                <h2>Tying It All Together</h2>
+                <p>You've now seen every major organ in the SDD anatomy. The executive summary hooks the reader, the system overview draws the map, the architecture reveals the structure, the data design models the information, and the interface design connects it all to the outside world. Security, performance, and testing (which we'll cover in later lessons) ensure the whole system is resilient.</p>
+
+                <div class="card card-accent text-center" style="padding: var(--spacing-xl);">
+                    <h3>💡 Key Takeaway</h3>
+                    <p>Each section of an SDD serves a different audience. Executives read the summary. Architects study the architecture diagram. Database engineers focus on data design. By giving each audience their own section, you ensure the document is useful to <em>everyone</em> — not just the person who wrote it.</p>
+                </div>
+
+                <p>In the next lesson, we'll zoom in on the <strong>system overview</strong> — how to capture the essence of your project without drowning readers in technical jargon.</p>
+            </section>
+
+            <!-- Lesson Navigation -->
+            <nav class="lesson-nav" aria-label="Lesson Navigation">
+                <a href="software_design_intro.html" class="prev-lesson">← Previous: Lesson 1 — Introduction</a>
+                <a href="index.html" class="home-link">🏠 Course Home</a>
+                <a href="system_overview_guide.html" class="next-lesson">Next: Lesson 3 — System Overviews →</a>
+            </nav>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>&copy; 2026 Ray De La Paz / PetalFawnStudio. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="https://rays-home.netlify.app/">Ray's House of Fun</a>
+            <a href="https://rays-home.netlify.app/contact">Contact</a>
+            <a href="#" id="print-button">Print Page</a>
+        </div>
+        <p><small>Press <kbd>?</kbd> for keyboard shortcuts</small></p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/clipboard.js"></script>
+    <script src="js/course-enhancements.js"></script>
+
+    <!-- Theme-aware Canvas Drawing -->
     <script>
-    const elevatorCanvas = document.getElementById('elevatorCanvas');
-    const ectx = elevatorCanvas.getContext('2d');
-    
-    // Background
-    ectx.fillStyle = '#f0f0f0';
-    ectx.fillRect(0, 0, 600, 300);
-    
-    // Elevator
-    ectx.fillStyle = '#ddd';
-    ectx.fillRect(200, 50, 200, 200);
-    
-    // Elevator doors
-    ectx.strokeStyle = '#999';
-    ectx.lineWidth = 2;
-    ectx.moveTo(300, 50);
-    ectx.lineTo(300, 250);
-    ectx.stroke();
-    
-    // People
-    ectx.fillStyle = '#4a90e2';
-    ectx.beginPath();
-    ectx.arc(250, 150, 20, 0, 2 * Math.PI);
-    ectx.fill();
-    
-    ectx.fillStyle = '#e74c3c';
-    ectx.beginPath();
-    ectx.arc(350, 150, 20, 0, 2 * Math.PI);
-    ectx.fill();
-    
-    // Speech bubble
-    ectx.fillStyle = '#fff';
-    ectx.beginPath();
-    ectx.moveTo(270, 100);
-    ectx.lineTo(380, 100);
-    ectx.lineTo(380, 70);
-    ectx.lineTo(290, 70);
-    ectx.lineTo(280, 80);
-    ectx.closePath();
-    ectx.fill();
-    ectx.stroke();
-    
-    ectx.fillStyle = '#333';
-    ectx.font = '12px Arial';
-    ectx.fillText('30 seconds to', 295, 85);
-    ectx.fillText('explain everything!', 285, 97);
-    
-    // Labels
-    ectx.font = '14px Arial';
-    ectx.fillText('You', 235, 190);
-    ectx.fillText('CEO', 335, 190);
-    
-    // Floor indicator
-    for(let i = 0; i < 5; i++) {
-        ectx.fillStyle = i === 2 ? '#4a90e2' : '#ccc';
-        ectx.beginPath();
-        ectx.arc(450, 70 + i * 30, 8, 0, 2 * Math.PI);
-        ectx.fill();
-    }
+    // ── Elevator Canvas ──────────────────────────────────────────
+    // The 30-second elevator pitch scene
+    window.registerCanvas('elevatorCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Elevator shaft background
+        ctx.fillStyle = C.card;
+        ctx.fillRect(w*0.25, h*0.1, w*0.5, h*0.7);
+        ctx.strokeStyle = C.border;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(w*0.25, h*0.1, w*0.5, h*0.7);
+
+        // Elevator doors (center split)
+        ctx.strokeStyle = C.border;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(w/2, h*0.1);
+        ctx.lineTo(w/2, h*0.8);
+        ctx.stroke();
+
+        // Door handles
+        ctx.fillStyle = C.accent3;
+        ctx.fillRect(w/2 - 8, h*0.44, 5, 12);
+        ctx.fillRect(w/2 + 3, h*0.44, 5, 12);
+
+        // Person 1 — "You" (left side)
+        var youX = w*0.37;
+        var personY = h*0.55;
+        ctx.fillStyle = C.accent1;
+        ctx.beginPath();
+        ctx.arc(youX, personY - 15, 18, 0, 2 * Math.PI);
+        ctx.fill();
+        // Head
+        ctx.fillStyle = C.card;
+        ctx.beginPath();
+        ctx.arc(youX, personY - 25, 8, 0, 2 * Math.PI);
+        ctx.fill();
+        // Body
+        ctx.fillStyle = C.accent1;
+        ctx.fillRect(youX - 7, personY + 3, 14, 16);
+
+        // Person 2 — "CEO" (right side)
+        var ceoX = w*0.63;
+        ctx.fillStyle = C.danger;
+        ctx.beginPath();
+        ctx.arc(ceoX, personY - 15, 18, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = C.card;
+        ctx.beginPath();
+        ctx.arc(ceoX, personY - 25, 8, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = C.danger;
+        ctx.fillRect(ceoX - 7, personY + 3, 14, 16);
+
+        // Labels
+        ctx.fillStyle = C.text;
+        ctx.font = '13px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('You', youX, personY + 35);
+        ctx.fillText('CEO', ceoX, personY + 35);
+
+        // Speech bubble
+        ctx.fillStyle = C.card;
+        ctx.strokeStyle = C.border;
+        ctx.lineWidth = 1.5;
+        var bx = w/2, by = h*0.22;
+        var bw = 160, bh = 36;
+        ctx.beginPath();
+        ctx.moveTo(bx - bw/2 + 8, by - bh/2);
+        ctx.lineTo(bx + bw/2 - 8, by - bh/2);
+        ctx.quadraticCurveTo(bx + bw/2, by - bh/2, bx + bw/2, by - bh/2 + 8);
+        ctx.lineTo(bx + bw/2, by + bh/2 - 8);
+        ctx.quadraticCurveTo(bx + bw/2, by + bh/2, bx + bw/2 - 8, by + bh/2);
+        ctx.lineTo(bx - 5, by + bh/2);
+        ctx.lineTo(bx - 10, by + bh/2 + 10);
+        ctx.lineTo(bx - 15, by + bh/2);
+        ctx.lineTo(bx - bw/2 + 8, by + bh/2);
+        ctx.quadraticCurveTo(bx - bw/2, by + bh/2, bx - bw/2, by + bh/2 - 8);
+        ctx.lineTo(bx - bw/2, by - bh/2 + 8);
+        ctx.quadraticCurveTo(bx - bw/2, by - bh/2, bx - bw/2 + 8, by - bh/2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = C.text;
+        ctx.font = '12px Arial';
+        ctx.fillText('30 seconds to explain', bx, by - 2);
+        ctx.fillText('everything!', bx, by + 12);
+
+        // Floor indicator (right side)
+        for (var i = 0; i < 5; i++) {
+            ctx.fillStyle = (i === 2) ? C.accent1 : C.muted;
+            ctx.beginPath();
+            ctx.arc(w*0.82, h*0.2 + i * 28, 7, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+        ctx.fillStyle = C.textLight;
+        ctx.font = '11px Arial';
+        ctx.fillText('Floor', w*0.82, h*0.2 + 5 * 28);
+
+        ctx.textAlign = 'start';
+    });
+
+    // ── Architecture Canvas ──────────────────────────────────────
+    // 3-Tier architecture diagram
+    window.registerCanvas('architectureCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('3-Tier Architecture Example', w/2, 30);
+
+        var boxW = w * 0.55;
+        var boxH = 75;
+        var startX = (w - boxW) / 2;
+        var gap = 30;
+        var radius = 10;
+
+        var tiers = [
+            { y: 55,            color: C.accent1,  label: 'Presentation Layer',   detail: 'React Web App  |  Mobile App  |  API Gateway' },
+            { y: 55 + boxH + gap, color: C.accent2,  label: 'Business Logic Layer', detail: 'Order Service  |  User Service  |  Payment Service' },
+            { y: 55 + 2*(boxH + gap), color: C.danger, label: 'Data Layer',           detail: 'PostgreSQL  |  Redis Cache  |  S3 Storage' }
+        ];
+
+        tiers.forEach(function(t) {
+            // Rounded rect
+            ctx.fillStyle = t.color;
+            ctx.beginPath();
+            ctx.moveTo(startX + radius, t.y);
+            ctx.lineTo(startX + boxW - radius, t.y);
+            ctx.quadraticCurveTo(startX + boxW, t.y, startX + boxW, t.y + radius);
+            ctx.lineTo(startX + boxW, t.y + boxH - radius);
+            ctx.quadraticCurveTo(startX + boxW, t.y + boxH, startX + boxW - radius, t.y + boxH);
+            ctx.lineTo(startX + radius, t.y + boxH);
+            ctx.quadraticCurveTo(startX, t.y + boxH, startX, t.y + boxH - radius);
+            ctx.lineTo(startX, t.y + radius);
+            ctx.quadraticCurveTo(startX, t.y, startX + radius, t.y);
+            ctx.closePath();
+            ctx.fill();
+
+            // Text
+            ctx.fillStyle = C.card;
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(t.label, w/2, t.y + 30);
+            ctx.font = '12px Arial';
+            ctx.fillText(t.detail, w/2, t.y + 52);
+        });
+
+        // Arrows between tiers
+        ctx.strokeStyle = C.text;
+        ctx.lineWidth = 2;
+        for (var i = 0; i < tiers.length - 1; i++) {
+            var fromY = tiers[i].y + boxH;
+            var toY = tiers[i + 1].y;
+            var midY = (fromY + toY) / 2;
+            // Shaft
+            ctx.beginPath();
+            ctx.moveTo(w/2, fromY + 4);
+            ctx.lineTo(w/2, toY - 4);
+            ctx.stroke();
+            // Arrowhead
+            ctx.beginPath();
+            ctx.moveTo(w/2, toY - 4);
+            ctx.lineTo(w/2 - 6, toY - 12);
+            ctx.moveTo(w/2, toY - 4);
+            ctx.lineTo(w/2 + 6, toY - 12);
+            ctx.stroke();
+        }
+
+        // Labels on side
+        ctx.fillStyle = C.textLight;
+        ctx.font = '11px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText('HTTP / WebSocket', startX + boxW + 12, tiers[0].y + boxH + gap/2 + 4);
+        ctx.fillText('SQL / Cache / Blob', startX + boxW + 12, tiers[1].y + boxH + gap/2 + 4);
+
+        ctx.textAlign = 'start';
+    });
+
+    // ── Interface Canvas ─────────────────────────────────────────
+    // Mobile app → API layer → external services
+    window.registerCanvas('interfaceCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // ── Mobile phone ──
+        var phoneX = w*0.08, phoneY = h*0.1, phoneW = w*0.22, phoneH = h*0.7;
+        // Phone body
+        ctx.fillStyle = C.text;
+        ctx.beginPath();
+        ctx.moveTo(phoneX + 10, phoneY);
+        ctx.lineTo(phoneX + phoneW - 10, phoneY);
+        ctx.quadraticCurveTo(phoneX + phoneW, phoneY, phoneX + phoneW, phoneY + 10);
+        ctx.lineTo(phoneX + phoneW, phoneY + phoneH - 10);
+        ctx.quadraticCurveTo(phoneX + phoneW, phoneY + phoneH, phoneX + phoneW - 10, phoneY + phoneH);
+        ctx.lineTo(phoneX + 10, phoneY + phoneH);
+        ctx.quadraticCurveTo(phoneX, phoneY + phoneH, phoneX, phoneY + phoneH - 10);
+        ctx.lineTo(phoneX, phoneY + 10);
+        ctx.quadraticCurveTo(phoneX, phoneY, phoneX + 10, phoneY);
+        ctx.closePath();
+        ctx.fill();
+
+        // Screen
+        ctx.fillStyle = C.card;
+        ctx.fillRect(phoneX + 8, phoneY + 30, phoneW - 16, phoneH - 55);
+
+        // Screen buttons
+        var btnColors = [C.accent1, C.accent2, C.accent4];
+        var btnLabels = ['Browse', 'Order', 'Track'];
+        for (var i = 0; i < 3; i++) {
+            var btnY = phoneY + 50 + i * 52;
+            ctx.fillStyle = btnColors[i];
+            ctx.fillRect(phoneX + 18, btnY, phoneW - 36, 38);
+            ctx.fillStyle = C.card;
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(btnLabels[i], phoneX + phoneW/2, btnY + 24);
+        }
+
+        // ── API box (center) ──
+        var apiX = w*0.38, apiY = h*0.2, apiW = w*0.18, apiH = h*0.55;
+        ctx.fillStyle = C.accent3;
+        ctx.fillRect(apiX, apiY, apiW, apiH);
+        ctx.fillStyle = C.card;
+        ctx.font = 'bold 13px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('REST API', apiX + apiW/2, apiY + 25);
+
+        ctx.font = '10px Arial';
+        var endpoints = ['GET /orders', 'POST /orders', 'PUT /orders/:id', 'DELETE /orders/:id'];
+        endpoints.forEach(function(ep, idx) {
+            ctx.fillText(ep, apiX + apiW/2, apiY + 50 + idx * 20);
+        });
+
+        // ── External service boxes (right) ──
+        var svcX = w*0.64, svcW = w*0.28;
+        var services = [
+            { y: h*0.12, label: 'Payment Gateway', icon: '💳', color: C.accent1 },
+            { y: h*0.38, label: 'Maps Service',    icon: '🗺️', color: C.accent2 },
+            { y: h*0.64, label: 'SMS Service',     icon: '📱', color: C.accent4 }
+        ];
+        services.forEach(function(svc) {
+            ctx.fillStyle = svc.color;
+            ctx.globalAlpha = 0.15;
+            ctx.fillRect(svcX, svc.y, svcW, h*0.2);
+            ctx.globalAlpha = 1.0;
+            ctx.strokeStyle = svc.color;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(svcX, svc.y, svcW, h*0.2);
+            ctx.fillStyle = C.text;
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(svc.icon + ' ' + svc.label, svcX + svcW/2, svc.y + h*0.12);
+        });
+
+        // ── Connecting lines ──
+        ctx.strokeStyle = C.border;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+
+        // Phone → API
+        ctx.beginPath();
+        ctx.moveTo(phoneX + phoneW, phoneY + phoneH/2);
+        ctx.lineTo(apiX, apiY + apiH/2);
+        ctx.stroke();
+
+        // API → Services
+        var apiRight = apiX + apiW;
+        services.forEach(function(svc) {
+            ctx.beginPath();
+            ctx.moveTo(apiRight, apiY + apiH/2);
+            ctx.lineTo(svcX, svc.y + h*0.1);
+            ctx.stroke();
+        });
+        ctx.setLineDash([]);
+
+        // Column labels
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 13px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Mobile App', phoneX + phoneW/2, h*0.95);
+        ctx.fillText('API Layer', apiX + apiW/2, h*0.95);
+        ctx.fillText('External Services', svcX + svcW/2, h*0.95);
+
+        ctx.textAlign = 'start';
+    });
     </script>
-    
-    <h3>Real-World Example: Food Delivery App</h3>
-    
-    <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h4>Executive Summary</h4>
-        <p><strong>Project:</strong> QuickBite - Food Delivery Platform</p>
-        <p><strong>Goal:</strong> Connect hungry customers with local restaurants through a seamless mobile experience</p>
-        <p><strong>Key Features:</strong> Real-time tracking, AI-powered recommendations, 30-minute delivery guarantee</p>
-        <p><strong>Success Metrics:</strong> 100,000 active users in 6 months, 15% month-over-month growth</p>
-    </div>
-    
-    <h2>System Overview: The Map of Your Kingdom</h2>
-    
-    <p>Think of this section as a map showing all the territories in your software kingdom. It answers: What are we building? Who will use it? How does it fit into the bigger picture?</p>
-    
-    <div class="mermaid">
-    graph LR
-        subgraph "External World"
-            U[Users]
-            R[Restaurants]
-            D[Delivery Partners]
-            P[Payment Systems]
-        end
-        
-        subgraph "Our System"
-            A[QuickBite Platform]
-            A1[Mobile App]
-            A2[Web Portal]
-            A3[Admin Dashboard]
-        end
-        
-        U --> A1
-        R --> A2
-        D --> A1
-        A --> P
-        
-        style A fill:#90EE90
-    </div>
-    
-    <h2>Architecture Design: The Blueprint</h2>
-    
-    <p>This is where we get into the "how" - like showing how rooms connect in a house blueprint. It reveals the technical structure and how components communicate.</p>
-    
-    <canvas id="architectureCanvas" width="600" height="400"></canvas>
-    
-    <script>
-    const archCanvas = document.getElementById('architectureCanvas');
-    const actx = archCanvas.getContext('2d');
-    
-    // Background
-    actx.fillStyle = '#f9f9f9';
-    actx.fillRect(0, 0, 600, 400);
-    
-    // Title
-    actx.fillStyle = '#333';
-    actx.font = '16px Arial';
-    actx.fillText('3-Tier Architecture Example', 220, 30);
-    
-    // Presentation Layer
-    actx.fillStyle = '#3498db';
-    actx.fillRect(150, 60, 300, 80);
-    actx.fillStyle = '#fff';
-    actx.font = '14px Arial';
-    actx.fillText('Presentation Layer', 250, 90);
-    actx.font = '12px Arial';
-    actx.fillText('React Web App | Mobile App | API Gateway', 200, 115);
-    
-    // Business Logic Layer
-    actx.fillStyle = '#2ecc71';
-    actx.fillRect(150, 170, 300, 80);
-    actx.fillStyle = '#fff';
-    actx.font = '14px Arial';
-    actx.fillText('Business Logic Layer', 245, 200);
-    actx.font = '12px Arial';
-    actx.fillText('Order Service | User Service | Payment Service', 195, 225);
-    
-    // Data Layer
-    actx.fillStyle = '#e74c3c';
-    actx.fillRect(150, 280, 300, 80);
-    actx.fillStyle = '#fff';
-    actx.font = '14px Arial';
-    actx.fillText('Data Layer', 270, 310);
-    actx.font = '12px Arial';
-    actx.fillText('PostgreSQL | Redis Cache | S3 Storage', 210, 335);
-    
-    // Arrows
-    actx.strokeStyle = '#666';
-    actx.lineWidth = 2;
-    
-    // Arrow 1
-    actx.beginPath();
-    actx.moveTo(300, 140);
-    actx.lineTo(300, 170);
-    actx.lineTo(295, 165);
-    actx.moveTo(300, 170);
-    actx.lineTo(305, 165);
-    actx.stroke();
-    
-    // Arrow 2
-    actx.beginPath();
-    actx.moveTo(300, 250);
-    actx.lineTo(300, 280);
-    actx.lineTo(295, 275);
-    actx.moveTo(300, 280);
-    actx.lineTo(305, 275);
-    actx.stroke();
-    </script>
-    
-    <h2>Data Design: The Information Highway</h2>
-    
-    <p>Data is the lifeblood of your application. This section is like designing the circulatory system - how information flows, where it's stored, and how it's structured.</p>
-    
-    <div class="mermaid">
-    erDiagram
-        USER ||--o{ ORDER : places
-        USER {
-            int user_id PK
-            string name
-            string email
-            string phone
-            datetime created_at
-        }
-        ORDER ||--|{ ORDER_ITEM : contains
-        ORDER {
-            int order_id PK
-            int user_id FK
-            int restaurant_id FK
-            decimal total_amount
-            string status
-            datetime order_time
-        }
-        RESTAURANT ||--o{ ORDER : receives
-        RESTAURANT {
-            int restaurant_id PK
-            string name
-            string address
-            float rating
-            boolean is_active
-        }
-        ORDER_ITEM {
-            int item_id PK
-            int order_id FK
-            int menu_item_id FK
-            int quantity
-            decimal price
-        }
-    </div>
-    
-    <h2>Interface Design: The User's Window</h2>
-    
-    <p>Interfaces are like doors and windows in a building - they're how users interact with your system. This includes APIs, user interfaces, and system integrations.</p>
-    
-    <canvas id="interfaceCanvas" width="600" height="350"></canvas>
-    
-    <script>
-    const intCanvas = document.getElementById('interfaceCanvas');
-    const ictx = intCanvas.getContext('2d');
-    
-    // Background
-    ictx.fillStyle = '#f5f5f5';
-    ictx.fillRect(0, 0, 600, 350);
-    
-    // Mobile Interface
-    ictx.fillStyle = '#333';
-    ictx.fillRect(50, 50, 150, 250);
-    ictx.fillStyle = '#fff';
-    ictx.fillRect(60, 80, 130, 200);
-    ictx.fillStyle = '#4CAF50';
-    ictx.fillRect(70, 100, 110, 40);
-    ictx.fillStyle = '#2196F3';
-    ictx.fillRect(70, 150, 110, 40);
-    ictx.fillStyle = '#FF9800';
-    ictx.fillRect(70, 200, 110, 40);
-    
-    // API Box
-    ictx.fillStyle = '#9C27B0';
-    ictx.fillRect(250, 100, 100, 150);
-    ictx.fillStyle = '#fff';
-    ictx.font = '14px Arial';
-    ictx.fillText('REST API', 270, 130);
-    ictx.font = '10px Arial';
-    ictx.fillText('GET /orders', 260, 160);
-    ictx.fillText('POST /orders', 260, 180);
-    ictx.fillText('PUT /orders/:id', 260, 200);
-    ictx.fillText('DELETE /orders/:id', 255, 220);
-    
-    // External Services
-    ictx.fillStyle = '#607D8B';
-    ictx.fillRect(400, 50, 150, 60);
-    ictx.fillRect(400, 130, 150, 60);
-    ictx.fillRect(400, 210, 150, 60);
-    
-    ictx.fillStyle = '#fff';
-    ictx.font = '12px Arial';
-    ictx.fillText('Payment Gateway', 430, 85);
-    ictx.fillText('Maps Service', 440, 165);
-    ictx.fillText('SMS Service', 445, 245);
-    
-    // Connecting lines
-    ictx.strokeStyle = '#666';
-    ictx.setLineDash([5, 5]);
-    ictx.beginPath();
-    ictx.moveTo(200, 175);
-    ictx.lineTo(250, 175);
-    ictx.moveTo(350, 175);
-    ictx.lineTo(400, 80);
-    ictx.moveTo(350, 175);
-    ictx.lineTo(400, 160);
-    ictx.moveTo(350, 175);
-    ictx.lineTo(400, 240);
-    ictx.stroke();
-    
-    ictx.setLineDash([]);
-    ictx.fillStyle = '#333';
-    ictx.font = '14px Arial';
-    ictx.fillText('Mobile App', 90, 320);
-    ictx.fillText('API Layer', 270, 320);
-    ictx.fillText('External Services', 430, 320);
-    </script>
-    
-    <h2>The Living Document Philosophy</h2>
-    
-    <p>Remember: A design document is like a garden - it needs regular care and updates. As your project grows and changes, so should your documentation. It's not a museum piece to be admired from afar, but a working tool that gets dirty in the trenches with you.</p>
-    
-    <div class="mermaid">
-    graph LR
-        A[Initial Design] --> B[Development Insights]
-        B --> C[Update Document]
-        C --> D[New Requirements]
-        D --> E[Refine Design]
-        E --> B
-        
-        style C fill:#90EE90
-        style E fill:#90EE90
-    </div>
-    
-    <h3>Pro Tip: The Restaurant Menu Approach</h3>
-    
-    <p>Make your design document like a good restaurant menu - organized, easy to scan, with enough detail to make informed decisions, but not so much that it overwhelms. Each section should serve a purpose, just like each menu category helps diners find what they're looking for.</p>
-    
-    <p><em>Next, we'll dive deep into writing effective system overviews that capture the essence of your project without drowning readers in technical jargon.</em></p>
 </body>
 </html>

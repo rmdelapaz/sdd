@@ -3,496 +3,721 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Design and Modeling</title>
-    <link rel="stylesheet" href="/styles/main.css">
-    <link rel="icon" href="/favicon.png">
+    <meta name="description" content="Master data design and modeling — from entity-relationship diagrams and normalization to choosing the right database and planning safe migrations.">
+    <meta name="author" content="Ray De La Paz">
+    <title>Data Design and Modeling - SDD Tutorial</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Mermaid — theme-aware via course-enhancements.js -->
     <script type="module">
-      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-      mermaid.initialize({ startOnLoad: true });
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        window.__mermaid = mermaid;
+        const isDark = localStorage.getItem('theme') === 'dark' ||
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: isDark ? 'dark' : 'default',
+            themeVariables: isDark
+                ? { primaryColor: '#334155', primaryTextColor: '#e2e8f0', primaryBorderColor: '#6366f1', lineColor: '#94a3b8', secondaryColor: '#1e293b', tertiaryColor: '#0f172a' }
+                : { primaryColor: '#eff6ff', primaryTextColor: '#1e293b', primaryBorderColor: '#3b82f6', lineColor: '#64748b', secondaryColor: '#f8fafc', tertiaryColor: '#f1f5f9' }
+        });
     </script>
 </head>
 <body>
-    <h1>Data Design and Modeling</h1>
-    
-    <p>If software architecture is the skeleton of your system, then data design is its lifeblood. Just as a doctor needs to understand how blood flows through the body, developers need to understand how data flows through their applications.</p>
-    
-    <h2>The Library Catalog Metaphor</h2>
-    
-    <p>Think of your database like a well-organized library. Books (data) are arranged in sections (tables), with catalog cards (indexes) helping you find what you need quickly. Without proper organization, you'd spend hours searching for a single book!</p>
-    
-    <canvas id="libraryCanvas" width="600" height="300"></canvas>
-    
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
+
+    <div class="progress-indicator" role="progressbar" aria-label="Page scroll progress">
+        <div class="progress-bar"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">SDD Tutorial</a>
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-expanded="false" aria-controls="nav-links">☰</button>
+            <div class="nav-links" id="nav-links">
+                <a href="index.html">Home</a>
+                <a href="index.html#modules">All Lessons</a>
+                <span class="nav-divider"></span>
+                <a href="https://rays-home.netlify.app/">Ray's House of Fun</a>
+                <a href="https://rays-home.netlify.app/contact">Contact</a>
+                <button id="theme-toggle" aria-label="Toggle dark/light mode">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#modules">Core</a></li>
+            <li aria-current="page">Lesson 5: Data Design &amp; Modeling</li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <div class="container">
+            <header>
+                <h1>🗄️ Lesson 5: Data Design and Modeling</h1>
+                <p class="lead">If software architecture is the skeleton of your system, then data design is its lifeblood. Just as a doctor needs to understand how blood flows through the body, developers need to understand how data flows through their applications. Get data design wrong and every feature you build on top of it will feel like swimming upstream.</p>
+
+                <div class="card card-info">
+                    <h2>🎯 Learning Objectives</h2>
+                    <p>By the end of this lesson, you will be able to:</p>
+                    <ul>
+                        <li>Explain how databases organize data using the library catalog metaphor</li>
+                        <li>Read and create Entity-Relationship (ER) diagrams for real-world domains</li>
+                        <li>Apply the three normal forms to eliminate data redundancy</li>
+                        <li>Trace data flows through a system using Data Flow Diagrams (DFDs)</li>
+                        <li>Choose the right database type for a given use case</li>
+                        <li>Plan a safe, validated data migration strategy</li>
+                    </ul>
+                    <p><strong>Estimated Time:</strong> 30 minutes</p>
+                </div>
+            </header>
+
+            <!-- Table of Contents -->
+            <details class="card toc-card" open>
+                <summary>
+                    <h2 style="display:inline; margin:0;">📑 In This Lesson</h2>
+                </summary>
+                <nav aria-label="Table of Contents">
+                    <ol>
+                        <li><a href="#library" class="toc-link">The Library Catalog Metaphor</a></li>
+                        <li><a href="#er-diagrams" class="toc-link">Entity-Relationship Diagrams</a></li>
+                        <li><a href="#normalization" class="toc-link">Normalization: The Marie Kondo of Databases</a></li>
+                        <li><a href="#data-flow" class="toc-link">Data Flow Diagrams</a></li>
+                        <li><a href="#choosing-db" class="toc-link">Choosing the Right Database</a></li>
+                        <li><a href="#migration" class="toc-link">Data Migration Strategies</a></li>
+                        <li><a href="#best-practices" class="toc-link">Best Practices</a></li>
+                        <li><a href="#next" class="toc-link">Real-World Example &amp; Next Steps</a></li>
+                    </ol>
+                </nav>
+            </details>
+
+            <!-- Section 1: Library Metaphor -->
+            <section id="library">
+                <h2>The Library Catalog Metaphor</h2>
+                <p>Think of your database like a well-organized library. Books (data) are arranged in sections (tables), with catalog cards (indexes) helping you find what you need quickly. Without proper organization, you'd spend hours searching for a single book!</p>
+
+                <canvas id="libraryCanvas" width="600" height="300"></canvas>
+
+                <div class="card card-accent">
+                    <h4>💡 Why Organization Matters</h4>
+                    <p>A library with 10 books doesn't need a card catalog. A library with 10 million books can't function without one. The same is true for databases — organization is cheap up front and invaluable at scale. If your queries are slow, the first question to ask isn't "do we need a faster server?" but "do we need a better index?"</p>
+                </div>
+            </section>
+
+            <!-- Section 2: ER Diagrams -->
+            <section id="er-diagrams">
+                <h2>Entity-Relationship Diagrams: The Family Tree of Data</h2>
+                <p>ER diagrams show how your data entities relate to each other, like a family tree shows relationships between people. Each box is an entity (a "thing" you store), each line is a relationship, and the symbols at the ends of the lines tell you the cardinality — how many of one thing connect to another.</p>
+
+                <p>Let's build one for a social media platform:</p>
+
+                <div class="mermaid">
+                erDiagram
+                    USER ||--o{ POST : creates
+                    USER ||--o{ COMMENT : writes
+                    USER ||--o{ FRIEND_REQUEST : sends
+                    USER ||--o{ FRIEND_REQUEST : receives
+                    POST ||--o{ COMMENT : has
+                    POST ||--o{ LIKE : receives
+                    USER ||--o{ LIKE : gives
+
+                    USER {
+                        int user_id PK
+                        string username UK
+                        string email UK
+                        string password_hash
+                        datetime created_at
+                        datetime last_login
+                        boolean is_active
+                    }
+
+                    POST {
+                        int post_id PK
+                        int user_id FK
+                        text content
+                        string image_url
+                        datetime posted_at
+                        int like_count
+                        int comment_count
+                    }
+
+                    COMMENT {
+                        int comment_id PK
+                        int post_id FK
+                        int user_id FK
+                        text content
+                        datetime commented_at
+                    }
+
+                    LIKE {
+                        int like_id PK
+                        int user_id FK
+                        int post_id FK
+                        datetime liked_at
+                    }
+
+                    FRIEND_REQUEST {
+                        int request_id PK
+                        int sender_id FK
+                        int receiver_id FK
+                        string status
+                        datetime sent_at
+                        datetime responded_at
+                    }
+                </div>
+
+                <div class="card card-info">
+                    <h4>📖 Reading the Crow's Foot Notation</h4>
+                    <p>The symbols at each end of a relationship line tell a story. <code>||</code> means "exactly one," <code>o{</code> means "zero or many." So <code>USER ||--o{ POST</code> reads: "one user creates zero or many posts." Learning to read these symbols is like learning to read musical notation — clumsy at first, fluent with practice.</p>
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ Watch for Denormalized Counters</h4>
+                    <p>Notice <code>like_count</code> and <code>comment_count</code> on the POST entity? These are <strong>denormalized</strong> — you could compute them by counting rows in the LIKE and COMMENT tables, but storing them directly avoids an expensive COUNT query on every page load. This is a deliberate trade-off: faster reads in exchange for extra bookkeeping on writes. Always document <em>why</em> you denormalized.</p>
+                </div>
+            </section>
+
+            <!-- Section 3: Normalization -->
+            <section id="normalization">
+                <h2>Normalization: The Marie Kondo of Databases</h2>
+                <p>Just as Marie Kondo teaches us to organize our homes by keeping only what "sparks joy" and avoiding duplication, database normalization teaches us to organize data efficiently. The goal is a single source of truth for every piece of information.</p>
+
+                <canvas id="normalizationCanvas" width="600" height="400"></canvas>
+
+                <div class="card card-accent">
+                    <h4>💡 The Three Normal Forms (Quick Version)</h4>
+                    <p><strong>1NF — No repeating groups:</strong> Every cell holds a single value. No comma-separated lists stuffed into one column.</p>
+                    <p><strong>2NF — No partial dependencies:</strong> Every non-key column depends on the <em>entire</em> primary key, not just part of it.</p>
+                    <p><strong>3NF — No transitive dependencies:</strong> Non-key columns depend on the key and nothing but the key. If column A determines column B, and B determines column C, then C should live in its own table.</p>
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ When to Stop Normalizing</h4>
+                    <p>Over-normalization is a real pitfall. If every query requires five JOINs, your read performance will suffer and your SQL will be painful to maintain. Normalize until it hurts, then denormalize where you can measure a concrete performance gain — and document every denormalization decision in your SDD.</p>
+                </div>
+            </section>
+
+            <!-- Section 4: Data Flow Diagrams -->
+            <section id="data-flow">
+                <h2>Data Flow Diagrams: Following the River</h2>
+                <p>Data flow diagrams (DFDs) show how information moves through your system, like following a river from its source to the ocean. External entities (the squares) push data in, processes (the circles) transform it, and data stores (the open rectangles) hold it at rest. Let's trace the journey of an online order:</p>
+
+                <div class="mermaid">
+                graph LR
+                    subgraph "External Entities"
+                        Customer[Customer 👤]
+                        PaymentGW[Payment Gateway 💳]
+                        Warehouse[Warehouse 📦]
+                        EmailSvc[Email Service 📧]
+                    end
+
+                    subgraph "Processes"
+                        P1((1. Place Order))
+                        P2((2. Validate Payment))
+                        P3((3. Update Inventory))
+                        P4((4. Send Confirmation))
+                    end
+
+                    subgraph "Data Stores"
+                        D1[(Order DB)]
+                        D2[(Product DB)]
+                        D3[(Customer DB)]
+                    end
+
+                    Customer -->|Order Details| P1
+                    P1 -->|Order Record| D1
+                    P1 -->|Payment Request| P2
+                    P2 -->|Payment Info| PaymentGW
+                    PaymentGW -->|Payment Result| P2
+                    P2 -->|Update Status| D1
+                    P2 -->|Trigger| P3
+                    P3 -->|Check Stock| D2
+                    P3 -->|Update Quantity| D2
+                    P3 -->|Fulfillment Request| Warehouse
+                    P3 -->|Trigger| P4
+                    P4 -->|Get Customer Info| D3
+                    P4 -->|Send Email| EmailSvc
+                </div>
+
+                <div class="card card-info">
+                    <h4>📖 DFD Levels of Detail</h4>
+                    <p>Like the C4 model from Lesson 4, DFDs support progressive zoom. A <strong>Level 0</strong> (context) diagram shows the whole system as a single process. <strong>Level 1</strong> breaks that process into sub-processes (like the diagram above). <strong>Level 2</strong> expands any sub-process that's still complex. Start at Level 0 for stakeholders, zoom in for developers.</p>
+                </div>
+
+                <div class="card card-danger">
+                    <h4>🚫 Don't Mix Data Flow with Control Flow</h4>
+                    <p>A common mistake is drawing DFDs that show <em>when</em> things happen (sequence, conditionals, loops). That's a flowchart, not a DFD. A DFD only shows <em>what</em> data moves <em>where</em>. If you catch yourself writing "if" on a DFD arrow, stop — you've crossed into control flow territory.</p>
+                </div>
+            </section>
+
+            <!-- Section 5: Choosing the Right Database -->
+            <section id="choosing-db">
+                <h2>Choosing the Right Database: The Tool for the Job</h2>
+                <p>Like choosing between a hammer and a screwdriver, different databases serve different purposes. The worst mistake isn't picking the "wrong" database — it's using one database for everything because it's the only one you know.</p>
+
+                <canvas id="databaseTypesCanvas" width="600" height="450"></canvas>
+
+                <div class="card card-success">
+                    <h4>✅ The Decision Framework</h4>
+                    <p><strong>Need ACID compliance and complex queries?</strong> → Relational (PostgreSQL, MySQL). This is the safe default for most applications.</p>
+                    <p><strong>Flexible, nested, or document-shaped data?</strong> → Document (MongoDB, CouchDB). Great for content management and catalogs.</p>
+                    <p><strong>Sub-millisecond key lookups or caching?</strong> → Key-Value (Redis, DynamoDB). Perfect as a complementary store alongside a primary database.</p>
+                    <p><strong>Highly connected data with traversal queries?</strong> → Graph (Neo4j). Social networks, recommendation engines, fraud detection.</p>
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ Polyglot Persistence</h4>
+                    <p>Many production systems use multiple database types — a relational DB for transactional data, Redis for caching and sessions, and maybe Elasticsearch for full-text search. This is called <strong>polyglot persistence</strong>. It's powerful but adds operational complexity. Document each data store, its purpose, and its sync strategy in your SDD.</p>
+                </div>
+            </section>
+
+            <!-- Section 6: Migration -->
+            <section id="migration">
+                <h2>Data Migration: Moving Day for Your Data</h2>
+                <p>Data migration is like moving to a new house — you need to plan carefully, pack properly, and make sure nothing gets lost along the way. The golden rule: never do a big-bang migration on a Friday afternoon.</p>
+
+                <div class="mermaid">
+                graph TD
+                    A[Migration Planning] --> B[Data Analysis]
+                    B --> C[Schema Mapping]
+                    C --> D[Test Migration]
+                    D --> E{Validation OK?}
+                    E -->|No| C
+                    E -->|Yes| F[Production Migration]
+                    F --> G[Post-Migration Validation]
+                    G --> H[Cleanup &amp; Optimization]
+
+                    B --> I[Identify data types]
+                    B --> J[Check constraints]
+                    B --> K[Document relationships]
+
+                    C --> L[Field mapping]
+                    C --> M[Transform rules]
+                    C --> N[Default values]
+                </div>
+
+                <div class="card card-accent">
+                    <h4>💡 Migration Safety Checklist</h4>
+                    <p><strong>Before you start:</strong> Take a full backup. Then verify the backup actually restores. Then take another backup.</p>
+                    <p><strong>During migration:</strong> Run in a staging environment first. Compare row counts, checksums, and sample records between old and new. Automate validation — eyeballing 10 rows out of 10 million proves nothing.</p>
+                    <p><strong>After migration:</strong> Keep the old system read-only for a rollback window (typically 1–2 weeks). Monitor error rates, query performance, and data freshness in the new system before decommissioning the old one.</p>
+                </div>
+            </section>
+
+            <!-- Section 7: Best Practices -->
+            <section id="best-practices">
+                <h2>Best Practices: The Data Commandments</h2>
+
+                <div class="card card-accent">
+                    <h3>📏 The Sacred Rules of Data Design</h3>
+
+                    <p><strong>1. Name Things Clearly:</strong> Use descriptive names. <code>user_email</code> beats <code>ue</code> every time. A good column name tells you what it holds without reading any documentation.</p>
+
+                    <p><strong>2. Be Consistent:</strong> If you use <code>snake_case</code> in one table, don't switch to <code>camelCase</code> in another. Pick a convention, document it, and enforce it in code review.</p>
+
+                    <p><strong>3. Plan for Growth:</strong> That <code>phone_number</code> field? Make it big enough for international numbers with country codes. That <code>INT</code> primary key? Consider whether you'll ever need more than 2.1 billion rows.</p>
+
+                    <p><strong>4. Index Wisely:</strong> Like bookmarks in a book — useful, but too many slow down writes and bloat storage. Index columns you filter, sort, or join on. Profile your actual queries before adding speculative indexes.</p>
+
+                    <p><strong>5. Document Everything:</strong> Future you (and your teammates) will thank present you. Every table, every column, every constraint should have a comment explaining <em>why</em> it exists.</p>
+
+                    <p><strong>6. Think About Deletion:</strong> Soft deletes (a <code>deleted_at</code> timestamp) let you recover mistakes and satisfy audit trails. Hard deletes save space but are permanent. Choose based on your compliance and audit needs.</p>
+
+                    <p><strong>7. Version Your Schema:</strong> Track schema changes with migration files — just like you track code changes with Git. Tools like Flyway, Alembic, or Knex migrations make this painless.</p>
+                </div>
+
+                <div class="card card-danger">
+                    <h4>🚫 The "We'll Fix It Later" Trap</h4>
+                    <p>Schema decisions are the hardest to change after launch. Renaming a column is easy. Splitting a table, migrating millions of rows, and updating every query in the codebase? That's a multi-sprint project. Invest the time to get data design right in the SDD <em>before</em> the first migration file is written.</p>
+                </div>
+            </section>
+
+            <!-- Section 8: Real-World Example & Next -->
+            <section id="next">
+                <h2>Real-World Example: Healthcare System Data Model</h2>
+                <p>Let's apply everything we've covered to a domain where data design has real-world consequences — a healthcare scheduling system. Notice the use of UUIDs instead of auto-incrementing integers (better for distributed systems), encrypted fields for sensitive data, and JSON columns for semi-structured data like contact info and vital signs.</p>
+
+                <div class="mermaid">
+                erDiagram
+                    PATIENT ||--o{ APPOINTMENT : schedules
+                    DOCTOR ||--o{ APPOINTMENT : conducts
+                    APPOINTMENT ||--|| MEDICAL_RECORD : generates
+                    PATIENT ||--o{ MEDICAL_RECORD : has
+                    MEDICAL_RECORD ||--o{ PRESCRIPTION : contains
+                    DOCTOR ||--o{ PRESCRIPTION : writes
+                    PATIENT ||--o{ INSURANCE_CLAIM : submits
+
+                    PATIENT {
+                        uuid patient_id PK
+                        string first_name
+                        string last_name
+                        date birth_date
+                        string ssn_encrypted
+                        json contact_info
+                        timestamp created_at
+                    }
+
+                    DOCTOR {
+                        uuid doctor_id PK
+                        string license_number UK
+                        string specialization
+                        json schedule
+                        boolean is_active
+                    }
+
+                    APPOINTMENT {
+                        uuid appointment_id PK
+                        uuid patient_id FK
+                        uuid doctor_id FK
+                        timestamp scheduled_time
+                        int duration_minutes
+                        string status
+                        text notes
+                    }
+
+                    MEDICAL_RECORD {
+                        uuid record_id PK
+                        uuid patient_id FK
+                        uuid appointment_id FK
+                        text diagnosis
+                        text treatment_plan
+                        json vital_signs
+                        timestamp created_at
+                    }
+                </div>
+
+                <div class="card card-info">
+                    <h4>📖 Design Decisions Worth Documenting</h4>
+                    <p>In a healthcare SDD, you'd call out choices like: why <code>ssn_encrypted</code> uses application-level encryption (HIPAA compliance), why <code>contact_info</code> is JSON rather than separate columns (patients may have multiple phones, emails, and addresses that change frequently), and why <code>APPOINTMENT</code> to <code>MEDICAL_RECORD</code> is one-to-one (business rule: every visit produces exactly one record). These decisions look obvious now but will be mysteries to the next developer if left undocumented.</p>
+                </div>
+
+                <p>In the next lesson, we'll explore <strong>API and interface design</strong> — the doors and windows through which your system communicates with the world. You'll learn how to document endpoints, versioning strategies, authentication flows, and error contracts.</p>
+
+                <div class="card card-accent text-center" style="padding: var(--spacing-xl);">
+                    <h3>💡 Key Takeaway</h3>
+                    <p>Data outlives code. The application that reads your tables today will probably be rewritten in five years, but the data will still be there. Design your schemas for the long haul: name things clearly, normalize until it hurts, document every denormalization, and version every migration.</p>
+                </div>
+            </section>
+
+            <!-- Lesson Navigation -->
+            <nav class="lesson-nav" aria-label="Lesson Navigation">
+                <a href="architecture_diagrams_guide.html" class="prev-lesson">← Previous: Lesson 4 — Architecture Diagrams</a>
+                <a href="index.html" class="home-link">🏠 Course Home</a>
+                <a href="api_interface_design.html" class="next-lesson">Next: Lesson 6 — API &amp; Interface Design →</a>
+            </nav>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>&copy; 2026 Ray De La Paz / PetalFawnStudio. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="https://rays-home.netlify.app/">Ray's House of Fun</a>
+            <a href="https://rays-home.netlify.app/contact">Contact</a>
+            <a href="#" id="print-button">Print Page</a>
+        </div>
+        <p><small>Press <kbd>?</kbd> for keyboard shortcuts</small></p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/clipboard.js"></script>
+    <script src="js/course-enhancements.js"></script>
+
+    <!-- Theme-aware Canvas Drawing -->
     <script>
-    const libraryCanvas = document.getElementById('libraryCanvas');
-    const lctx = libraryCanvas.getContext('2d');
-    
-    // Background
-    lctx.fillStyle = '#faf8f5';
-    lctx.fillRect(0, 0, 600, 300);
-    
-    // Bookshelf sections (tables)
-    const sections = [
-        {x: 50, y: 50, w: 100, h: 200, color: '#8B4513', label: 'Users'},
-        {x: 170, y: 50, w: 100, h: 200, color: '#A0522D', label: 'Orders'},
-        {x: 290, y: 50, w: 100, h: 200, color: '#D2691E', label: 'Products'},
-        {x: 410, y: 50, w: 100, h: 200, color: '#CD853F', label: 'Reviews'}
-    ];
-    
-    sections.forEach(section => {
-        // Shelf
-        lctx.fillStyle = section.color;
-        lctx.fillRect(section.x, section.y, section.w, section.h);
-        
-        // Books (rows)
-        lctx.fillStyle = '#fff';
-        for(let i = 0; i < 4; i++) {
-            lctx.fillRect(section.x + 10, section.y + 10 + i * 45, 80, 35);
-        }
-        
-        // Label
-        lctx.fillStyle = '#333';
-        lctx.font = '12px Arial';
-        lctx.fillText(section.label, section.x + 25, section.y + 220);
+    // ── Library Canvas ───────────────────────────────────────────
+    // Bookshelf sections (tables) with catalog index (indexes) and quick-lookup arrows
+    window.registerCanvas('libraryCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 15px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Your Database as a Library', w / 2, 28);
+
+        // Bookshelf sections
+        var sections = [
+            { label: 'Users',    color: C.accent1 },
+            { label: 'Orders',   color: C.accent2 },
+            { label: 'Products', color: C.accent4 },
+            { label: 'Reviews',  color: C.accent3 }
+        ];
+        var shelfW = 100, shelfH = 160, gap = 20;
+        var totalW = sections.length * shelfW + (sections.length - 1) * gap;
+        var startX = (w - totalW - 100) / 2; // leave room for index card on the right
+
+        sections.forEach(function(sec, i) {
+            var sx = startX + i * (shelfW + gap);
+            var sy = 50;
+
+            // Shelf body
+            ctx.fillStyle = sec.color;
+            ctx.fillRect(sx, sy, shelfW, shelfH);
+
+            // Books (rows) inside
+            ctx.fillStyle = C.card;
+            for (var r = 0; r < 4; r++) {
+                ctx.fillRect(sx + 10, sy + 10 + r * 38, shelfW - 20, 28);
+            }
+
+            // Label
+            ctx.fillStyle = C.text;
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(sec.label, sx + shelfW / 2, sy + shelfH + 18);
+        });
+
+        // Index card
+        var ixX = startX + totalW + 20;
+        var ixY = 80;
+        ctx.fillStyle = C.accent5 || C.highlight;
+        ctx.fillRect(ixX, ixY, 70, 70);
+        ctx.fillStyle = C.card;
+        ctx.font = 'bold 11px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Index', ixX + 35, ixY + 30);
+        ctx.fillText('Cards', ixX + 35, ixY + 46);
+
+        // Dashed arrow from index to Products shelf
+        var prodShelfX = startX + 2 * (shelfW + gap) + shelfW / 2;
+        ctx.strokeStyle = C.accent5 || C.highlight;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(ixX, ixY + 35);
+        ctx.lineTo(prodShelfX + shelfW / 2 + 5, ixY + 35);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Bottom label
+        ctx.fillStyle = C.textLight;
+        ctx.font = '13px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Organized data = Fast retrieval', w / 2, h - 14);
+
+        ctx.textAlign = 'start';
     });
-    
-    // Catalog (indexes)
-    lctx.fillStyle = '#4CAF50';
-    lctx.fillRect(520, 100, 60, 80);
-    lctx.fillStyle = '#fff';
-    lctx.font = '10px Arial';
-    lctx.fillText('Index', 535, 120);
-    lctx.fillText('Cards', 535, 135);
-    
-    // Arrows showing quick lookup
-    lctx.strokeStyle = '#4CAF50';
-    lctx.lineWidth = 2;
-    lctx.setLineDash([5, 5]);
-    lctx.beginPath();
-    lctx.moveTo(520, 140);
-    lctx.lineTo(450, 140);
-    lctx.lineTo(450, 150);
-    lctx.lineTo(350, 150);
-    lctx.stroke();
-    
-    lctx.setLineDash([]);
-    lctx.fillStyle = '#333';
-    lctx.font = '14px Arial';
-    lctx.fillText('Organized data = Fast retrieval', 200, 280);
+
+    // ── Normalization Canvas ─────────────────────────────────────
+    // Before (redundant) vs After (normalized) comparison
+    window.registerCanvas('normalizationCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        var half = w / 2;
+
+        // ── Before side ──
+        ctx.fillStyle = C.danger;
+        ctx.globalAlpha = 0.08;
+        ctx.fillRect(4, 4, half - 8, h - 8);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = C.danger;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(4, 4, half - 8, h - 8);
+
+        ctx.fillStyle = C.danger;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Before: Redundant Data', half / 2, 30);
+
+        // Table header
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 10px monospace';
+        ctx.fillText('Order | Customer | Addr      | Product  | Price', half / 2, 58);
+
+        // Rows
+        ctx.font = '10px monospace';
+        var rows = [
+            '1     | John     | 123 Main  | Laptop   | $999',
+            '2     | John     | 123 Main  | Mouse    | $29',
+            '3     | Jane     | 456 Oak   | Laptop   | $999',
+            '4     | John     | 123 Main  | Keyboard | $79'
+        ];
+        rows.forEach(function(row, i) {
+            ctx.fillStyle = C.text;
+            ctx.fillText(row, half / 2, 80 + i * 20);
+        });
+
+        // Red highlight on redundant customer data
+        ctx.fillStyle = C.danger;
+        ctx.globalAlpha = 0.15;
+        ctx.fillRect(half * 0.18, 68, half * 0.35, 82);
+        ctx.globalAlpha = 1;
+
+        // Problems
+        ctx.fillStyle = C.danger;
+        ctx.font = '11px Arial';
+        ctx.fillText('✗ John\'s address repeated 3×', half / 2, 185);
+        ctx.fillText('✗ "Laptop $999" duplicated', half / 2, 205);
+        ctx.fillText('✗ Update one? Must update all.', half / 2, 225);
+
+        // ── After side ──
+        ctx.fillStyle = C.accent1;
+        ctx.globalAlpha = 0.08;
+        ctx.fillRect(half + 4, 4, half - 8, h - 8);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = C.accent1;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(half + 4, 4, half - 8, h - 8);
+
+        ctx.fillStyle = C.accent1;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('After: Normalized', half + half / 2, 30);
+
+        // Customers mini-table
+        var tblX = half + 16, tblW = half * 0.4 - 8;
+        ctx.strokeStyle = C.border;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(tblX, 50, tblW, 72);
+        ctx.fillStyle = C.accent1;
+        ctx.font = 'bold 11px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Customers', tblX + tblW / 2, 46);
+        ctx.fillStyle = C.text;
+        ctx.font = '10px monospace';
+        ctx.fillText('ID | Name | Addr', tblX + tblW / 2, 68);
+        ctx.fillText('1  | John | 123 Main', tblX + tblW / 2, 86);
+        ctx.fillText('2  | Jane | 456 Oak', tblX + tblW / 2, 104);
+
+        // Products mini-table
+        var tbl2X = half + half * 0.4 + 16;
+        ctx.strokeStyle = C.border;
+        ctx.strokeRect(tbl2X, 50, tblW, 88);
+        ctx.fillStyle = C.accent2;
+        ctx.font = 'bold 11px Arial';
+        ctx.fillText('Products', tbl2X + tblW / 2, 46);
+        ctx.fillStyle = C.text;
+        ctx.font = '10px monospace';
+        ctx.fillText('ID | Name     | Price', tbl2X + tblW / 2, 68);
+        ctx.fillText('1  | Laptop   | $999', tbl2X + tblW / 2, 86);
+        ctx.fillText('2  | Mouse    | $29', tbl2X + tblW / 2, 104);
+        ctx.fillText('3  | Keyboard | $79', tbl2X + tblW / 2, 122);
+
+        // Orders mini-table
+        var tbl3X = half + half * 0.2 + 8, tbl3W = half * 0.5;
+        ctx.strokeStyle = C.border;
+        ctx.strokeRect(tbl3X, 170, tbl3W, 100);
+        ctx.fillStyle = C.accent4;
+        ctx.font = 'bold 11px Arial';
+        ctx.fillText('Orders', tbl3X + tbl3W / 2, 166);
+        ctx.fillStyle = C.text;
+        ctx.font = '10px monospace';
+        ctx.fillText('ID | Cust_ID | Prod_ID', tbl3X + tbl3W / 2, 190);
+        ctx.fillText('1  |    1    |    1', tbl3X + tbl3W / 2, 208);
+        ctx.fillText('2  |    1    |    2', tbl3X + tbl3W / 2, 226);
+        ctx.fillText('3  |    2    |    1', tbl3X + tbl3W / 2, 244);
+        ctx.fillText('4  |    1    |    3', tbl3X + tbl3W / 2, 262);
+
+        // Relationship lines
+        ctx.strokeStyle = C.accent1;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(tblX + tblW / 2, 122);
+        ctx.lineTo(tbl3X + tbl3W * 0.3, 170);
+        ctx.stroke();
+        ctx.strokeStyle = C.accent2;
+        ctx.beginPath();
+        ctx.moveTo(tbl2X + tblW / 2, 138);
+        ctx.lineTo(tbl3X + tbl3W * 0.7, 170);
+        ctx.stroke();
+
+        // Benefits
+        ctx.fillStyle = C.accent1;
+        ctx.font = '11px Arial';
+        ctx.fillText('✓ Single source of truth', half + half / 2, 310);
+        ctx.fillText('✓ Efficient storage', half + half / 2, 330);
+        ctx.fillText('✓ Easy, safe updates', half + half / 2, 350);
+
+        // Bottom arrow
+        ctx.fillStyle = C.textLight;
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('Redundancy → Normalized → Maintainable', w / 2, h - 14);
+
+        ctx.textAlign = 'start';
+    });
+
+    // ── Database Types Canvas ────────────────────────────────────
+    // Four database types with color blocks and use cases
+    window.registerCanvas('databaseTypesCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Database Types and Use Cases', w / 2, 28);
+
+        var types = [
+            { label: 'Relational', examples: ['PostgreSQL', 'MySQL'], strengths: ['ACID', 'Complex queries', 'Transactions'], use: 'E-commerce / Orders', color: C.accent1 },
+            { label: 'Document',   examples: ['MongoDB', 'CouchDB'], strengths: ['Flexible schema', 'JSON data', 'Scalability'],  use: 'Content CMS / Blogs', color: C.accent2 },
+            { label: 'Key-Value',  examples: ['Redis', 'DynamoDB'],  strengths: ['Fast lookups', 'Caching', 'Sessions'],           use: 'Session Store / Cache', color: C.accent4 },
+            { label: 'Graph',      examples: ['Neo4j', 'ArangoDB'], strengths: ['Relationships', 'Networks', 'Path queries'],      use: 'Social / Recommendations', color: C.accent3 }
+        ];
+
+        var colW = (w - 60) / 4;
+        var startX = 30;
+
+        types.forEach(function(t, i) {
+            var cx = startX + i * (colW + 10);
+            var cy = 50;
+
+            // Color block
+            ctx.fillStyle = t.color;
+            ctx.fillRect(cx, cy, colW, 140);
+
+            // Label
+            ctx.fillStyle = C.card;
+            ctx.font = 'bold 13px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(t.label, cx + colW / 2, cy + 24);
+
+            // Examples
+            ctx.font = '11px Arial';
+            t.examples.forEach(function(ex, j) {
+                ctx.fillText(ex, cx + colW / 2, cy + 48 + j * 16);
+            });
+
+            // Strengths
+            ctx.font = '10px Arial';
+            t.strengths.forEach(function(s, j) {
+                ctx.fillText('✓ ' + s, cx + colW / 2, cy + 90 + j * 16);
+            });
+
+            // Use case
+            ctx.fillStyle = C.text;
+            ctx.font = '11px Arial';
+            ctx.fillText(t.use, cx + colW / 2, cy + 160);
+        });
+
+        // Decision guide box
+        ctx.strokeStyle = C.border;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(30, 280, w - 60, 150);
+
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Quick Decision Guide', w / 2, 300);
+
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'start';
+        ctx.fillText('Need ACID compliance?                → Relational', 60, 325);
+        ctx.fillText('Flexible / nested data?              → Document', 60, 350);
+        ctx.fillText('Simple key lookups / sub-ms speed?   → Key-Value', 60, 375);
+        ctx.fillText('Complex relationships / traversals?  → Graph', 60, 400);
+        ctx.fillText('Not sure?  Start relational — you can always add others later.', 60, 425);
+
+        ctx.textAlign = 'start';
+    });
     </script>
-    
-    <h2>Entity Relationship Diagrams: The Family Tree of Data</h2>
-    
-    <p>ER diagrams show how your data entities relate to each other, like a family tree shows relationships between people. Let's build one for a social media platform:</p>
-    
-    <div class="mermaid">
-    erDiagram
-        USER ||--o{ POST : creates
-        USER ||--o{ COMMENT : writes
-        USER ||--o{ FRIEND_REQUEST : sends
-        USER ||--o{ FRIEND_REQUEST : receives
-        POST ||--o{ COMMENT : has
-        POST ||--o{ LIKE : receives
-        USER ||--o{ LIKE : gives
-        
-        USER {
-            int user_id PK
-            string username UK
-            string email UK
-            string password_hash
-            datetime created_at
-            datetime last_login
-            boolean is_active
-        }
-        
-        POST {
-            int post_id PK
-            int user_id FK
-            text content
-            string image_url
-            datetime posted_at
-            int like_count
-            int comment_count
-        }
-        
-        COMMENT {
-            int comment_id PK
-            int post_id FK
-            int user_id FK
-            text content
-            datetime commented_at
-        }
-        
-        LIKE {
-            int like_id PK
-            int user_id FK
-            int post_id FK
-            datetime liked_at
-        }
-        
-        FRIEND_REQUEST {
-            int request_id PK
-            int sender_id FK
-            int receiver_id FK
-            string status
-            datetime sent_at
-            datetime responded_at
-        }
-    </div>
-    
-    <h2>Normalization: The Marie Kondo of Databases</h2>
-    
-    <p>Just as Marie Kondo teaches us to organize our homes by keeping only what "sparks joy" and avoiding duplication, database normalization teaches us to organize data efficiently:</p>
-    
-    <canvas id="normalizationCanvas" width="600" height="400"></canvas>
-    
-    <script>
-    const normCanvas = document.getElementById('normalizationCanvas');
-    const nctx = normCanvas.getContext('2d');
-    
-    // Background
-    nctx.fillStyle = '#f9f9f9';
-    nctx.fillRect(0, 0, 600, 400);
-    
-    // Before Normalization
-    nctx.fillStyle = '#ffcccc';
-    nctx.fillRect(20, 50, 260, 150);
-    nctx.fillStyle = '#333';
-    nctx.font = '14px Arial';
-    nctx.fillText('Before: Redundant Data', 80, 30);
-    
-    // Messy table
-    nctx.strokeStyle = '#666';
-    nctx.lineWidth = 1;
-    nctx.strokeRect(30, 70, 240, 120);
-    
-    // Headers
-    nctx.font = '10px Arial';
-    nctx.fillText('Order_ID | Customer | Address | Product | Price', 40, 85);
-    
-    // Data rows with redundancy
-    nctx.fillText('1 | John | 123 Main | Laptop | $999', 40, 105);
-    nctx.fillText('2 | John | 123 Main | Mouse | $29', 40, 125);
-    nctx.fillText('3 | Jane | 456 Oak | Laptop | $999', 40, 145);
-    nctx.fillText('4 | John | 123 Main | Keyboard | $79', 40, 165);
-    
-    // Highlight redundancy
-    nctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
-    nctx.fillRect(70, 95, 80, 75);
-    
-    // After Normalization
-    nctx.fillStyle = '#ccffcc';
-    nctx.fillRect(320, 50, 260, 300);
-    nctx.fillStyle = '#333';
-    nctx.font = '14px Arial';
-    nctx.fillText('After: Normalized Tables', 380, 30);
-    
-    // Customers table
-    nctx.strokeStyle = '#666';
-    nctx.strokeRect(330, 70, 110, 80);
-    nctx.font = '11px Arial';
-    nctx.fillText('Customers', 360, 65);
-    nctx.font = '10px Arial';
-    nctx.fillText('ID | Name | Address', 335, 85);
-    nctx.fillText('1 | John | 123 Main', 335, 105);
-    nctx.fillText('2 | Jane | 456 Oak', 335, 125);
-    
-    // Products table
-    nctx.strokeRect(460, 70, 110, 80);
-    nctx.font = '11px Arial';
-    nctx.fillText('Products', 495, 65);
-    nctx.font = '10px Arial';
-    nctx.fillText('ID | Name | Price', 465, 85);
-    nctx.fillText('1 | Laptop | $999', 465, 105);
-    nctx.fillText('2 | Mouse | $29', 465, 125);
-    nctx.fillText('3 | Keyboard | $79', 465, 140);
-    
-    // Orders table
-    nctx.strokeRect(395, 180, 120, 100);
-    nctx.font = '11px Arial';
-    nctx.fillText('Orders', 440, 175);
-    nctx.font = '10px Arial';
-    nctx.fillText('ID | Cust_ID | Prod_ID', 400, 195);
-    nctx.fillText('1 | 1 | 1', 420, 215);
-    nctx.fillText('2 | 1 | 2', 420, 235);
-    nctx.fillText('3 | 2 | 1', 420, 255);
-    nctx.fillText('4 | 1 | 3', 420, 275);
-    
-    // Relationship lines
-    nctx.strokeStyle = '#4CAF50';
-    nctx.lineWidth = 2;
-    nctx.beginPath();
-    nctx.moveTo(440, 150);
-    nctx.lineTo(455, 180);
-    nctx.moveTo(515, 150);
-    nctx.lineTo(500, 180);
-    nctx.stroke();
-    
-    // Benefits text
-    nctx.fillStyle = '#333';
-    nctx.font = '12px Arial';
-    nctx.fillText('✓ No redundancy', 30, 220);
-    nctx.fillText('✗ Updates affect many rows', 30, 240);
-    nctx.fillText('✗ Storage waste', 30, 260);
-    
-    nctx.fillText('✓ Single source of truth', 330, 310);
-    nctx.fillText('✓ Efficient storage', 330, 330);
-    nctx.fillText('✓ Easy updates', 330, 350);
-    </script>
-    
-    <h2>Data Flow Diagrams: Following the River</h2>
-    
-    <p>Data flow diagrams (DFDs) show how information moves through your system, like following a river from its source to the ocean. Let's trace the journey of an online order:</p>
-    
-    <div class="mermaid">
-    graph LR
-        subgraph "External Entities"
-            Customer[Customer 👤]
-            PaymentGW[Payment Gateway 💳]
-            Warehouse[Warehouse 📦]
-            EmailSvc[Email Service 📧]
-        end
-        
-        subgraph "Processes"
-            P1((1. Place Order))
-            P2((2. Validate Payment))
-            P3((3. Update Inventory))
-            P4((4. Send Confirmation))
-        end
-        
-        subgraph "Data Stores"
-            D1[(Order DB)]
-            D2[(Product DB)]
-            D3[(Customer DB)]
-        end
-        
-        Customer -->|Order Details| P1
-        P1 -->|Order Record| D1
-        P1 -->|Payment Request| P2
-        P2 -->|Payment Info| PaymentGW
-        PaymentGW -->|Payment Result| P2
-        P2 -->|Update Status| D1
-        P2 -->|Trigger| P3
-        P3 -->|Check Stock| D2
-        P3 -->|Update Quantity| D2
-        P3 -->|Fulfillment Request| Warehouse
-        P3 -->|Trigger| P4
-        P4 -->|Get Customer Info| D3
-        P4 -->|Send Email| EmailSvc
-        
-        style Customer fill:#e3f2fd
-        style PaymentGW fill:#e3f2fd
-        style Warehouse fill:#e3f2fd
-        style EmailSvc fill:#e3f2fd
-        style P1 fill:#90caf9
-        style P2 fill:#90caf9
-        style P3 fill:#90caf9
-        style P4 fill:#90caf9
-        style D1 fill:#fff9c4
-        style D2 fill:#fff9c4
-        style D3 fill:#fff9c4
-    </div>
-    
-    <h2>Choosing the Right Database: The Tool for the Job</h2>
-    
-    <p>Like choosing between a hammer and a screwdriver, different databases serve different purposes:</p>
-    
-    <canvas id="databaseTypesCanvas" width="600" height="450"></canvas>
-    
-    <script>
-    const dbCanvas = document.getElementById('databaseTypesCanvas');
-    const dctx = dbCanvas.getContext('2d');
-    
-    // Background
-    dctx.fillStyle = '#f5f5f5';
-    dctx.fillRect(0, 0, 600, 450);
-    
-    // Title
-    dctx.fillStyle = '#333';
-    dctx.font = '16px Arial';
-    dctx.fillText('Database Types and Use Cases', 200, 30);
-    
-    // Relational DB
-    dctx.fillStyle = '#2196F3';
-    dctx.fillRect(50, 60, 120, 150);
-    dctx.fillStyle = '#fff';
-    dctx.font = '14px Arial';
-    dctx.fillText('Relational', 80, 90);
-    dctx.font = '11px Arial';
-    dctx.fillText('PostgreSQL', 75, 115);
-    dctx.fillText('MySQL', 85, 135);
-    dctx.fillText('✓ ACID', 80, 160);
-    dctx.fillText('✓ Complex queries', 60, 180);
-    dctx.fillText('✓ Transactions', 70, 200);
-    
-    // Document DB
-    dctx.fillStyle = '#4CAF50';
-    dctx.fillRect(200, 60, 120, 150);
-    dctx.fillStyle = '#fff';
-    dctx.font = '14px Arial';
-    dctx.fillText('Document', 235, 90);
-    dctx.font = '11px Arial';
-    dctx.fillText('MongoDB', 230, 115);
-    dctx.fillText('CouchDB', 230, 135);
-    dctx.fillText('✓ Flexible schema', 205, 160);
-    dctx.fillText('✓ JSON data', 220, 180);
-    dctx.fillText('✓ Scalability', 220, 200);
-    
-    // Key-Value DB
-    dctx.fillStyle = '#FF9800';
-    dctx.fillRect(350, 60, 120, 150);
-    dctx.fillStyle = '#fff';
-    dctx.font = '14px Arial';
-    dctx.fillText('Key-Value', 380, 90);
-    dctx.font = '11px Arial';
-    dctx.fillText('Redis', 395, 115);
-    dctx.fillText('DynamoDB', 375, 135);
-    dctx.fillText('✓ Fast lookups', 365, 160);
-    dctx.fillText('✓ Caching', 380, 180);
-    dctx.fillText('✓ Sessions', 380, 200);
-    
-    // Graph DB
-    dctx.fillStyle = '#9C27B0';
-    dctx.fillRect(500, 60, 80, 150);
-    dctx.fillStyle = '#fff';
-    dctx.font = '14px Arial';
-    dctx.fillText('Graph', 520, 90);
-    dctx.font = '11px Arial';
-    dctx.fillText('Neo4j', 520, 115);
-    dctx.fillText('✓ Relations', 505, 160);
-    dctx.fillText('✓ Networks', 505, 180);
-    dctx.fillText('✓ Paths', 515, 200);
-    
-    // Use case examples
-    dctx.fillStyle = '#333';
-    dctx.font = '12px Arial';
-    dctx.fillText('E-commerce', 75, 235);
-    dctx.fillText('Orders', 90, 250);
-    
-    dctx.fillText('Content CMS', 225, 235);
-    dctx.fillText('Blogs', 240, 250);
-    
-    dctx.fillText('Session Store', 370, 235);
-    dctx.fillText('Cache', 395, 250);
-    
-    dctx.fillText('Social', 515, 235);
-    dctx.fillText('Network', 510, 250);
-    
-    // Decision flowchart
-    dctx.strokeStyle = '#666';
-    dctx.lineWidth = 2;
-    dctx.strokeRect(50, 280, 500, 150);
-    
-    dctx.fillStyle = '#333';
-    dctx.font = '14px Arial';
-    dctx.fillText('Quick Decision Guide:', 60, 300);
-    
-    dctx.font = '12px Arial';
-    dctx.fillText('Need ACID compliance? → Relational', 70, 330);
-    dctx.fillText('Flexible/nested data? → Document', 70, 355);
-    dctx.fillText('Simple key lookups? → Key-Value', 70, 380);
-    dctx.fillText('Complex relationships? → Graph', 70, 405);
-    </script>
-    
-    <h2>Data Migration: Moving Day for Your Data</h2>
-    
-    <p>Data migration is like moving to a new house - you need to plan carefully, pack properly, and make sure nothing gets lost along the way:</p>
-    
-    <div class="mermaid">
-    graph TD
-        A[Migration Planning] --> B[Data Analysis]
-        B --> C[Schema Mapping]
-        C --> D[Test Migration]
-        D --> E{Validation OK?}
-        E -->|No| C
-        E -->|Yes| F[Production Migration]
-        F --> G[Post-Migration Validation]
-        G --> H[Cleanup & Optimization]
-        
-        B --> I[Identify data types]
-        B --> J[Check constraints]
-        B --> K[Document relationships]
-        
-        C --> L[Field mapping]
-        C --> M[Transform rules]
-        C --> N[Default values]
-        
-        style A fill:#e3f2fd
-        style E fill:#fff3e0
-        style F fill:#ffccbc
-        style H fill:#c8e6c9
-    </div>
-    
-    <h2>Best Practices: The Data Commandments</h2>
-    
-    <div style="background-color: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3>The Sacred Rules of Data Design</h3>
-        
-        <p><strong>1. Name Things Clearly:</strong> Use descriptive names. <code>user_email</code> beats <code>ue</code> every time.</p>
-        
-        <p><strong>2. Be Consistent:</strong> If you use <code>user_id</code> in one table, don't use <code>userId</code> in another.</p>
-        
-        <p><strong>3. Plan for Growth:</strong> That <code>phone_number</code> field? Make it big enough for international numbers.</p>
-        
-        <p><strong>4. Index Wisely:</strong> Like bookmarks in a book - useful, but too many slow things down.</p>
-        
-        <p><strong>5. Document Everything:</strong> Future you (and your teammates) will thank present you.</p>
-        
-        <p><strong>6. Think About Deletion:</strong> Soft deletes vs hard deletes - choose based on audit needs.</p>
-        
-        <p><strong>7. Version Your Schema:</strong> Track changes like you track code changes.</p>
-    </div>
-    
-    <h2>Real-World Example: Healthcare System Data Model</h2>
-    
-    <div class="mermaid">
-    erDiagram
-        PATIENT ||--o{ APPOINTMENT : schedules
-        DOCTOR ||--o{ APPOINTMENT : conducts
-        APPOINTMENT ||--|| MEDICAL_RECORD : generates
-        PATIENT ||--o{ MEDICAL_RECORD : has
-        MEDICAL_RECORD ||--o{ PRESCRIPTION : contains
-        DOCTOR ||--o{ PRESCRIPTION : writes
-        PATIENT ||--o{ INSURANCE_CLAIM : submits
-        
-        PATIENT {
-            uuid patient_id PK
-            string first_name
-            string last_name
-            date birth_date
-            string ssn_encrypted
-            json contact_info
-            timestamp created_at
-        }
-        
-        DOCTOR {
-            uuid doctor_id PK
-            string license_number UK
-            string specialization
-            json schedule
-            boolean is_active
-        }
-        
-        APPOINTMENT {
-            uuid appointment_id PK
-            uuid patient_id FK
-            uuid doctor_id FK
-            timestamp scheduled_time
-            int duration_minutes
-            string status
-            text notes
-        }
-        
-        MEDICAL_RECORD {
-            uuid record_id PK
-            uuid patient_id FK
-            uuid appointment_id FK
-            text diagnosis
-            text treatment_plan
-            json vital_signs
-            timestamp created_at
-        }
-    </div>
-    
-    <p><em>Next, we'll explore API and interface design - the doors and windows through which your system communicates with the world.</em></p>
 </body>
 </html>

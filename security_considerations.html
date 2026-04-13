@@ -3,527 +3,784 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Security Considerations in Design Documents</title>
-    <link rel="stylesheet" href="/styles/main.css">
-    <link rel="icon" href="/favicon.png">
+    <meta name="description" content="Document security in your SDD — from defense-in-depth and STRIDE threat modeling to authentication, encryption, OWASP Top 10, zero trust, and security testing pipelines.">
+    <meta name="author" content="Ray De La Paz">
+    <title>Security Considerations - SDD Tutorial</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Mermaid — theme-aware via course-enhancements.js -->
     <script type="module">
-      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-      mermaid.initialize({ startOnLoad: true });
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        window.__mermaid = mermaid;
+        const isDark = localStorage.getItem('theme') === 'dark' ||
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: isDark ? 'dark' : 'default',
+            themeVariables: isDark
+                ? { primaryColor: '#334155', primaryTextColor: '#e2e8f0', primaryBorderColor: '#6366f1', lineColor: '#94a3b8', secondaryColor: '#1e293b', tertiaryColor: '#0f172a' }
+                : { primaryColor: '#eff6ff', primaryTextColor: '#1e293b', primaryBorderColor: '#3b82f6', lineColor: '#64748b', secondaryColor: '#f8fafc', tertiaryColor: '#f1f5f9' }
+        });
     </script>
 </head>
 <body>
-    <h1>Security Considerations in Design Documents</h1>
-    
-    <p>Building software without security considerations is like building a house with no locks, alarms, or fences. Security isn't an afterthought - it's a fundamental part of your architecture. Let's explore how to build digital fortresses, not just digital houses!</p>
-    
-    <h2>The Castle Defense Strategy</h2>
-    
-    <canvas id="castleCanvas" width="600" height="400"></canvas>
-    
-    <script>
-    const castleCanvas = document.getElementById('castleCanvas');
-    const cctx = castleCanvas.getContext('2d');
-    
-    // Background
-    cctx.fillStyle = '#87CEEB';
-    cctx.fillRect(0, 0, 600, 300);
-    cctx.fillStyle = '#90EE90';
-    cctx.fillRect(0, 300, 600, 100);
-    
-    // Moat (Network Security)
-    cctx.fillStyle = '#4682B4';
-    cctx.fillRect(100, 280, 400, 40);
-    cctx.fillStyle = '#fff';
-    cctx.font = '12px Arial';
-    cctx.fillText('Network Security (Moat)', 230, 305);
-    
-    // Outer Wall (Firewall)
-    cctx.fillStyle = '#8B7355';
-    cctx.fillRect(150, 200, 300, 80);
-    cctx.fillStyle = '#fff';
-    cctx.fillText('Firewall (Outer Wall)', 250, 240);
-    
-    // Inner Wall (Application Security)
-    cctx.fillStyle = '#A0522D';
-    cctx.fillRect(200, 120, 200, 80);
-    cctx.fillStyle = '#fff';
-    cctx.fillText('App Security', 260, 160);
-    
-    // Keep (Data Encryption)
-    cctx.fillStyle = '#654321';
-    cctx.fillRect(250, 50, 100, 70);
-    cctx.fillStyle = '#fff';
-    cctx.fillText('Encrypted', 270, 80);
-    cctx.fillText('Data', 280, 100);
-    
-    // Guards (Authentication)
-    cctx.fillStyle = '#333';
-    cctx.beginPath();
-    cctx.arc(180, 240, 10, 0, 2 * Math.PI);
-    cctx.arc(420, 240, 10, 0, 2 * Math.PI);
-    cctx.arc(230, 160, 10, 0, 2 * Math.PI);
-    cctx.arc(370, 160, 10, 0, 2 * Math.PI);
-    cctx.fill();
-    
-    // Attacker
-    cctx.fillStyle = '#FF0000';
-    cctx.beginPath();
-    cctx.arc(50, 350, 15, 0, 2 * Math.PI);
-    cctx.fill();
-    cctx.fillStyle = '#333';
-    cctx.font = '11px Arial';
-    cctx.fillText('Attacker', 30, 380);
-    
-    // Defense layers labels
-    cctx.strokeStyle = '#333';
-    cctx.lineWidth = 1;
-    cctx.setLineDash([5, 5]);
-    
-    // Lines pointing to each layer
-    cctx.beginPath();
-    cctx.moveTo(500, 300);
-    cctx.lineTo(520, 300);
-    cctx.moveTo(500, 240);
-    cctx.lineTo(520, 240);
-    cctx.moveTo(500, 160);
-    cctx.lineTo(520, 160);
-    cctx.moveTo(500, 85);
-    cctx.lineTo(520, 85);
-    cctx.stroke();
-    
-    cctx.setLineDash([]);
-    cctx.fillStyle = '#333';
-    cctx.font = '10px Arial';
-    cctx.fillText('Layer 1', 525, 305);
-    cctx.fillText('Layer 2', 525, 245);
-    cctx.fillText('Layer 3', 525, 165);
-    cctx.fillText('Layer 4', 525, 90);
-    
-    cctx.font = '14px Arial';
-    cctx.fillText('Defense in Depth: Multiple Layers of Security', 180, 30);
-    </script>
-    
-    <h2>The STRIDE Threat Model</h2>
-    
-    <p>STRIDE helps us think like attackers. It's like a burglar's checklist - if we know what they're looking for, we can protect against it:</p>
-    
-    <div class="mermaid">
-    graph TD
-        S[Spoofing] --> S1[Pretending to be someone else]
-        T[Tampering] --> T1[Modifying data or code]
-        R[Repudiation] --> R1[Denying actions performed]
-        I[Information Disclosure] --> I1[Exposing private data]
-        D[Denial of Service] --> D1[Making system unavailable]
-        E[Elevation of Privilege] --> E1[Gaining unauthorized access]
-        
-        S --> S2[Solution: Strong Authentication]
-        T --> T2[Solution: Data Integrity Checks]
-        R --> R2[Solution: Audit Logging]
-        I --> I2[Solution: Encryption]
-        D --> D2[Solution: Rate Limiting]
-        E --> E2[Solution: Least Privilege]
-        
-        style S fill:#ffcdd2
-        style T fill:#f8bbd0
-        style R fill:#e1bee7
-        style I fill:#d1c4e9
-        style D fill:#c5cae9
-        style E fill:#bbdefb
-        
-        style S2 fill:#c8e6c9
-        style T2 fill:#c8e6c9
-        style R2 fill:#c8e6c9
-        style I2 fill:#c8e6c9
-        style D2 fill:#c8e6c9
-        style E2 fill:#c8e6c9
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
+
+    <div class="progress-indicator" role="progressbar" aria-label="Page scroll progress">
+        <div class="progress-bar"></div>
     </div>
-    
-    <h2>Real-World Example: Banking Application Security</h2>
-    
-    <div style="background-color: #ffebee; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3>Security Architecture for Online Banking</h3>
-        
-        <div class="mermaid">
-        graph TB
-            subgraph "Public Zone"
-                U[User Browser]
-                M[Mobile App]
-            end
-            
-            subgraph "DMZ"
-                WAF[Web Application Firewall]
-                LB[Load Balancer]
-                API[API Gateway]
-            end
-            
-            subgraph "Application Zone"
-                WEB[Web Servers]
-                APP[App Servers]
-                AUTH[Auth Service]
-            end
-            
-            subgraph "Data Zone"
-                DB[(Encrypted Database)]
-                VAULT[Secrets Vault]
-                LOGS[Security Logs]
-            end
-            
-            U --> WAF
-            M --> WAF
-            WAF --> LB
-            LB --> API
-            API --> WEB
-            API --> APP
-            APP --> AUTH
-            APP --> DB
-            AUTH --> VAULT
-            APP --> LOGS
-            
-            style DB fill:#ffcdd2
-            style VAULT fill:#ffcdd2
-            style WAF fill:#c8e6c9
-            style AUTH fill:#fff9c4
-        </graph>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">SDD Tutorial</a>
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-expanded="false" aria-controls="nav-links">☰</button>
+            <div class="nav-links" id="nav-links">
+                <a href="index.html">Home</a>
+                <a href="index.html#modules">All Lessons</a>
+                <span class="nav-divider"></span>
+                <a href="https://rays-home.netlify.app/">Ray's House of Fun</a>
+                <a href="https://rays-home.netlify.app/contact">Contact</a>
+                <button id="theme-toggle" aria-label="Toggle dark/light mode">🌙</button>
+            </div>
         </div>
-    </div>
-    
-    <h2>Authentication vs Authorization: The Bouncer and the VIP List</h2>
-    
-    <canvas id="authCanvas" width="600" height="300"></canvas>
-    
+    </nav>
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#modules">Technical</a></li>
+            <li aria-current="page">Lesson 7: Security Considerations</li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <div class="container">
+            <header>
+                <h1>🛡️ Lesson 7: Security Considerations in Design Documents</h1>
+                <p class="lead">Building software without security considerations is like building a house with no locks, alarms, or fences. Security isn't an afterthought — it's a fundamental part of your architecture. The worst time to think about security is after a breach. The best time? Right now, in your SDD.</p>
+
+                <div class="card card-info">
+                    <h2>🎯 Learning Objectives</h2>
+                    <p>By the end of this lesson, you will be able to:</p>
+                    <ul>
+                        <li>Apply the defense-in-depth strategy to your architecture using the castle metaphor</li>
+                        <li>Use the STRIDE model to systematically identify threats</li>
+                        <li>Distinguish between authentication and authorization and document both</li>
+                        <li>Specify encryption requirements for data at rest and in transit</li>
+                        <li>Reference the OWASP Top 10 when writing security sections of your SDD</li>
+                        <li>Integrate security testing at every stage of the development pipeline</li>
+                    </ul>
+                    <p><strong>Estimated Time:</strong> 30 minutes</p>
+                </div>
+            </header>
+
+            <!-- Table of Contents -->
+            <details class="card toc-card" open>
+                <summary>
+                    <h2 style="display:inline; margin:0;">📑 In This Lesson</h2>
+                </summary>
+                <nav aria-label="Table of Contents">
+                    <ol>
+                        <li><a href="#castle" class="toc-link">The Castle Defense Strategy</a></li>
+                        <li><a href="#stride" class="toc-link">The STRIDE Threat Model</a></li>
+                        <li><a href="#banking" class="toc-link">Real-World Example: Banking Security</a></li>
+                        <li><a href="#auth" class="toc-link">Authentication vs Authorization</a></li>
+                        <li><a href="#owasp" class="toc-link">The OWASP Top 10</a></li>
+                        <li><a href="#encryption" class="toc-link">Encryption: Data at Rest &amp; in Transit</a></li>
+                        <li><a href="#pipeline" class="toc-link">Security Testing Pipeline</a></li>
+                        <li><a href="#next" class="toc-link">Zero Trust, Checklist &amp; Next Steps</a></li>
+                    </ol>
+                </nav>
+            </details>
+
+            <!-- Section 1: Castle Defense -->
+            <section id="castle">
+                <h2>The Castle Defense Strategy</h2>
+                <p>Medieval castles didn't rely on a single wall — they used moats, outer walls, inner walls, and a fortified keep. This is <strong>defense in depth</strong>: multiple layers of security so that if one layer fails, the others still protect you. Your SDD should document each layer and what it defends against.</p>
+
+                <canvas id="castleCanvas" width="600" height="400"></canvas>
+
+                <div class="card card-accent">
+                    <h4>💡 The Four Layers in Your SDD</h4>
+                    <p><strong>Layer 1 — Network Security (the Moat):</strong> Firewalls, VPNs, network segmentation. Keeps most attackers from even reaching your application.</p>
+                    <p><strong>Layer 2 — Perimeter (the Outer Wall):</strong> WAF (Web Application Firewall), DDoS protection, rate limiting. Filters malicious traffic.</p>
+                    <p><strong>Layer 3 — Application Security (the Inner Wall):</strong> Input validation, authentication, authorization, secure coding practices.</p>
+                    <p><strong>Layer 4 — Data Encryption (the Keep):</strong> The last line of defense. Even if attackers breach everything else, encrypted data is useless without the keys.</p>
+                </div>
+            </section>
+
+            <!-- Section 2: STRIDE -->
+            <section id="stride">
+                <h2>The STRIDE Threat Model</h2>
+                <p>STRIDE helps you think like an attacker. It's a systematic checklist: for every component in your architecture, ask "could someone Spoof, Tamper, Repudiate, disclose Information, Deny service, or Elevate privilege?" Then document the mitigation for each threat in your SDD.</p>
+
+                <div class="mermaid">
+                graph TD
+                    S[S — Spoofing] --> S1[Pretending to be someone else]
+                    T[T — Tampering] --> T1[Modifying data or code]
+                    R[R — Repudiation] --> R1[Denying actions performed]
+                    I[I — Info Disclosure] --> I1[Exposing private data]
+                    D[D — Denial of Service] --> D1[Making system unavailable]
+                    E[E — Elevation of Privilege] --> E1[Gaining unauthorized access]
+
+                    S --> S2[Mitigation: Strong Authentication]
+                    T --> T2[Mitigation: Data Integrity Checks]
+                    R --> R2[Mitigation: Audit Logging]
+                    I --> I2[Mitigation: Encryption]
+                    D --> D2[Mitigation: Rate Limiting]
+                    E --> E2[Mitigation: Least Privilege]
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ Threat Modeling Isn't One-and-Done</h4>
+                    <p>Run STRIDE every time you add a new component, a new integration, or a new user role. A system that was secure last quarter may have new attack surfaces today. Add a "Security Review Triggers" section to your SDD that lists which changes require a threat model refresh.</p>
+                </div>
+            </section>
+
+            <!-- Section 3: Banking Example -->
+            <section id="banking">
+                <h2>Real-World Example: Banking Application Security</h2>
+                <p>Banking systems are the gold standard for security architecture. Notice how this design uses network zones — each zone has progressively stricter access controls, and no component in the public zone can directly reach the data zone.</p>
+
+                <div class="card card-danger">
+                    <h3>Security Architecture for Online Banking</h3>
+
+                    <div class="mermaid">
+                    graph TB
+                        subgraph "Public Zone"
+                            U[User Browser]
+                            M[Mobile App]
+                        end
+
+                        subgraph "DMZ"
+                            WAF[Web Application Firewall]
+                            LB[Load Balancer]
+                            API[API Gateway]
+                        end
+
+                        subgraph "Application Zone"
+                            WEB[Web Servers]
+                            APP[App Servers]
+                            AUTH[Auth Service]
+                        end
+
+                        subgraph "Data Zone"
+                            DB[(Encrypted Database)]
+                            VAULT[Secrets Vault]
+                            LOGS[Security Logs]
+                        end
+
+                        U --> WAF
+                        M --> WAF
+                        WAF --> LB
+                        LB --> API
+                        API --> WEB
+                        API --> APP
+                        APP --> AUTH
+                        APP --> DB
+                        AUTH --> VAULT
+                        APP --> LOGS
+                    </div>
+                </div>
+
+                <div class="card card-info">
+                    <h4>📖 Why Zones Matter</h4>
+                    <p>Each zone boundary is a firewall with explicit allow-rules. The DMZ can talk to the Application Zone, but not directly to the Data Zone. The Application Zone can reach the Data Zone, but the Data Zone never initiates outbound connections. This means an attacker who compromises the API Gateway still can't reach the database without also compromising an app server. Document every zone and every allowed connection in your SDD.</p>
+                </div>
+            </section>
+
+            <!-- Section 4: Auth vs Authz -->
+            <section id="auth">
+                <h2>Authentication vs Authorization: The Bouncer and the VIP List</h2>
+                <p>These two concepts are frequently confused, but the difference is critical. <strong>Authentication</strong> (AuthN) answers "who are you?" — it verifies identity. <strong>Authorization</strong> (AuthZ) answers "what are you allowed to do?" — it checks permissions. You need both, and your SDD should document both separately.</p>
+
+                <canvas id="authCanvas" width="600" height="300"></canvas>
+
+                <div class="card card-accent">
+                    <h4>💡 Common Auth Patterns to Document</h4>
+                    <p><strong>Authentication:</strong> JWT tokens, OAuth 2.0/OpenID Connect, SAML for enterprise SSO, API keys for service-to-service, MFA requirements (which roles? which actions?).</p>
+                    <p><strong>Authorization:</strong> RBAC (Role-Based Access Control) for most apps, ABAC (Attribute-Based) when roles aren't granular enough, resource-level permissions (can user X edit document Y?), time-limited access tokens.</p>
+                </div>
+
+                <div class="card card-danger">
+                    <h4>🚫 The "Admin Flag" Anti-Pattern</h4>
+                    <p>Don't model authorization as a single <code>is_admin: true/false</code> boolean. Real systems need granular permissions: who can read billing data, who can invite users, who can deploy to production. Start with RBAC and define roles like <code>viewer</code>, <code>editor</code>, <code>billing_admin</code>, <code>super_admin</code> — with each role's permissions explicitly documented in the SDD.</p>
+                </div>
+            </section>
+
+            <!-- Section 5: OWASP -->
+            <section id="owasp">
+                <h2>The OWASP Top 10: Know Your Enemies</h2>
+                <p>The OWASP Top 10 is the industry's most widely referenced list of web application security risks. Your SDD's security section should address how your design mitigates at least the top five:</p>
+
+                <div class="mermaid">
+                graph LR
+                    A[OWASP Top 10] --> A1[Broken Access Control]
+                    A --> A2[Cryptographic Failures]
+                    A --> A3[Injection]
+                    A --> A4[Insecure Design]
+                    A --> A5[Security Misconfiguration]
+
+                    A1 --> C1[Implement RBAC]
+                    A2 --> C2[Encrypt everything]
+                    A3 --> C3[Parameterized queries]
+                    A4 --> C4[Threat modeling]
+                    A5 --> C5[Security hardening]
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ Injection Is Not Just SQL</h4>
+                    <p>When developers hear "injection," they think SQL injection. But injection attacks target <em>any</em> interpreter: OS commands, LDAP queries, XPath, template engines, even log files (log injection). The universal defense is: <strong>never trust user input</strong>. Validate, sanitize, and use parameterized interfaces everywhere — then document your validation strategy in the SDD.</p>
+                </div>
+
+                <div class="card card-info">
+                    <h4>📖 #4 Is the One That Matters Most for SDDs</h4>
+                    <p>"Insecure Design" was added to the OWASP Top 10 in 2021 specifically because security can't be bolted on after the fact. A design that lacks rate limiting, doesn't separate admin and user flows, or stores secrets in config files is insecure <em>by design</em>. This entire lesson is about preventing #4.</p>
+                </div>
+            </section>
+
+            <!-- Section 6: Encryption -->
+            <section id="encryption">
+                <h2>Encryption: The Secret Code</h2>
+                <p>Encryption is your last line of defense — if everything else fails, properly encrypted data is still protected. Your SDD needs to specify encryption for two scenarios: <strong>data at rest</strong> (stored in databases, file systems, backups) and <strong>data in transit</strong> (moving between client and server, or between services).</p>
+
+                <canvas id="encryptionCanvas" width="600" height="350"></canvas>
+
+                <div class="card card-accent">
+                    <h4>💡 What to Specify in Your SDD</h4>
+                    <p><strong>At rest:</strong> AES-256 for database encryption, encrypted backups, key rotation schedule (90 days is common), key management system (AWS KMS, HashiCorp Vault, etc.).</p>
+                    <p><strong>In transit:</strong> TLS 1.3 minimum (TLS 1.2 acceptable with strong cipher suites), certificate pinning for mobile apps, mutual TLS (mTLS) for service-to-service communication.</p>
+                    <p><strong>Application-level:</strong> Bcrypt or Argon2 for password hashing (never MD5 or SHA-1), field-level encryption for PII (SSN, credit cards), envelope encryption for large datasets.</p>
+                </div>
+
+                <div class="card card-danger">
+                    <h4>🚫 Never Roll Your Own Crypto</h4>
+                    <p>This is possibly the most important rule in software security. Use battle-tested libraries (libsodium, OpenSSL, your language's standard crypto library). Even PhD cryptographers get it wrong when implementing from scratch. Document <em>which</em> library you use and <em>which</em> algorithms — "we use encryption" is not a security specification.</p>
+                </div>
+            </section>
+
+            <!-- Section 7: Pipeline -->
+            <section id="pipeline">
+                <h2>Security Testing in Your Pipeline</h2>
+                <p>Security testing shouldn't be a separate phase that happens after development. It should be woven into every stage of your CI/CD pipeline — "shift left" means catching vulnerabilities as early as possible, when they're cheapest to fix.</p>
+
+                <canvas id="pipelineCanvas" width="600" height="200"></canvas>
+
+                <div class="card card-success">
+                    <h4>✅ What Each Stage Catches</h4>
+                    <p><strong>SAST (Static Analysis):</strong> Scans source code for vulnerabilities before it runs — catches SQL injection, hardcoded secrets, insecure patterns. Run on every commit.</p>
+                    <p><strong>Dependency Scan:</strong> Checks your <code>package.json</code>/<code>requirements.txt</code> against known vulnerability databases (CVEs). A single outdated library can be the entry point.</p>
+                    <p><strong>DAST (Dynamic Analysis):</strong> Tests the running application by sending malicious inputs — finds XSS, CSRF, auth bypasses that static analysis misses.</p>
+                    <p><strong>Config Scan:</strong> Verifies deployment configurations — open ports, default credentials, overly permissive IAM roles, missing security headers.</p>
+                    <p><strong>Runtime Protection:</strong> Monitors production for anomalies — unusual traffic patterns, failed auth spikes, data exfiltration attempts.</p>
+                </div>
+            </section>
+
+            <!-- Section 8: Zero Trust & Checklist -->
+            <section id="next">
+                <h2>Zero Trust Architecture: Trust No One</h2>
+                <p>Traditional security assumes everything inside the network perimeter is trusted. Zero Trust flips this: <strong>nothing is trusted by default</strong>, whether it's inside or outside the network. Every request is verified, every connection is encrypted, every access is logged.</p>
+
+                <div class="mermaid">
+                graph TD
+                    A[Zero Trust Principles] --> B[Verify Explicitly]
+                    A --> C[Least Privilege Access]
+                    A --> D[Assume Breach]
+
+                    B --> B1[Always authenticate]
+                    B --> B2[Always authorize]
+                    B --> B3[Context-aware decisions]
+
+                    C --> C1[Just-in-time access]
+                    C --> C2[Just-enough access]
+                    C --> C3[Time-limited permissions]
+
+                    D --> D1[Minimize blast radius]
+                    D --> D2[Segment everything]
+                    D --> D3[Encrypt by default]
+                </div>
+
+                <div class="card card-info">
+                    <h4>📖 Zero Trust in Practice</h4>
+                    <p>Zero Trust doesn't mean "don't trust anyone" — it means "verify before trusting." In practical terms: service-to-service calls use mTLS (not just "they're on the same network"), API tokens have short lifetimes and narrow scopes, internal dashboards require the same authentication as external ones, and every data access is logged for audit.</p>
+                </div>
+
+                <h2>Security Checklist for Design Documents</h2>
+
+                <div class="card card-accent">
+                    <h3>📏 Essential Security Sections in Your SDD</h3>
+
+                    <p><strong>Authentication &amp; Authorization:</strong> MFA support, RBAC/ABAC model, session management, password policies, token lifetimes, service-to-service auth.</p>
+
+                    <p><strong>Data Protection:</strong> Encryption at rest (algorithm, key management), encryption in transit (TLS version, cipher suites), data classification levels, retention and deletion policies, backup encryption.</p>
+
+                    <p><strong>Application Security:</strong> Input validation strategy, output encoding (XSS prevention), parameterized queries (injection prevention), security headers (CSP, HSTS, X-Frame-Options), dependency management.</p>
+
+                    <p><strong>Infrastructure Security:</strong> Network segmentation and zones, firewall rules, WAF configuration, DDoS protection, secrets management (no secrets in code or config files).</p>
+
+                    <p><strong>Monitoring &amp; Incident Response:</strong> Security event logging (what gets logged, where, how long), alerting thresholds, incident response playbook, breach notification plan, penetration testing schedule.</p>
+                </div>
+
+                <div class="card card-danger">
+                    <h4>🚫 The "Security Through Obscurity" Fallacy</h4>
+                    <p>Hiding your API endpoints, using non-standard ports, or obfuscating code is not security — it's a speed bump that a determined attacker will bypass in minutes. Real security comes from strong authentication, proper encryption, input validation, and defense in depth. If your system's security depends on attackers not knowing how it works, it's not secure.</p>
+                </div>
+
+                <p>In the next lesson, we'll explore <strong>performance and scalability</strong> — because a secure system that can't handle users is like a fortress with no food. You'll learn to document capacity requirements, caching strategies, database optimization, and scaling patterns.</p>
+
+                <div class="card card-accent text-center" style="padding: var(--spacing-xl);">
+                    <h3>💡 Key Takeaway</h3>
+                    <p>Security is not a feature — it's a quality that pervades every architectural decision. Document your threat model, your defense layers, your encryption choices, and your testing pipeline in the SDD. The goal isn't to make your system unhackable (nothing is) — it's to make attacking it so expensive and slow that attackers move on to easier targets.</p>
+                </div>
+            </section>
+
+            <!-- Lesson Navigation -->
+            <nav class="lesson-nav" aria-label="Lesson Navigation">
+                <a href="api_interface_design.html" class="prev-lesson">← Previous: Lesson 6 — API Design</a>
+                <a href="index.html" class="home-link">🏠 Course Home</a>
+                <a href="performance_scalability.html" class="next-lesson">Next: Lesson 8 — Performance →</a>
+            </nav>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>&copy; 2026 Ray De La Paz / PetalFawnStudio. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="https://rays-home.netlify.app/">Ray's House of Fun</a>
+            <a href="https://rays-home.netlify.app/contact">Contact</a>
+            <a href="#" id="print-button">Print Page</a>
+        </div>
+        <p><small>Press <kbd>?</kbd> for keyboard shortcuts</small></p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/clipboard.js"></script>
+    <script src="js/course-enhancements.js"></script>
+
+    <!-- Theme-aware Canvas Drawing -->
     <script>
-    const authCanvas = document.getElementById('authCanvas');
-    const actx = authCanvas.getContext('2d');
-    
-    // Background
-    actx.fillStyle = '#f5f5f5';
-    actx.fillRect(0, 0, 600, 300);
-    
-    // Club entrance
-    actx.fillStyle = '#333';
-    actx.fillRect(200, 50, 200, 200);
-    
-    // Door
-    actx.fillStyle = '#8B4513';
-    actx.fillRect(280, 150, 40, 100);
-    
-    // Authentication (Bouncer)
-    actx.fillStyle = '#2196F3';
-    actx.beginPath();
-    actx.arc(150, 200, 30, 0, 2 * Math.PI);
-    actx.fill();
-    actx.fillStyle = '#fff';
-    actx.font = '10px Arial';
-    actx.fillText('AUTH', 138, 205);
-    
-    // User approaching
-    actx.fillStyle = '#4CAF50';
-    actx.beginPath();
-    actx.arc(50, 200, 20, 0, 2 * Math.PI);
-    actx.fill();
-    
-    // ID Check
-    actx.strokeStyle = '#333';
-    actx.lineWidth = 2;
-    actx.beginPath();
-    actx.moveTo(70, 200);
-    actx.lineTo(120, 200);
-    actx.stroke();
-    
-    actx.fillStyle = '#333';
-    actx.font = '11px Arial';
-    actx.fillText('"Who are you?"', 75, 180);
-    actx.fillText('Show ID', 85, 220);
-    
-    // Inside club - Authorization
-    actx.fillStyle = '#FF9800';
-    actx.fillRect(220, 80, 60, 40);
-    actx.fillRect(320, 80, 60, 40);
-    actx.fillRect(270, 140, 60, 40);
-    
-    actx.fillStyle = '#fff';
-    actx.font = '10px Arial';
-    actx.fillText('VIP Area', 230, 105);
-    actx.fillText('Bar', 340, 105);
-    actx.fillText('Dance', 285, 165);
-    
-    // Authorization checks
-    actx.fillStyle = '#E91E63';
-    actx.beginPath();
-    actx.arc(250, 100, 8, 0, 2 * Math.PI);
-    actx.arc(350, 100, 8, 0, 2 * Math.PI);
-    actx.arc(300, 160, 8, 0, 2 * Math.PI);
-    actx.fill();
-    
-    // Labels
-    actx.fillStyle = '#333';
-    actx.font = '14px Arial';
-    actx.fillText('Authentication', 100, 30);
-    actx.fillText('Authorization', 270, 30);
-    
-    actx.font = '12px Arial';
-    actx.fillText('Verifies identity', 90, 260);
-    actx.fillText('"What can you access?"', 250, 260);
-    
-    // Arrow
-    actx.strokeStyle = '#4CAF50';
-    actx.lineWidth = 3;
-    actx.beginPath();
-    actx.moveTo(180, 200);
-    actx.lineTo(280, 200);
-    actx.stroke();
-    actx.fillText('✓', 225, 195);
-    </script>
-    
-    <h2>The OWASP Top 10: Know Your Enemies</h2>
-    
-    <div class="mermaid">
-    graph LR
-        A[OWASP Top 10] --> A1[Broken Access Control]
-        A --> A2[Cryptographic Failures]
-        A --> A3[Injection]
-        A --> A4[Insecure Design]
-        A --> A5[Security Misconfiguration]
-        
-        A1 --> B1[Users access others data]
-        A2 --> B2[Sensitive data exposed]
-        A3 --> B3[SQL/Command injection]
-        A4 --> B4[Missing security controls]
-        A5 --> B5[Default passwords]
-        
-        B1 --> C1[Implement RBAC]
-        B2 --> C2[Encrypt everything]
-        B3 --> C3[Parameterized queries]
-        B4 --> C4[Threat modeling]
-        B5 --> C5[Security hardening]
-        
-        style A1 fill:#ffcdd2
-        style A2 fill:#ffcdd2
-        style A3 fill:#ffcdd2
-        style A4 fill:#ffcdd2
-        style A5 fill:#ffcdd2
-        
-        style C1 fill:#c8e6c9
-        style C2 fill:#c8e6c9
-        style C3 fill:#c8e6c9
-        style C4 fill:#c8e6c9
-        style C5 fill:#c8e6c9
-    </div>
-    
-    <h2>Encryption: The Secret Code</h2>
-    
-    <canvas id="encryptionCanvas" width="600" height="350"></canvas>
-    
-    <script>
-    const encCanvas = document.getElementById('encryptionCanvas');
-    const ectx = encCanvas.getContext('2d');
-    
-    // Background
-    ectx.fillStyle = '#f9f9f9';
-    ectx.fillRect(0, 0, 600, 350);
-    
-    // Title
-    ectx.fillStyle = '#333';
-    ectx.font = '16px Arial';
-    ectx.fillText('Encryption in Transit and at Rest', 200, 30);
-    
-    // Data at Rest
-    ectx.fillStyle = '#3F51B5';
-    ectx.fillRect(50, 60, 200, 120);
-    ectx.fillStyle = '#fff';
-    ectx.font = '14px Arial';
-    ectx.fillText('Data at Rest', 115, 85);
-    
-    // Database icon
-    ectx.beginPath();
-    ectx.ellipse(150, 110, 40, 15, 0, 0, 2 * Math.PI);
-    ectx.fill();
-    ectx.fillRect(110, 110, 80, 40);
-    ectx.beginPath();
-    ectx.ellipse(150, 150, 40, 15, 0, 0, 2 * Math.PI);
-    ectx.fill();
-    
-    ectx.fillStyle = '#FFD700';
-    ectx.font = '20px Arial';
-    ectx.fillText('🔒', 135, 135);
-    
-    // Data in Transit
-    ectx.strokeStyle = '#4CAF50';
-    ectx.lineWidth = 3;
-    ectx.beginPath();
-    ectx.moveTo(250, 120);
-    ectx.lineTo(350, 120);
-    ectx.stroke();
-    
-    ectx.fillStyle = '#4CAF50';
-    ectx.font = '12px Arial';
-    ectx.fillText('HTTPS/TLS', 270, 110);
-    ectx.fillText('🔒 Encrypted', 265, 140);
-    
-    // Destination
-    ectx.fillStyle = '#E91E63';
-    ectx.fillRect(350, 60, 200, 120);
-    ectx.fillStyle = '#fff';
-    ectx.font = '14px Arial';
-    ectx.fillText('Client Application', 405, 85);
-    
-    // Computer icon
-    ectx.fillRect(420, 110, 60, 40);
-    ectx.fillStyle = '#E91E63';
-    ectx.fillRect(430, 120, 40, 25);
-    ectx.fillRect(415, 155, 70, 10);
-    
-    // Encryption types
-    ectx.fillStyle = '#666';
-    ectx.font = '11px Arial';
-    ectx.fillText('• AES-256 encryption', 70, 210);
-    ectx.fillText('• Encrypted backups', 70, 230);
-    ectx.fillText('• Key management', 70, 250);
-    
-    ectx.fillText('• TLS 1.3', 270, 210);
-    ectx.fillText('• Certificate pinning', 270, 230);
-    ectx.fillText('• Perfect forward secrecy', 270, 250);
-    
-    ectx.fillText('• End-to-end encryption', 420, 210);
-    ectx.fillText('• Local storage encryption', 420, 230);
-    ectx.fillText('• Secure key storage', 420, 250);
-    
-    // Warning
-    ectx.fillStyle = '#ffccbc';
-    ectx.fillRect(100, 280, 400, 50);
-    ectx.fillStyle = '#d32f2f';
-    ectx.font = '12px Arial';
-    ectx.fillText('⚠️ Never store sensitive data in plain text!', 200, 295);
-    ectx.fillText('Always encrypt: passwords, credit cards, PII, API keys', 180, 315);
-    </script>
-    
-    <h2>Security Checklist for Design Documents</h2>
-    
-    <div style="background-color: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3>Essential Security Considerations</h3>
-        
-        <h4>Authentication & Authorization</h4>
-        <p>☑️ Multi-factor authentication (MFA) support</p>
-        <p>☑️ Role-based access control (RBAC)</p>
-        <p>☑️ Session management and timeout policies</p>
-        <p>☑️ Password complexity requirements</p>
-        
-        <h4>Data Protection</h4>
-        <p>☑️ Encryption at rest and in transit</p>
-        <p>☑️ Data classification and handling procedures</p>
-        <p>☑️ Secure backup and recovery</p>
-        <p>☑️ Data retention and deletion policies</p>
-        
-        <h4>Application Security</h4>
-        <p>☑️ Input validation and sanitization</p>
-        <p>☑️ Output encoding to prevent XSS</p>
-        <p>☑️ SQL injection prevention</p>
-        <p>☑️ Security headers implementation</p>
-        
-        <h4>Infrastructure Security</h4>
-        <p>☑️ Network segmentation</p>
-        <p>☑️ Firewall rules and configurations</p>
-        <p>☑️ Intrusion detection systems</p>
-        <p>☑️ Regular security updates and patches</p>
-        
-        <h4>Monitoring & Incident Response</h4>
-        <p>☑️ Security logging and monitoring</p>
-        <p>☑️ Incident response plan</p>
-        <p>☑️ Regular security audits</p>
-        <p>☑️ Penetration testing schedule</p>
-    </div>
-    
-    <h2>Zero Trust Architecture: Trust No One</h2>
-    
-    <div class="mermaid">
-    graph TD
-        A[Zero Trust Principles] --> B[Verify Explicitly]
-        A --> C[Least Privilege Access]
-        A --> D[Assume Breach]
-        
-        B --> B1[Always authenticate]
-        B --> B2[Always authorize]
-        B --> B3[Context-aware decisions]
-        
-        C --> C1[Just-in-time access]
-        C --> C2[Just-enough access]
-        C --> C3[Time-limited permissions]
-        
-        D --> D1[Minimize blast radius]
-        D --> D2[Segment everything]
-        D --> D3[Encrypt by default]
-        
-        style A fill:#1976d2,color:#fff
-        style B fill:#42a5f5
-        style C fill:#42a5f5
-        style D fill:#42a5f5
-    </div>
-    
-    <h2>Security Testing in Your Pipeline</h2>
-    
-    <canvas id="pipelineCanvas" width="600" height="200"></canvas>
-    
-    <script>
-    const pipeCanvas = document.getElementById('pipelineCanvas');
-    const pctx = pipeCanvas.getContext('2d');
-    
-    // Background
-    pctx.fillStyle = '#f5f5f5';
-    pctx.fillRect(0, 0, 600, 200);
-    
-    // Pipeline stages
-    const stages = [
-        {x: 50, label: 'Code', test: 'SAST', color: '#4CAF50'},
-        {x: 170, label: 'Build', test: 'Dependency\nScan', color: '#2196F3'},
-        {x: 290, label: 'Test', test: 'DAST', color: '#FF9800'},
-        {x: 410, label: 'Deploy', test: 'Config\nScan', color: '#9C27B0'},
-        {x: 530, label: 'Monitor', test: 'Runtime\nProtection', color: '#E91E63'}
-    ];
-    
-    // Draw pipeline
-    pctx.strokeStyle = '#333';
-    pctx.lineWidth = 3;
-    pctx.beginPath();
-    pctx.moveTo(30, 100);
-    pctx.lineTo(570, 100);
-    pctx.stroke();
-    
-    stages.forEach((stage, index) => {
-        // Stage circle
-        pctx.fillStyle = stage.color;
-        pctx.beginPath();
-        pctx.arc(stage.x, 100, 25, 0, 2 * Math.PI);
-        pctx.fill();
-        
-        // Stage label
-        pctx.fillStyle = '#fff';
-        pctx.font = '11px Arial';
-        pctx.fillText(stage.label, stage.x - 15, 105);
-        
-        // Security test
-        pctx.fillStyle = '#333';
-        pctx.font = '10px Arial';
-        const lines = stage.test.split('\n');
-        lines.forEach((line, i) => {
-            pctx.fillText(line, stage.x - 25, 140 + i * 12);
+    // ── Castle Canvas ────────────────────────────────────────────
+    // Defense in depth: moat → outer wall → inner wall → keep
+    window.registerCanvas('castleCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.sky || C.bg;
+        ctx.fillRect(0, 0, w, h * 0.75);
+        ctx.fillStyle = C.grass || C.accent1;
+        ctx.globalAlpha = 0.3;
+        ctx.fillRect(0, h * 0.75, w, h * 0.25);
+        ctx.globalAlpha = 1;
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Defense in Depth: Multiple Layers of Security', w / 2, 22);
+
+        // Moat (Layer 1 — Network Security)
+        ctx.fillStyle = C.accent2;
+        ctx.globalAlpha = 0.35;
+        ctx.fillRect(w * 0.12, h * 0.68, w * 0.76, h * 0.1);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = C.accent2;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(w * 0.12, h * 0.68, w * 0.76, h * 0.1);
+        ctx.fillStyle = C.card;
+        ctx.font = '11px Arial';
+        ctx.fillText('Network Security (Moat)', w / 2, h * 0.74);
+
+        // Outer Wall (Layer 2 — Firewall)
+        ctx.fillStyle = C.accent4;
+        ctx.fillRect(w * 0.2, h * 0.45, w * 0.6, h * 0.22);
+        ctx.fillStyle = C.card;
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('Firewall / WAF (Outer Wall)', w / 2, h * 0.57);
+
+        // Inner Wall (Layer 3 — Application Security)
+        ctx.fillStyle = C.accent3;
+        ctx.fillRect(w * 0.28, h * 0.26, w * 0.44, h * 0.18);
+        ctx.fillStyle = C.card;
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('Application Security (Inner Wall)', w / 2, h * 0.36);
+
+        // Keep (Layer 4 — Encrypted Data)
+        ctx.fillStyle = C.accent1;
+        ctx.fillRect(w * 0.36, h * 0.1, w * 0.28, h * 0.15);
+        ctx.fillStyle = C.card;
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('Encrypted Data', w / 2, h * 0.175);
+        ctx.font = '16px Arial';
+        ctx.fillText('🔒', w / 2, h * 0.21);
+
+        // Guards (small circles at wall edges)
+        var guardColor = C.highlight || C.accent5;
+        ctx.fillStyle = guardColor;
+        [[w * 0.22, h * 0.55], [w * 0.78, h * 0.55], [w * 0.30, h * 0.34], [w * 0.70, h * 0.34]].forEach(function(g) {
+            ctx.beginPath();
+            ctx.arc(g[0], g[1], 7, 0, 2 * Math.PI);
+            ctx.fill();
         });
-        
-        // Arrow to next
-        if (index < stages.length - 1) {
-            pctx.strokeStyle = '#666';
-            pctx.lineWidth = 2;
-            pctx.beginPath();
-            pctx.moveTo(stage.x + 25, 100);
-            pctx.lineTo(stages[index + 1].x - 25, 100);
-            pctx.stroke();
-        }
+
+        // Attacker
+        ctx.fillStyle = C.danger;
+        ctx.beginPath();
+        ctx.arc(w * 0.06, h * 0.85, 12, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = C.text;
+        ctx.font = '10px Arial';
+        ctx.fillText('Attacker', w * 0.06, h * 0.93);
+
+        // Layer labels on the right
+        ctx.fillStyle = C.textLight;
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'start';
+        var layers = [
+            [h * 0.73, 'Layer 1'],
+            [h * 0.56, 'Layer 2'],
+            [h * 0.35, 'Layer 3'],
+            [h * 0.17, 'Layer 4']
+        ];
+        layers.forEach(function(l) {
+            ctx.setLineDash([3, 3]);
+            ctx.strokeStyle = C.textLight;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.88, l[0]);
+            ctx.lineTo(w * 0.91, l[0]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillText(l[1], w * 0.92, l[0] + 4);
+        });
+
+        ctx.textAlign = 'start';
     });
-    
-    pctx.fillStyle = '#333';
-    pctx.font = '14px Arial';
-    pctx.fillText('Security at Every Stage', 220, 30);
+
+    // ── Auth Canvas ──────────────────────────────────────────────
+    // Authentication (bouncer) vs Authorization (VIP list)
+    window.registerCanvas('authCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        var half = w / 2;
+
+        // Divider
+        ctx.strokeStyle = C.border;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(half, 10);
+        ctx.lineTo(half, h - 10);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // ── Left: Authentication ──
+        ctx.fillStyle = C.accent2;
+        ctx.font = 'bold 15px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Authentication', half * 0.5, 28);
+        ctx.fillStyle = C.textLight;
+        ctx.font = '12px Arial';
+        ctx.fillText('"Who are you?"', half * 0.5, 48);
+
+        // User approaching
+        ctx.fillStyle = C.accent1;
+        ctx.beginPath();
+        ctx.arc(half * 0.2, h * 0.45, 18, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = C.card;
+        ctx.font = '9px Arial';
+        ctx.fillText('User', half * 0.2, h * 0.45 + 4);
+
+        // Arrow to bouncer
+        ctx.strokeStyle = C.text;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(half * 0.3, h * 0.45);
+        ctx.lineTo(half * 0.5, h * 0.45);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(half * 0.5, h * 0.45);
+        ctx.lineTo(half * 0.48, h * 0.43);
+        ctx.moveTo(half * 0.5, h * 0.45);
+        ctx.lineTo(half * 0.48, h * 0.47);
+        ctx.stroke();
+
+        // Bouncer
+        ctx.fillStyle = C.accent2;
+        ctx.beginPath();
+        ctx.arc(half * 0.65, h * 0.45, 22, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = C.card;
+        ctx.font = 'bold 10px Arial';
+        ctx.fillText('AUTH', half * 0.65, h * 0.45 + 4);
+
+        // ID card
+        ctx.fillStyle = C.card;
+        ctx.strokeStyle = C.border;
+        ctx.lineWidth = 1;
+        ctx.fillRect(half * 0.3, h * 0.58, half * 0.25, h * 0.12);
+        ctx.strokeRect(half * 0.3, h * 0.58, half * 0.25, h * 0.12);
+        ctx.fillStyle = C.text;
+        ctx.font = '9px Arial';
+        ctx.fillText('Show ID / Token', half * 0.42, h * 0.65);
+
+        // Checkmark
+        ctx.fillStyle = C.accent1;
+        ctx.font = 'bold 18px Arial';
+        ctx.fillText('✓', half * 0.82, h * 0.48);
+
+        // Methods listed below
+        ctx.fillStyle = C.text;
+        ctx.font = '11px Arial';
+        ctx.fillText('JWT · OAuth · SAML', half * 0.5, h * 0.82);
+        ctx.fillText('MFA · API Keys', half * 0.5, h * 0.9);
+
+        // ── Right: Authorization ──
+        ctx.fillStyle = C.accent4;
+        ctx.font = 'bold 15px Arial';
+        ctx.fillText('Authorization', half + half * 0.5, 28);
+        ctx.fillStyle = C.textLight;
+        ctx.font = '12px Arial';
+        ctx.fillText('"What can you access?"', half + half * 0.5, 48);
+
+        // Room boxes (access zones)
+        var rooms = [
+            { x: half + half * 0.1, y: h * 0.25, label: 'VIP Area',    color: C.danger },
+            { x: half + half * 0.5, y: h * 0.25, label: 'Dashboard',   color: C.accent4 },
+            { x: half + half * 0.1, y: h * 0.48, label: 'Profile',     color: C.accent1 },
+            { x: half + half * 0.5, y: h * 0.48, label: 'Settings',    color: C.accent3 }
+        ];
+        var rW = half * 0.35, rH = h * 0.15;
+        rooms.forEach(function(r) {
+            ctx.fillStyle = r.color;
+            ctx.fillRect(r.x, r.y, rW, rH);
+            ctx.fillStyle = C.card;
+            ctx.font = '11px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(r.label, r.x + rW / 2, r.y + rH / 2 + 4);
+
+            // Lock icon
+            ctx.fillStyle = C.card;
+            ctx.globalAlpha = 0.6;
+            ctx.font = '12px Arial';
+            ctx.fillText('🔒', r.x + rW - 12, r.y + 14);
+            ctx.globalAlpha = 1;
+        });
+
+        // Methods listed below
+        ctx.fillStyle = C.text;
+        ctx.font = '11px Arial';
+        ctx.fillText('RBAC · ABAC · Scopes', half + half * 0.5, h * 0.82);
+        ctx.fillText('Resource-level permissions', half + half * 0.5, h * 0.9);
+
+        ctx.textAlign = 'start';
+    });
+
+    // ── Encryption Canvas ────────────────────────────────────────
+    // Data at rest (DB with lock) → transit (TLS tunnel) → client
+    window.registerCanvas('encryptionCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 15px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Encryption in Transit and at Rest', w / 2, 24);
+
+        // ── Data at Rest (left) ──
+        var leftX = w * 0.15;
+        ctx.fillStyle = C.accent2;
+        ctx.fillRect(leftX - 60, 50, 120, 110);
+        ctx.fillStyle = C.card;
+        ctx.font = 'bold 12px Arial';
+        ctx.fillText('Data at Rest', leftX, 70);
+
+        // DB cylinder
+        ctx.fillStyle = C.card;
+        ctx.beginPath();
+        ctx.ellipse(leftX, 98, 35, 12, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillRect(leftX - 35, 98, 70, 35);
+        ctx.beginPath();
+        ctx.ellipse(leftX, 133, 35, 12, 0, 0, 2 * Math.PI);
+        ctx.fill();
+
+        ctx.fillStyle = C.accent2;
+        ctx.font = '16px Arial';
+        ctx.fillText('🔒', leftX, 122);
+
+        // Bullets
+        ctx.fillStyle = C.text;
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'start';
+        ctx.fillText('• AES-256', leftX - 55, 185);
+        ctx.fillText('• Encrypted backups', leftX - 55, 200);
+        ctx.fillText('• Key management', leftX - 55, 215);
+
+        // ── Data in Transit (center) ──
+        var midX = w * 0.5;
+        ctx.strokeStyle = C.accent1;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(leftX + 65, 105);
+        ctx.lineTo(midX - 35, 105);
+        ctx.stroke();
+        // Arrow
+        ctx.beginPath();
+        ctx.moveTo(midX - 35, 105);
+        ctx.lineTo(midX - 42, 100);
+        ctx.moveTo(midX - 35, 105);
+        ctx.lineTo(midX - 42, 110);
+        ctx.stroke();
+
+        ctx.fillStyle = C.accent1;
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('HTTPS / TLS 1.3', midX, 85);
+        ctx.font = '14px Arial';
+        ctx.fillText('🔒 Encrypted Channel', midX, 125);
+
+        ctx.fillStyle = C.text;
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'start';
+        ctx.fillText('• TLS 1.3', midX - 55, 185);
+        ctx.fillText('• Certificate pinning', midX - 55, 200);
+        ctx.fillText('• Perfect forward secrecy', midX - 55, 215);
+
+        // Arrow right
+        ctx.strokeStyle = C.accent1;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(midX + 35, 105);
+        ctx.lineTo(w * 0.72, 105);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(w * 0.72, 105);
+        ctx.lineTo(w * 0.72 - 7, 100);
+        ctx.moveTo(w * 0.72, 105);
+        ctx.lineTo(w * 0.72 - 7, 110);
+        ctx.stroke();
+
+        // ── Client (right) ──
+        var rightX = w * 0.85;
+        ctx.fillStyle = C.accent3;
+        ctx.fillRect(rightX - 60, 50, 120, 110);
+        ctx.fillStyle = C.card;
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Client App', rightX, 70);
+
+        // Computer icon
+        ctx.fillStyle = C.card;
+        ctx.fillRect(rightX - 25, 90, 50, 30);
+        ctx.fillStyle = C.accent3;
+        ctx.fillRect(rightX - 20, 95, 40, 20);
+        ctx.fillStyle = C.card;
+        ctx.fillRect(rightX - 15, 122, 30, 5);
+
+        ctx.fillStyle = C.text;
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'start';
+        ctx.fillText('• E2E encryption', rightX - 55, 185);
+        ctx.fillText('• Secure storage', rightX - 55, 200);
+        ctx.fillText('• Secure key storage', rightX - 55, 215);
+
+        // Warning bar
+        ctx.fillStyle = C.danger;
+        ctx.globalAlpha = 0.12;
+        ctx.fillRect(w * 0.1, h - 65, w * 0.8, 45);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = C.danger;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(w * 0.1, h - 65, w * 0.8, 45);
+        ctx.fillStyle = C.danger;
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Never store sensitive data in plain text!', w / 2, h - 48);
+        ctx.font = '11px Arial';
+        ctx.fillText('Always encrypt: passwords, credit cards, PII, API keys', w / 2, h - 30);
+
+        ctx.textAlign = 'start';
+    });
+
+    // ── Pipeline Canvas ──────────────────────────────────────────
+    // CI/CD security stages: Code → Build → Test → Deploy → Monitor
+    window.registerCanvas('pipelineCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Security at Every Stage', w / 2, 22);
+
+        var stages = [
+            { label: 'Code',    test: 'SAST',       color: C.accent1 },
+            { label: 'Build',   test: 'Dep Scan',   color: C.accent2 },
+            { label: 'Test',    test: 'DAST',        color: C.accent4 },
+            { label: 'Deploy',  test: 'Config Scan', color: C.accent3 },
+            { label: 'Monitor', test: 'Runtime',     color: C.danger }
+        ];
+
+        var pad = w * 0.06;
+        var totalGap = (stages.length - 1) * pad;
+        var circR = 22;
+        var stageSpacing = (w - 2 * pad) / (stages.length - 1);
+
+        // Pipeline line
+        ctx.strokeStyle = C.border;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(pad, h * 0.5);
+        ctx.lineTo(w - pad, h * 0.5);
+        ctx.stroke();
+
+        stages.forEach(function(s, i) {
+            var cx = pad + i * stageSpacing;
+
+            // Circle
+            ctx.fillStyle = s.color;
+            ctx.beginPath();
+            ctx.arc(cx, h * 0.5, circR, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Stage label
+            ctx.fillStyle = C.card;
+            ctx.font = 'bold 11px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(s.label, cx, h * 0.5 + 4);
+
+            // Test label below
+            ctx.fillStyle = C.text;
+            ctx.font = '10px Arial';
+            ctx.fillText(s.test, cx, h * 0.5 + circR + 18);
+
+            // Connecting segment (thicker between circles)
+            if (i < stages.length - 1) {
+                var nx = pad + (i + 1) * stageSpacing;
+                ctx.strokeStyle = C.border;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(cx + circR, h * 0.5);
+                ctx.lineTo(nx - circR, h * 0.5);
+                ctx.stroke();
+
+                // Small arrow
+                ctx.beginPath();
+                ctx.moveTo(nx - circR, h * 0.5);
+                ctx.lineTo(nx - circR - 6, h * 0.5 - 4);
+                ctx.moveTo(nx - circR, h * 0.5);
+                ctx.lineTo(nx - circR - 6, h * 0.5 + 4);
+                ctx.stroke();
+            }
+        });
+
+        ctx.textAlign = 'start';
+    });
     </script>
-    
-    <p><em>Next, we'll explore performance and scalability considerations - because a secure system that can't handle users is like a fortress with no food!</em></p>
 </body>
 </html>

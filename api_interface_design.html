@@ -3,143 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API and Interface Design</title>
-    <link rel="stylesheet" href="/styles/main.css">
-    <link rel="icon" href="/favicon.png">
+    <meta name="description" content="Master API and interface design — from RESTful principles and versioning to authentication flows, error contracts, rate limiting, and the REST vs GraphQL decision.">
+    <meta name="author" content="Ray De La Paz">
+    <title>API and Interface Design - SDD Tutorial</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Mermaid — theme-aware via course-enhancements.js -->
     <script type="module">
-      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-      mermaid.initialize({ startOnLoad: true });
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        window.__mermaid = mermaid;
+        const isDark = localStorage.getItem('theme') === 'dark' ||
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: isDark ? 'dark' : 'default',
+            themeVariables: isDark
+                ? { primaryColor: '#334155', primaryTextColor: '#e2e8f0', primaryBorderColor: '#6366f1', lineColor: '#94a3b8', secondaryColor: '#1e293b', tertiaryColor: '#0f172a' }
+                : { primaryColor: '#eff6ff', primaryTextColor: '#1e293b', primaryBorderColor: '#3b82f6', lineColor: '#64748b', secondaryColor: '#f8fafc', tertiaryColor: '#f1f5f9' }
+        });
     </script>
 </head>
 <body>
-    <h1>API and Interface Design</h1>
-    
-    <p>APIs are like restaurants - they serve requests from hungry clients. A good API, like a good restaurant, has a clear menu, consistent service, and delivers exactly what was ordered. Let's learn how to design APIs that developers will love!</p>
-    
-    <h2>The Restaurant Menu Analogy</h2>
-    
-    <canvas id="restaurantCanvas" width="600" height="400"></canvas>
-    
-    <script>
-    const restaurantCanvas = document.getElementById('restaurantCanvas');
-    const rctx = restaurantCanvas.getContext('2d');
-    
-    // Background
-    rctx.fillStyle = '#faf8f3';
-    rctx.fillRect(0, 0, 600, 400);
-    
-    // Restaurant front
-    rctx.fillStyle = '#8B4513';
-    rctx.fillRect(150, 100, 300, 250);
-    
-    // Door
-    rctx.fillStyle = '#654321';
-    rctx.fillRect(270, 200, 60, 150);
-    
-    // Sign
-    rctx.fillStyle = '#FFD700';
-    rctx.fillRect(200, 60, 200, 40);
-    rctx.fillStyle = '#333';
-    rctx.font = '20px Arial';
-    rctx.fillText('API Restaurant', 235, 88);
-    
-    // Menu board
-    rctx.fillStyle = '#fff';
-    rctx.fillRect(170, 130, 100, 150);
-    rctx.fillStyle = '#333';
-    rctx.font = '12px Arial';
-    rctx.fillText('MENU', 210, 150);
-    rctx.font = '10px Arial';
-    rctx.fillText('GET /users', 180, 170);
-    rctx.fillText('POST /orders', 180, 190);
-    rctx.fillText('PUT /items/:id', 180, 210);
-    rctx.fillText('DELETE /cart', 180, 230);
-    
-    // Response window
-    rctx.fillStyle = '#87CEEB';
-    rctx.fillRect(330, 130, 100, 60);
-    rctx.fillStyle = '#333';
-    rctx.fillText('Order Ready!', 350, 165);
-    rctx.fillText('200 OK', 360, 180);
-    
-    // Customer
-    rctx.fillStyle = '#333';
-    rctx.beginPath();
-    rctx.arc(100, 250, 20, 0, 2 * Math.PI);
-    rctx.fill();
-    rctx.fillText('Client', 85, 290);
-    
-    // Speech bubble
-    rctx.fillStyle = '#fff';
-    rctx.beginPath();
-    rctx.moveTo(120, 230);
-    rctx.lineTo(200, 230);
-    rctx.lineTo(200, 200);
-    rctx.lineTo(140, 200);
-    rctx.lineTo(130, 210);
-    rctx.closePath();
-    rctx.fill();
-    rctx.stroke();
-    
-    rctx.fillStyle = '#333';
-    rctx.font = '11px Arial';
-    rctx.fillText('I\'d like to', 145, 215);
-    rctx.fillText('GET /users', 140, 227);
-    
-    // API flow arrows
-    rctx.strokeStyle = '#4CAF50';
-    rctx.lineWidth = 2;
-    rctx.beginPath();
-    rctx.moveTo(120, 250);
-    rctx.lineTo(270, 250);
-    rctx.stroke();
-    
-    rctx.beginPath();
-    rctx.moveTo(330, 250);
-    rctx.lineTo(480, 250);
-    rctx.stroke();
-    
-    rctx.fillStyle = '#333';
-    rctx.font = '12px Arial';
-    rctx.fillText('Request', 180, 245);
-    rctx.fillText('Response', 380, 245);
-    </script>
-    
-    <h2>RESTful API Design Principles</h2>
-    
-    <p>REST is like the grammar of API design - it gives us rules to communicate clearly:</p>
-    
-    <div class="mermaid">
-    graph TD
-        A[RESTful Principles] --> B[Resources as Nouns]
-        A --> C[HTTP Verbs as Actions]
-        A --> D[Stateless Communication]
-        A --> E[Uniform Interface]
-        A --> F[Client-Server Separation]
-        
-        B --> B1[/users not /getUsers]
-        C --> C1[GET: Read<br/>POST: Create<br/>PUT: Update<br/>DELETE: Remove]
-        D --> D1[Each request is complete]
-        E --> E1[Consistent patterns]
-        F --> F1[API doesn't know UI]
-        
-        style A fill:#4CAF50
-        style B fill:#81C784
-        style C fill:#81C784
-        style D fill:#81C784
-        style E fill:#81C784
-        style F fill:#81C784
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
+
+    <div class="progress-indicator" role="progressbar" aria-label="Page scroll progress">
+        <div class="progress-bar"></div>
     </div>
-    
-    <h2>Real-World Example: E-Commerce API</h2>
-    
-    <div style="background-color: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3>Product Catalog API Endpoints</h3>
-        
-        <div style="margin: 10px 0;">
-            <strong>GET /api/v1/products</strong>
-            <pre style="background: #263238; color: #aed581; padding: 10px; border-radius: 5px;">
-{
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">SDD Tutorial</a>
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-expanded="false" aria-controls="nav-links">☰</button>
+            <div class="nav-links" id="nav-links">
+                <a href="index.html">Home</a>
+                <a href="index.html#modules">All Lessons</a>
+                <span class="nav-divider"></span>
+                <a href="https://rays-home.netlify.app/">Ray's House of Fun</a>
+                <a href="https://rays-home.netlify.app/contact">Contact</a>
+                <button id="theme-toggle" aria-label="Toggle dark/light mode">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#modules">Technical</a></li>
+            <li aria-current="page">Lesson 6: API &amp; Interface Design</li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <div class="container">
+            <header>
+                <h1>🔌 Lesson 6: API and Interface Design</h1>
+                <p class="lead">APIs are like restaurants — they serve requests from hungry clients. A good API, like a good restaurant, has a clear menu, consistent service, and delivers exactly what was ordered. A bad API makes every developer who touches it wish they'd called in sick. Let's learn how to design APIs that developers will love!</p>
+
+                <div class="card card-info">
+                    <h2>🎯 Learning Objectives</h2>
+                    <p>By the end of this lesson, you will be able to:</p>
+                    <ul>
+                        <li>Apply the restaurant analogy to understand the request-response cycle</li>
+                        <li>Design RESTful endpoints that follow resource-oriented conventions</li>
+                        <li>Implement a versioning strategy that doesn't break existing clients</li>
+                        <li>Document authentication flows using sequence diagrams</li>
+                        <li>Define consistent error response contracts with actionable messages</li>
+                        <li>Choose between REST and GraphQL based on your project's needs</li>
+                    </ul>
+                    <p><strong>Estimated Time:</strong> 30 minutes</p>
+                </div>
+            </header>
+
+            <!-- Table of Contents -->
+            <details class="card toc-card" open>
+                <summary>
+                    <h2 style="display:inline; margin:0;">📑 In This Lesson</h2>
+                </summary>
+                <nav aria-label="Table of Contents">
+                    <ol>
+                        <li><a href="#restaurant" class="toc-link">The Restaurant Menu Analogy</a></li>
+                        <li><a href="#rest" class="toc-link">RESTful API Design Principles</a></li>
+                        <li><a href="#example" class="toc-link">Real-World Example: E-Commerce API</a></li>
+                        <li><a href="#versioning" class="toc-link">API Versioning Strategies</a></li>
+                        <li><a href="#auth" class="toc-link">Authentication &amp; Security</a></li>
+                        <li><a href="#errors" class="toc-link">Error Handling Contracts</a></li>
+                        <li><a href="#comparison" class="toc-link">GraphQL vs REST</a></li>
+                        <li><a href="#next" class="toc-link">Best Practices &amp; Next Steps</a></li>
+                    </ol>
+                </nav>
+            </details>
+
+            <!-- Section 1: Restaurant Analogy -->
+            <section id="restaurant">
+                <h2>The Restaurant Menu Analogy</h2>
+                <p>Imagine walking into a restaurant with no menu, where the waiter speaks a different language every visit, and sometimes your food arrives raw. That's what a poorly designed API feels like. A well-designed API is the opposite: the menu is clear (documentation), the orders are predictable (consistent endpoints), and the food arrives exactly as described (reliable responses).</p>
+
+                <canvas id="restaurantCanvas" width="600" height="400"></canvas>
+
+                <div class="card card-accent">
+                    <h4>💡 The Menu Is the Contract</h4>
+                    <p>In API terms, the menu is your <strong>API specification</strong> — an OpenAPI/Swagger document that describes every endpoint, every parameter, and every response shape. Just as a restaurant menu sets expectations before you order, a good API spec lets developers know exactly what to send and what they'll get back <em>before</em> they write a single line of code.</p>
+                </div>
+            </section>
+
+            <!-- Section 2: REST Principles -->
+            <section id="rest">
+                <h2>RESTful API Design Principles</h2>
+                <p>REST is like the grammar of API design — it gives us rules to communicate clearly. The word "RESTful" gets thrown around loosely, but at its core, REST is about treating everything as a <strong>resource</strong> identified by a URL and manipulated through standard HTTP verbs.</p>
+
+                <div class="mermaid">
+                graph TD
+                    A[RESTful Principles] --> B[Resources as Nouns]
+                    A --> C[HTTP Verbs as Actions]
+                    A --> D[Stateless Communication]
+                    A --> E[Uniform Interface]
+                    A --> F[Client-Server Separation]
+
+                    B --> B1["/users" not "/getUsers"]
+                    C --> C1["GET: Read | POST: Create | PUT: Update | DELETE: Remove"]
+                    D --> D1[Each request carries all context]
+                    E --> E1[Consistent URL patterns]
+                    F --> F1[API knows nothing about the UI]
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ REST Is a Style, Not a Standard</h4>
+                    <p>There's no official "REST certification." Two teams can both claim to be RESTful and disagree on nearly every design choice. What matters isn't purity — it's <strong>consistency</strong>. Document your conventions (plural nouns? nested routes? query params or body?) in your SDD and stick to them across every endpoint.</p>
+                </div>
+
+                <div class="card card-info">
+                    <h4>📖 The Verb Cheat Sheet</h4>
+                    <p><code>GET</code> is safe and idempotent — calling it 100 times has the same effect as calling it once. <code>PUT</code> is idempotent but not safe — it changes state, but repeating it doesn't change state further. <code>POST</code> is neither — every call may create a new resource. <code>DELETE</code> is idempotent — deleting something twice gives you the same result (it's gone). Understanding idempotency is critical for designing retry-safe APIs.</p>
+                </div>
+            </section>
+
+            <!-- Section 3: Real-World Example -->
+            <section id="example">
+                <h2>Real-World Example: E-Commerce API</h2>
+                <p>Let's see these principles in action. Below is an e-commerce product catalog API that follows REST conventions: resource-based URLs, proper HTTP verbs, pagination, and consistent JSON response shapes.</p>
+
+                <div class="card card-accent">
+                    <h3>Product Catalog API Endpoints</h3>
+
+                    <p><strong>GET /api/v1/products</strong> — List products with pagination</p>
+                    <pre><code>{
   "products": [
     {
       "id": "prod_123",
@@ -154,19 +164,16 @@
     "per_page": 20,
     "total": 485
   }
-}</pre>
-        </div>
-        
-        <div style="margin: 10px 0;">
-            <strong>POST /api/v1/orders</strong>
-            <pre style="background: #263238; color: #aed581; padding: 10px; border-radius: 5px;">
-// Request
+}</code></pre>
+
+                    <p><strong>POST /api/v1/orders</strong> — Create a new order</p>
+                    <pre><code>// Request
 {
   "customer_id": "cust_456",
   "items": [
-    {"product_id": "prod_123", "quantity": 2}
+    { "product_id": "prod_123", "quantity": 2 }
   ],
-  "shipping_address": {...}
+  "shipping_address": { ... }
 }
 
 // Response (201 Created)
@@ -175,319 +182,598 @@
   "status": "pending",
   "total": 159.98,
   "created_at": "2024-03-15T10:30:00Z"
-}</pre>
-        </div>
-    </div>
-    
-    <h2>API Versioning: The Evolution Strategy</h2>
-    
-    <canvas id="versioningCanvas" width="600" height="300"></canvas>
-    
-    <script>
-    const versionCanvas = document.getElementById('versioningCanvas');
-    const vctx = versionCanvas.getContext('2d');
-    
-    // Background
-    vctx.fillStyle = '#f5f5f5';
-    vctx.fillRect(0, 0, 600, 300);
-    
-    // Timeline
-    vctx.strokeStyle = '#333';
-    vctx.lineWidth = 3;
-    vctx.beginPath();
-    vctx.moveTo(50, 150);
-    vctx.lineTo(550, 150);
-    vctx.stroke();
-    
-    // Version points
-    const versions = [
-        {x: 100, label: 'v1', color: '#4CAF50', features: 'Basic CRUD'},
-        {x: 250, label: 'v2', color: '#2196F3', features: '+ Filtering'},
-        {x: 400, label: 'v3', color: '#FF9800', features: '+ Webhooks'},
-        {x: 500, label: 'v4', color: '#9C27B0', features: '+ GraphQL'}
-    ];
-    
-    versions.forEach((version, index) => {
-        // Version circle
-        vctx.fillStyle = version.color;
-        vctx.beginPath();
-        vctx.arc(version.x, 150, 20, 0, 2 * Math.PI);
-        vctx.fill();
-        
-        // Version label
-        vctx.fillStyle = '#fff';
-        vctx.font = '14px Arial';
-        vctx.fillText(version.label, version.x - 10, 155);
-        
-        // Features
-        vctx.fillStyle = '#333';
-        vctx.font = '11px Arial';
-        vctx.fillText(version.features, version.x - 30, 190);
-        
-        // Deprecation warning
-        if (index < 2) {
-            vctx.fillStyle = '#ffcccc';
-            vctx.fillRect(version.x - 40, 70, 80, 30);
-            vctx.fillStyle = '#d32f2f';
-            vctx.font = '10px Arial';
-            vctx.fillText('Deprecated', version.x - 30, 90);
-        }
-    });
-    
-    // Best practice note
-    vctx.fillStyle = '#666';
-    vctx.font = '12px Arial';
-    vctx.fillText('Support at least 2 versions concurrently for smooth migrations', 150, 250);
-    
-    // URL examples
-    vctx.fillStyle = '#333';
-    vctx.font = '11px Arial';
-    vctx.fillText('/api/v1/products', 60, 220);
-    vctx.fillText('/api/v2/products?filter=active', 180, 220);
-    vctx.fillText('/api/v3/products + webhooks', 330, 220);
-    </script>
-    
-    <h2>Authentication & Security: The Bouncer at the Door</h2>
-    
-    <div class="mermaid">
-    sequenceDiagram
-        participant Client
-        participant API
-        participant AuthServer
-        participant Database
-        
-        Client->>AuthServer: POST /auth/login<br/>{email, password}
-        AuthServer->>Database: Verify credentials
-        Database-->>AuthServer: User valid
-        AuthServer-->>Client: JWT Token
-        
-        Note over Client: Store token securely
-        
-        Client->>API: GET /api/products<br/>Authorization: Bearer {token}
-        API->>API: Validate JWT
-        API->>Database: Fetch products
-        Database-->>API: Product data
-        API-->>Client: 200 OK + Products
-        
-        Note over Client,API: All subsequent requests include token
-    </div>
-    
-    <h2>Error Handling: Speaking the Same Language</h2>
-    
-    <canvas id="errorCanvas" width="600" height="350"></canvas>
-    
-    <script>
-    const errorCanvas = document.getElementById('errorCanvas');
-    const ectx = errorCanvas.getContext('2d');
-    
-    // Background
-    ectx.fillStyle = '#fff';
-    ectx.fillRect(0, 0, 600, 350);
-    
-    // Title
-    ectx.fillStyle = '#333';
-    ectx.font = '16px Arial';
-    ectx.fillText('Consistent Error Response Format', 200, 30);
-    
-    // Error examples
-    const errors = [
-        {
-            code: 400,
-            color: '#FFA726',
-            title: 'Bad Request',
-            example: {
-                error: 'validation_failed',
-                message: 'Email is required',
-                field: 'email'
-            }
-        },
-        {
-            code: 401,
-            color: '#EF5350',
-            title: 'Unauthorized',
-            example: {
-                error: 'invalid_token',
-                message: 'Token has expired'
-            }
-        },
-        {
-            code: 404,
-            color: '#AB47BC',
-            title: 'Not Found',
-            example: {
-                error: 'resource_not_found',
-                message: 'Product with ID prod_999 not found'
-            }
-        },
-        {
-            code: 500,
-            color: '#EC407A',
-            title: 'Server Error',
-            example: {
-                error: 'internal_error',
-                message: 'An unexpected error occurred',
-                request_id: 'req_abc123'
-            }
-        }
-    ];
-    
-    errors.forEach((error, index) => {
-        const y = 60 + index * 70;
-        
-        // Status code box
-        ectx.fillStyle = error.color;
-        ectx.fillRect(50, y, 60, 50);
-        ectx.fillStyle = '#fff';
-        ectx.font = '18px Arial';
-        ectx.fillText(error.code, 65, y + 32);
-        
-        // Error details
-        ectx.fillStyle = '#f5f5f5';
-        ectx.fillRect(120, y, 430, 50);
-        
-        ectx.fillStyle = '#333';
-        ectx.font = '12px Arial';
-        ectx.fillText(error.title, 130, y + 15);
-        
-        ectx.font = '10px Courier';
-        ectx.fillText(JSON.stringify(error.example, null, 2).split('\n')[1], 130, y + 35);
-    });
-    
-    // Best practice
-    ectx.fillStyle = '#4CAF50';
-    ectx.fillRect(50, 310, 500, 30);
-    ectx.fillStyle = '#fff';
-    ectx.font = '12px Arial';
-    ectx.fillText('✓ Always return consistent error structure with actionable messages', 180, 330);
-    </script>
-    
-    <h2>API Documentation: The Instruction Manual</h2>
-    
-    <div class="mermaid">
-    graph LR
-        A[Good API Docs] --> B[Interactive Examples]
-        A --> C[Clear Authentication]
-        A --> D[Request/Response Samples]
-        A --> E[Error Scenarios]
-        A --> F[Rate Limits]
-        
-        B --> G[Try it now button]
-        C --> H[Step-by-step setup]
-        D --> I[Multiple languages]
-        E --> J[How to handle each]
-        F --> K[Headers show limits]
-        
-        style A fill:#4CAF50
-        style B fill:#81C784
-        style C fill:#81C784
-        style D fill:#81C784
-        style E fill:#81C784
-        style F fill:#81C784
-    </div>
-    
-    <h2>Rate Limiting: The Traffic Controller</h2>
-    
-    <div style="background-color: #fff3e0; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3>Rate Limiting Strategy</h3>
-        
-        <pre style="background: #263238; color: #aed581; padding: 10px; border-radius: 5px;">
-// Response Headers
-X-RateLimit-Limit: 1000
-X-RateLimit-Remaining: 487
-X-RateLimit-Reset: 1615642800
+}</code></pre>
+                </div>
 
-// When limit exceeded (429 Too Many Requests)
-{
-  "error": "rate_limit_exceeded",
-  "message": "API rate limit exceeded. Try again in 34 seconds.",
-  "retry_after": 34
-}</pre>
-        
-        <p><strong>Strategies:</strong></p>
-        <ul>
-            <li>🪟 <strong>Fixed Window:</strong> 1000 requests per hour</li>
-            <li>🎯 <strong>Sliding Window:</strong> More accurate, complex</li>
-            <li>🪣 <strong>Token Bucket:</strong> Allows bursts, refills over time</li>
-            <li>👤 <strong>Per-User Limits:</strong> Based on subscription tier</li>
-        </ul>
-    </div>
-    
-    <h2>GraphQL vs REST: Choose Your Fighter</h2>
-    
-    <canvas id="comparisonCanvas" width="600" height="300"></canvas>
-    
+                <div class="card card-success">
+                    <h4>✅ What Makes These Endpoints Good</h4>
+                    <p>Notice the patterns: resources are plural nouns (<code>/products</code>, <code>/orders</code>), IDs use prefixed strings (<code>prod_123</code>, <code>ord_789</code>) so you can tell what type of ID it is at a glance, pagination metadata is separate from the data array, and the POST response returns the created resource (not just an ID) so the client doesn't need a second request.</p>
+                </div>
+            </section>
+
+            <!-- Section 4: Versioning -->
+            <section id="versioning">
+                <h2>API Versioning: The Evolution Strategy</h2>
+                <p>APIs evolve, and old clients can't be forced to update overnight. Versioning lets you ship breaking changes without breaking existing integrations. The question isn't <em>whether</em> to version — it's <em>how</em>.</p>
+
+                <canvas id="versioningCanvas" width="600" height="300"></canvas>
+
+                <div class="card card-accent">
+                    <h4>💡 Three Versioning Approaches</h4>
+                    <p><strong>URL path versioning</strong> (<code>/api/v1/products</code>) is the most visible and easiest to understand. It's the most common choice and the one we recommend for SDDs.</p>
+                    <p><strong>Header versioning</strong> (<code>Accept: application/vnd.myapi.v2+json</code>) keeps URLs clean but is harder to test in a browser and easier to forget.</p>
+                    <p><strong>Query parameter versioning</strong> (<code>/api/products?version=2</code>) is a middle ground but can create confusing cache keys.</p>
+                </div>
+
+                <div class="card card-danger">
+                    <h4>🚫 The "Just Don't Break Anything" Fantasy</h4>
+                    <p>Some teams try to avoid versioning by making every change backward-compatible. This works for a while — until you need to rename a field, change a data type, or remove a deprecated feature. The result is an API littered with legacy fields that nobody is sure whether they can delete. Plan for versioning from day one.</p>
+                </div>
+            </section>
+
+            <!-- Section 5: Authentication -->
+            <section id="auth">
+                <h2>Authentication &amp; Security: The Bouncer at the Door</h2>
+                <p>Authentication answers "who are you?" and authorization answers "what are you allowed to do?" The most common pattern for APIs is token-based authentication using JWTs. Here's the full flow:</p>
+
+                <div class="mermaid">
+                sequenceDiagram
+                    participant Client
+                    participant API
+                    participant AuthServer
+                    participant Database
+
+                    Client->>AuthServer: POST /auth/login {email, password}
+                    AuthServer->>Database: Verify credentials
+                    Database-->>AuthServer: User valid
+                    AuthServer-->>Client: JWT Token
+
+                    Note over Client: Store token securely
+
+                    Client->>API: GET /api/products — Authorization: Bearer {token}
+                    API->>API: Validate JWT
+                    API->>Database: Fetch products
+                    Database-->>API: Product data
+                    API-->>Client: 200 OK + Products
+
+                    Note over Client,API: All subsequent requests include token
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ JWT Pitfalls to Document</h4>
+                    <p>JWTs are stateless — once issued, the server can't revoke them (without a blocklist). Document the token lifetime in your SDD (15 minutes is a reasonable default for access tokens, days/weeks for refresh tokens). Also document where tokens are stored on the client: <code>httpOnly</code> cookies for web apps (protects against XSS), secure storage for mobile apps. Never <code>localStorage</code>.</p>
+                </div>
+            </section>
+
+            <!-- Section 6: Error Handling -->
+            <section id="errors">
+                <h2>Error Handling: Speaking the Same Language</h2>
+                <p>Nothing destroys developer trust faster than inconsistent error responses. One endpoint returns <code>{"error": "bad request"}</code>, another returns <code>{"message": "invalid"}</code>, and a third returns bare HTML. Define a single error contract in your SDD and enforce it across every endpoint.</p>
+
+                <canvas id="errorCanvas" width="600" height="350"></canvas>
+
+                <div class="card card-accent">
+                    <h4>💡 The Error Contract Template</h4>
+                    <p>Every error response from your API should include at minimum:</p>
+                    <pre><code>{
+  "error": "machine_readable_code",
+  "message": "Human-readable explanation",
+  "status": 400,
+  "request_id": "req_abc123"
+}</code></pre>
+                    <p>The <code>error</code> field is a stable string that client code can switch on. The <code>message</code> field is for developers reading logs. The <code>request_id</code> field connects client errors to server-side logs — invaluable for debugging production issues.</p>
+                </div>
+
+                <div class="card card-info">
+                    <h4>📖 Status Code Groups to Know</h4>
+                    <p><strong>2xx — Success:</strong> 200 (OK), 201 (Created), 204 (No Content — for successful deletes).</p>
+                    <p><strong>4xx — Client Error:</strong> 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden — authenticated but not allowed), 404 (Not Found), 409 (Conflict), 429 (Rate Limited).</p>
+                    <p><strong>5xx — Server Error:</strong> 500 (Internal), 502 (Bad Gateway), 503 (Service Unavailable). Never leak stack traces in production 5xx responses.</p>
+                </div>
+            </section>
+
+            <!-- Section 7: GraphQL vs REST -->
+            <section id="comparison">
+                <h2>GraphQL vs REST: Choose Your Fighter</h2>
+                <p>This isn't a "one is better" debate — it's a trade-off analysis. REST is the safe, well-understood default. GraphQL solves specific problems (deeply nested data, multiple client types) at the cost of complexity. Document your choice and your reasoning in the SDD.</p>
+
+                <canvas id="comparisonCanvas" width="600" height="300"></canvas>
+
+                <div class="card card-success">
+                    <h4>✅ When to Choose What</h4>
+                    <p><strong>Choose REST when:</strong> your data model is resource-oriented, caching matters, your team is familiar with HTTP conventions, or you're building a public API (REST is easier for third-party developers to consume).</p>
+                    <p><strong>Choose GraphQL when:</strong> different clients need different slices of the same data (mobile wants less, dashboards want more), you have deeply nested relationships, or you're tired of creating one-off endpoints for every UI variation.</p>
+                    <p><strong>Consider both:</strong> many production systems use REST for public APIs and GraphQL for internal front-end-to-backend communication.</p>
+                </div>
+            </section>
+
+            <!-- Section 8: Best Practices & Next -->
+            <section id="next">
+                <h2>API Documentation &amp; Rate Limiting</h2>
+
+                <p>Even the best-designed API is useless if nobody knows how to use it. API documentation isn't a nice-to-have — it's the developer experience.</p>
+
+                <div class="mermaid">
+                graph LR
+                    A[Good API Docs] --> B[Interactive Examples]
+                    A --> C[Clear Authentication]
+                    A --> D[Request/Response Samples]
+                    A --> E[Error Scenarios]
+                    A --> F[Rate Limits]
+
+                    B --> G[Try-it-now buttons]
+                    C --> H[Step-by-step setup]
+                    D --> I[Multiple languages]
+                    E --> J[How to handle each]
+                    F --> K[Headers show limits]
+                </div>
+
+                <div class="card card-warning">
+                    <h4>⚠️ Rate Limiting: Don't Skip It</h4>
+                    <p>Without rate limiting, a single misbehaving client can bring your API down for everyone. Document your strategy in the SDD:</p>
+                    <p><strong>Fixed window:</strong> simple (1000 requests per hour) but bursty at window boundaries. <strong>Sliding window:</strong> smoother but more complex. <strong>Token bucket:</strong> allows controlled bursts, refills over time — the best balance for most APIs.</p>
+                    <p>Always return rate limit headers (<code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, <code>X-RateLimit-Reset</code>) so clients can self-throttle before hitting 429 errors.</p>
+                </div>
+
+                <h2>The API Designer's Checklist</h2>
+
+                <div class="card card-accent">
+                    <h3>📏 Ten Principles to Design By</h3>
+
+                    <p><strong>1. Use nouns for resources:</strong> <code>/products</code> not <code>/getProducts</code>. The HTTP verb already tells you the action.</p>
+
+                    <p><strong>2. Version your API:</strong> <code>/api/v1/...</code> from day one. It's free now and expensive to add later.</p>
+
+                    <p><strong>3. Use proper HTTP status codes:</strong> 201 for created, 204 for no content, 409 for conflicts. Don't return 200 for everything.</p>
+
+                    <p><strong>4. Support filtering and pagination:</strong> <code>?page=2&amp;limit=20&amp;category=electronics</code>. Without pagination, your list endpoints become time bombs as data grows.</p>
+
+                    <p><strong>5. Return consistent response shapes:</strong> Success responses always have the same structure. Error responses always have the same structure. No surprises.</p>
+
+                    <p><strong>6. Include request IDs:</strong> Every response should include a <code>request_id</code> that maps to server-side logs. This turns "the API is broken" support tickets into 5-minute investigations.</p>
+
+                    <p><strong>7. Document everything:</strong> If it's not documented, it doesn't exist. Use OpenAPI/Swagger and generate docs automatically.</p>
+
+                    <p><strong>8. Use HTTPS everywhere:</strong> Security is not optional. Never support plain HTTP in production — not even for internal APIs.</p>
+
+                    <p><strong>9. Implement CORS properly:</strong> Don't use <code>Access-Control-Allow-Origin: *</code> on authenticated endpoints. Whitelist specific origins.</p>
+
+                    <p><strong>10. Design for failure:</strong> Every network call can fail. Document timeout behavior, retry policies, and circuit-breaker patterns in your SDD.</p>
+                </div>
+
+                <div class="card card-danger">
+                    <h4>🚫 The "Internal API, Who Cares" Trap</h4>
+                    <p>Internal APIs become external APIs more often than you'd think — a partner integration, a mobile app, a microservice that another team adopts. Design every API as if it will eventually be consumed by people who can't walk over to your desk and ask questions. Your future self will thank you.</p>
+                </div>
+
+                <p>In the next lesson, we'll explore <strong>security considerations</strong> — how to build fortresses, not just houses. You'll learn to document authentication strategies, encryption requirements, input validation, and the threat modeling process.</p>
+
+                <div class="card card-accent text-center" style="padding: var(--spacing-xl);">
+                    <h3>💡 Key Takeaway</h3>
+                    <p>An API is a contract between your system and every client that depends on it. Design it like a public promise: be explicit about what you accept, what you return, how you handle errors, and when things will change. Document every decision in your SDD — because the worst API bugs aren't technical, they're expectation mismatches.</p>
+                </div>
+            </section>
+
+            <!-- Lesson Navigation -->
+            <nav class="lesson-nav" aria-label="Lesson Navigation">
+                <a href="data_design_modeling.html" class="prev-lesson">← Previous: Lesson 5 — Data Design</a>
+                <a href="index.html" class="home-link">🏠 Course Home</a>
+                <a href="security_considerations.html" class="next-lesson">Next: Lesson 7 — Security →</a>
+            </nav>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>&copy; 2026 Ray De La Paz / PetalFawnStudio. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="https://rays-home.netlify.app/">Ray's House of Fun</a>
+            <a href="https://rays-home.netlify.app/contact">Contact</a>
+            <a href="#" id="print-button">Print Page</a>
+        </div>
+        <p><small>Press <kbd>?</kbd> for keyboard shortcuts</small></p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/clipboard.js"></script>
+    <script src="js/course-enhancements.js"></script>
+
+    <!-- Theme-aware Canvas Drawing -->
     <script>
-    const compCanvas = document.getElementById('comparisonCanvas');
-    const cctx = compCanvas.getContext('2d');
-    
-    // Background
-    cctx.fillStyle = '#f9f9f9';
-    cctx.fillRect(0, 0, 600, 300);
-    
-    // REST side
-    cctx.fillStyle = '#4CAF50';
-    cctx.fillRect(20, 40, 270, 240);
-    cctx.fillStyle = '#fff';
-    cctx.font = '16px Arial';
-    cctx.fillText('REST', 135, 65);
-    
-    cctx.font = '12px Arial';
-    cctx.fillText('✓ Simple & familiar', 40, 100);
-    cctx.fillText('✓ HTTP caching', 40, 125);
-    cctx.fillText('✓ Stateless', 40, 150);
-    cctx.fillText('✗ Over/under fetching', 40, 175);
-    cctx.fillText('✗ Multiple requests', 40, 200);
-    
-    cctx.fillStyle = '#333';
-    cctx.font = '10px Courier';
-    cctx.fillText('GET /users/123', 40, 230);
-    cctx.fillText('GET /users/123/posts', 40, 245);
-    cctx.fillText('GET /users/123/friends', 40, 260);
-    
-    // GraphQL side
-    cctx.fillStyle = '#E91E63';
-    cctx.fillRect(310, 40, 270, 240);
-    cctx.fillStyle = '#fff';
-    cctx.font = '16px Arial';
-    cctx.fillText('GraphQL', 415, 65);
-    
-    cctx.font = '12px Arial';
-    cctx.fillText('✓ Get exactly what you need', 330, 100);
-    cctx.fillText('✓ Single request', 330, 125);
-    cctx.fillText('✓ Strong typing', 330, 150);
-    cctx.fillText('✗ Learning curve', 330, 175);
-    cctx.fillText('✗ Complex caching', 330, 200);
-    
-    cctx.fillStyle = '#333';
-    cctx.font = '10px Courier';
-    cctx.fillText('query {', 330, 230);
-    cctx.fillText('  user(id: 123) {', 330, 245);
-    cctx.fillText('    name, posts, friends', 330, 260);
-    cctx.fillText('  }', 330, 275);
-    
-    // VS
-    cctx.fillStyle = '#333';
-    cctx.font = '20px Arial';
-    cctx.fillText('VS', 290, 160);
+    // ── Restaurant Canvas ────────────────────────────────────────
+    // API as a restaurant: client, menu, request/response flow
+    window.registerCanvas('restaurantCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Restaurant building
+        ctx.fillStyle = C.accent4;
+        ctx.fillRect(w * 0.25, h * 0.25, w * 0.5, h * 0.65);
+
+        // Door
+        ctx.fillStyle = C.muted;
+        ctx.fillRect(w * 0.44, h * 0.5, w * 0.12, h * 0.4);
+
+        // Sign
+        ctx.fillStyle = C.highlight;
+        ctx.fillRect(w * 0.33, h * 0.14, w * 0.34, h * 0.1);
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('API Restaurant', w * 0.5, h * 0.21);
+
+        // Menu board (left side)
+        ctx.fillStyle = C.card;
+        ctx.fillRect(w * 0.28, h * 0.32, w * 0.16, h * 0.38);
+        ctx.strokeStyle = C.border;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(w * 0.28, h * 0.32, w * 0.16, h * 0.38);
+
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 11px monospace';
+        ctx.fillText('MENU', w * 0.36, h * 0.38);
+        ctx.font = '10px monospace';
+        ctx.fillStyle = C.accent1;
+        ctx.fillText('GET /users', w * 0.36, h * 0.44);
+        ctx.fillStyle = C.accent2;
+        ctx.fillText('POST /orders', w * 0.36, h * 0.50);
+        ctx.fillStyle = C.accent4;
+        ctx.fillText('PUT /items/:id', w * 0.36, h * 0.56);
+        ctx.fillStyle = C.danger;
+        ctx.fillText('DELETE /cart', w * 0.36, h * 0.62);
+
+        // Response window (right side)
+        ctx.fillStyle = C.accent1;
+        ctx.globalAlpha = 0.2;
+        ctx.fillRect(w * 0.56, h * 0.32, w * 0.16, h * 0.16);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = C.accent1;
+        ctx.strokeRect(w * 0.56, h * 0.32, w * 0.16, h * 0.16);
+        ctx.fillStyle = C.accent1;
+        ctx.font = 'bold 11px Arial';
+        ctx.fillText('Order Ready!', w * 0.64, h * 0.39);
+        ctx.font = '11px monospace';
+        ctx.fillText('200 OK', w * 0.64, h * 0.45);
+
+        // Client (stick figure on the left)
+        ctx.fillStyle = C.accent3;
+        ctx.beginPath();
+        ctx.arc(w * 0.12, h * 0.55, 16, 0, 2 * Math.PI);
+        ctx.fill();
+        // Body
+        ctx.strokeStyle = C.accent3;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(w * 0.12, h * 0.59);
+        ctx.lineTo(w * 0.12, h * 0.72);
+        ctx.stroke();
+        // Arms
+        ctx.beginPath();
+        ctx.moveTo(w * 0.08, h * 0.64);
+        ctx.lineTo(w * 0.16, h * 0.64);
+        ctx.stroke();
+        // Legs
+        ctx.beginPath();
+        ctx.moveTo(w * 0.12, h * 0.72);
+        ctx.lineTo(w * 0.09, h * 0.82);
+        ctx.moveTo(w * 0.12, h * 0.72);
+        ctx.lineTo(w * 0.15, h * 0.82);
+        ctx.stroke();
+
+        ctx.fillStyle = C.text;
+        ctx.font = '11px Arial';
+        ctx.fillText('Client', w * 0.12, h * 0.88);
+
+        // Speech bubble
+        ctx.fillStyle = C.card;
+        ctx.beginPath();
+        ctx.moveTo(w * 0.16, h * 0.46);
+        ctx.lineTo(w * 0.26, h * 0.46);
+        ctx.lineTo(w * 0.26, h * 0.38);
+        ctx.lineTo(w * 0.18, h * 0.38);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = C.border;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = C.text;
+        ctx.font = '10px monospace';
+        ctx.fillText('GET /users', w * 0.21, h * 0.43);
+
+        // Request arrow
+        ctx.strokeStyle = C.accent1;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(w * 0.18, h * 0.55);
+        ctx.lineTo(w * 0.25, h * 0.55);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Arrow head
+        ctx.beginPath();
+        ctx.moveTo(w * 0.25, h * 0.55);
+        ctx.lineTo(w * 0.24, h * 0.53);
+        ctx.moveTo(w * 0.25, h * 0.55);
+        ctx.lineTo(w * 0.24, h * 0.57);
+        ctx.stroke();
+
+        ctx.fillStyle = C.textLight;
+        ctx.font = '10px Arial';
+        ctx.fillText('Request →', w * 0.18, h * 0.52);
+
+        // Response arrow (right side, coming out)
+        ctx.strokeStyle = C.accent2;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(w * 0.75, h * 0.55);
+        ctx.lineTo(w * 0.88, h * 0.55);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.beginPath();
+        ctx.moveTo(w * 0.88, h * 0.55);
+        ctx.lineTo(w * 0.87, h * 0.53);
+        ctx.moveTo(w * 0.88, h * 0.55);
+        ctx.lineTo(w * 0.87, h * 0.57);
+        ctx.stroke();
+
+        ctx.fillStyle = C.textLight;
+        ctx.font = '10px Arial';
+        ctx.fillText('← Response', w * 0.78, h * 0.52);
+
+        // JSON response box on far right
+        ctx.fillStyle = C.card;
+        ctx.strokeStyle = C.border;
+        ctx.lineWidth = 1;
+        ctx.fillRect(w * 0.8, h * 0.6, w * 0.17, h * 0.2);
+        ctx.strokeRect(w * 0.8, h * 0.6, w * 0.17, h * 0.2);
+
+        ctx.fillStyle = C.accent1;
+        ctx.font = '9px monospace';
+        ctx.fillText('{ "users":', w * 0.885, h * 0.66);
+        ctx.fillText('[{...}] }', w * 0.885, h * 0.72);
+        ctx.fillStyle = C.textLight;
+        ctx.font = '9px Arial';
+        ctx.fillText('JSON', w * 0.885, h * 0.78);
+
+        ctx.textAlign = 'start';
+    });
+
+    // ── Versioning Canvas ────────────────────────────────────────
+    // Timeline showing API versions with deprecation markers
+    window.registerCanvas('versioningCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 15px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('API Version Timeline', w / 2, 24);
+
+        // Timeline line
+        ctx.strokeStyle = C.border;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(50, 130);
+        ctx.lineTo(w - 50, 130);
+        ctx.stroke();
+
+        // Arrowhead at end
+        ctx.fillStyle = C.border;
+        ctx.beginPath();
+        ctx.moveTo(w - 50, 130);
+        ctx.lineTo(w - 60, 124);
+        ctx.lineTo(w - 60, 136);
+        ctx.closePath();
+        ctx.fill();
+
+        var versions = [
+            { x: w * 0.15, label: 'v1', color: C.accent1, features: 'Basic CRUD',   deprecated: true },
+            { x: w * 0.38, label: 'v2', color: C.accent2, features: '+ Filtering',   deprecated: true },
+            { x: w * 0.61, label: 'v3', color: C.accent4, features: '+ Webhooks',    deprecated: false },
+            { x: w * 0.82, label: 'v4', color: C.accent3, features: '+ GraphQL',     deprecated: false }
+        ];
+
+        versions.forEach(function(v) {
+            // Version circle
+            ctx.fillStyle = v.color;
+            ctx.beginPath();
+            ctx.arc(v.x, 130, 20, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Version label
+            ctx.fillStyle = C.card;
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(v.label, v.x, 135);
+
+            // Features below
+            ctx.fillStyle = C.text;
+            ctx.font = '11px Arial';
+            ctx.fillText(v.features, v.x, 170);
+
+            // Deprecation marker
+            if (v.deprecated) {
+                ctx.fillStyle = C.danger;
+                ctx.globalAlpha = 0.15;
+                ctx.fillRect(v.x - 38, 60, 76, 28);
+                ctx.globalAlpha = 1;
+                ctx.strokeStyle = C.danger;
+                ctx.lineWidth = 1;
+                ctx.strokeRect(v.x - 38, 60, 76, 28);
+                ctx.fillStyle = C.danger;
+                ctx.font = 'bold 10px Arial';
+                ctx.fillText('Deprecated', v.x, 78);
+            }
+        });
+
+        // URL examples
+        ctx.font = '10px monospace';
+        ctx.fillStyle = C.textLight;
+        ctx.fillText('/api/v1/products', versions[0].x, 200);
+        ctx.fillText('/api/v2/products', versions[1].x, 200);
+        ctx.fillText('/api/v3/products', versions[2].x, 200);
+        ctx.fillText('/api/v4/products', versions[3].x, 200);
+
+        // Best practice note
+        ctx.fillStyle = C.text;
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Support at least 2 versions concurrently for smooth migrations', w / 2, h - 30);
+
+        // Active window indicator
+        ctx.strokeStyle = C.accent1;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.strokeRect(versions[2].x - 50, 48, versions[3].x - versions[2].x + 100, 170);
+        ctx.setLineDash([]);
+        ctx.fillStyle = C.accent1;
+        ctx.font = 'bold 10px Arial';
+        ctx.fillText('Active Versions', (versions[2].x + versions[3].x) / 2, 44);
+
+        ctx.textAlign = 'start';
+    });
+
+    // ── Error Canvas ─────────────────────────────────────────────
+    // HTTP error codes with color-coded status blocks
+    window.registerCanvas('errorCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // Title
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 15px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Consistent Error Response Format', w / 2, 24);
+
+        var errors = [
+            { code: '400', color: C.accent4,  title: 'Bad Request',   field: '"error": "validation_failed", "message": "Email is required"' },
+            { code: '401', color: C.danger,    title: 'Unauthorized',  field: '"error": "invalid_token", "message": "Token has expired"' },
+            { code: '404', color: C.accent3,   title: 'Not Found',     field: '"error": "resource_not_found", "message": "Product prod_999 not found"' },
+            { code: '500', color: C.accent5 || C.muted, title: 'Server Error', field: '"error": "internal_error", "request_id": "req_abc123"' }
+        ];
+
+        errors.forEach(function(err, i) {
+            var y = 45 + i * 68;
+
+            // Status code block
+            ctx.fillStyle = err.color;
+            ctx.fillRect(40, y, 60, 50);
+            ctx.fillStyle = C.card;
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(err.code, 70, y + 32);
+
+            // Detail card
+            ctx.fillStyle = C.card;
+            ctx.fillRect(110, y, w - 150, 50);
+            ctx.strokeStyle = C.border;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(110, y, w - 150, 50);
+
+            ctx.textAlign = 'start';
+            ctx.fillStyle = C.text;
+            ctx.font = 'bold 12px Arial';
+            ctx.fillText(err.title, 120, y + 18);
+
+            ctx.fillStyle = C.textLight;
+            ctx.font = '10px monospace';
+            // Truncate if needed
+            var fieldText = err.field;
+            if (ctx.measureText(fieldText).width > w - 175) {
+                fieldText = fieldText.substring(0, 60) + '...';
+            }
+            ctx.fillText(fieldText, 120, y + 38);
+        });
+
+        // Best practice bar at bottom
+        ctx.fillStyle = C.accent1;
+        ctx.fillRect(40, h - 45, w - 80, 32);
+        ctx.fillStyle = C.card;
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Always return consistent error structure with actionable messages', w / 2, h - 24);
+
+        ctx.textAlign = 'start';
+    });
+
+    // ── Comparison Canvas ────────────────────────────────────────
+    // REST vs GraphQL side-by-side
+    window.registerCanvas('comparisonCanvas', function(ctx, w, h, C) {
+        ctx.fillStyle = C.bg;
+        ctx.fillRect(0, 0, w, h);
+
+        var half = w / 2;
+
+        // ── REST side ──
+        ctx.fillStyle = C.accent1;
+        ctx.fillRect(10, 30, half - 20, h - 40);
+
+        ctx.fillStyle = C.card;
+        ctx.font = 'bold 18px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('REST', half / 2, 58);
+
+        ctx.font = '12px Arial';
+        var restPros = ['Simple & familiar', 'HTTP caching built-in', 'Stateless by design'];
+        var restCons = ['Over/under fetching', 'Multiple round trips'];
+        restPros.forEach(function(p, i) {
+            ctx.fillText('✓ ' + p, half / 2, 85 + i * 22);
+        });
+        ctx.fillStyle = C.card;
+        ctx.globalAlpha = 0.7;
+        restCons.forEach(function(c, i) {
+            ctx.fillText('✗ ' + c, half / 2, 85 + (restPros.length + i) * 22);
+        });
+        ctx.globalAlpha = 1;
+
+        // REST code example
+        ctx.fillStyle = C.card;
+        ctx.font = '10px monospace';
+        ctx.fillText('GET /users/123', half / 2, h - 65);
+        ctx.fillText('GET /users/123/posts', half / 2, h - 50);
+        ctx.fillText('GET /users/123/friends', half / 2, h - 35);
+
+        // ── GraphQL side ──
+        ctx.fillStyle = C.accent3;
+        ctx.fillRect(half + 10, 30, half - 20, h - 40);
+
+        ctx.fillStyle = C.card;
+        ctx.font = 'bold 18px Arial';
+        ctx.fillText('GraphQL', half + half / 2, 58);
+
+        ctx.font = '12px Arial';
+        var gqlPros = ['Get exactly what you need', 'Single request', 'Strong type system'];
+        var gqlCons = ['Steeper learning curve', 'Complex caching'];
+        gqlPros.forEach(function(p, i) {
+            ctx.fillText('✓ ' + p, half + half / 2, 85 + i * 22);
+        });
+        ctx.fillStyle = C.card;
+        ctx.globalAlpha = 0.7;
+        gqlCons.forEach(function(c, i) {
+            ctx.fillText('✗ ' + c, half + half / 2, 85 + (gqlPros.length + i) * 22);
+        });
+        ctx.globalAlpha = 1;
+
+        // GraphQL code example
+        ctx.fillStyle = C.card;
+        ctx.font = '10px monospace';
+        ctx.fillText('query {', half + half / 2, h - 75);
+        ctx.fillText('  user(id: 123) {', half + half / 2, h - 60);
+        ctx.fillText('    name, posts, friends', half + half / 2, h - 45);
+        ctx.fillText('  }', half + half / 2, h - 30);
+
+        // VS divider
+        ctx.fillStyle = C.text;
+        ctx.font = 'bold 22px Arial';
+        ctx.fillText('VS', w / 2, h / 2 + 5);
+
+        ctx.textAlign = 'start';
+    });
     </script>
-    
-    <h2>Best Practices Checklist</h2>
-    
-    <div style="background-color: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3>The API Designer's Checklist</h3>
-        
-        <p>☑️ <strong>Use nouns for resources:</strong> <code>/products</code> not <code>/getProducts</code></p>
-        <p>☑️ <strong>Version your API:</strong> <code>/api/v1/...</code></p>
-        <p>☑️ <strong>Use proper HTTP status codes:</strong> 201 for created, 204 for no content</p>
-        <p>☑️ <strong>Support filtering and pagination:</strong> <code>?page=2&limit=20&category=electronics</code></p>
-        <p>☑️ <strong>Return consistent responses:</strong> Always use the same structure</p>
-        <p>☑️ <strong>Include request IDs:</strong> For debugging and support</p>
-        <p>☑️ <strong>Document everything:</strong> If it's not documented, it doesn't exist</p>
-        <p>☑️ <strong>Use HTTPS everywhere:</strong> Security is not optional</p>
-        <p>☑️ <strong>Implement CORS properly:</strong> Don't just use <code>*</code></p>
-        <p>☑️ <strong>Design for failure:</strong> What happens when things go wrong?</p>
-    </div>
-    
-    <p><em>Next, we'll explore security considerations in design documents - building fortresses, not just houses!</em></p>
 </body>
 </html>
