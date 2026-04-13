@@ -122,8 +122,8 @@
                     A --> E[Uniform Interface]
                     A --> F[Client-Server Separation]
 
-                    B --> B1["/users" not "/getUsers"]
-                    C --> C1["GET: Read | POST: Create | PUT: Update | DELETE: Remove"]
+                    B --> B1["/users, not /getUsers"]
+                    C --> C1["GET: Read<br/>POST: Create<br/>PUT: Update<br/>DELETE: Remove"]
                     D --> D1[Each request carries all context]
                     E --> E1[Consistent URL patterns]
                     F --> F1[API knows nothing about the UI]
@@ -440,19 +440,16 @@
         ctx.beginPath();
         ctx.arc(w * 0.12, h * 0.55, 16, 0, 2 * Math.PI);
         ctx.fill();
-        // Body
         ctx.strokeStyle = C.accent3;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(w * 0.12, h * 0.59);
         ctx.lineTo(w * 0.12, h * 0.72);
         ctx.stroke();
-        // Arms
         ctx.beginPath();
         ctx.moveTo(w * 0.08, h * 0.64);
         ctx.lineTo(w * 0.16, h * 0.64);
         ctx.stroke();
-        // Legs
         ctx.beginPath();
         ctx.moveTo(w * 0.12, h * 0.72);
         ctx.lineTo(w * 0.09, h * 0.82);
@@ -481,7 +478,6 @@
         ctx.font = '10px monospace';
         ctx.fillText('GET /users', w * 0.21, h * 0.43);
 
-        // Request arrow
         ctx.strokeStyle = C.accent1;
         ctx.lineWidth = 2;
         ctx.setLineDash([4, 4]);
@@ -491,7 +487,6 @@
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Arrow head
         ctx.beginPath();
         ctx.moveTo(w * 0.25, h * 0.55);
         ctx.lineTo(w * 0.24, h * 0.53);
@@ -503,7 +498,6 @@
         ctx.font = '10px Arial';
         ctx.fillText('Request →', w * 0.18, h * 0.52);
 
-        // Response arrow (right side, coming out)
         ctx.strokeStyle = C.accent2;
         ctx.lineWidth = 2;
         ctx.setLineDash([4, 4]);
@@ -524,7 +518,6 @@
         ctx.font = '10px Arial';
         ctx.fillText('← Response', w * 0.78, h * 0.52);
 
-        // JSON response box on far right
         ctx.fillStyle = C.card;
         ctx.strokeStyle = C.border;
         ctx.lineWidth = 1;
@@ -543,26 +536,19 @@
     });
 
     // ── Versioning Canvas ────────────────────────────────────────
-    // Timeline showing API versions with deprecation markers
     window.registerCanvas('versioningCanvas', function(ctx, w, h, C) {
         ctx.fillStyle = C.bg;
         ctx.fillRect(0, 0, w, h);
-
-        // Title
         ctx.fillStyle = C.text;
         ctx.font = 'bold 15px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('API Version Timeline', w / 2, 24);
-
-        // Timeline line
         ctx.strokeStyle = C.border;
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.moveTo(50, 130);
         ctx.lineTo(w - 50, 130);
         ctx.stroke();
-
-        // Arrowhead at end
         ctx.fillStyle = C.border;
         ctx.beginPath();
         ctx.moveTo(w - 50, 130);
@@ -570,33 +556,24 @@
         ctx.lineTo(w - 60, 136);
         ctx.closePath();
         ctx.fill();
-
         var versions = [
             { x: w * 0.15, label: 'v1', color: C.accent1, features: 'Basic CRUD',   deprecated: true },
             { x: w * 0.38, label: 'v2', color: C.accent2, features: '+ Filtering',   deprecated: true },
             { x: w * 0.61, label: 'v3', color: C.accent4, features: '+ Webhooks',    deprecated: false },
             { x: w * 0.82, label: 'v4', color: C.accent3, features: '+ GraphQL',     deprecated: false }
         ];
-
         versions.forEach(function(v) {
-            // Version circle
             ctx.fillStyle = v.color;
             ctx.beginPath();
             ctx.arc(v.x, 130, 20, 0, 2 * Math.PI);
             ctx.fill();
-
-            // Version label
             ctx.fillStyle = C.card;
             ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'center';
             ctx.fillText(v.label, v.x, 135);
-
-            // Features below
             ctx.fillStyle = C.text;
             ctx.font = '11px Arial';
             ctx.fillText(v.features, v.x, 170);
-
-            // Deprecation marker
             if (v.deprecated) {
                 ctx.fillStyle = C.danger;
                 ctx.globalAlpha = 0.15;
@@ -610,22 +587,16 @@
                 ctx.fillText('Deprecated', v.x, 78);
             }
         });
-
-        // URL examples
         ctx.font = '10px monospace';
         ctx.fillStyle = C.textLight;
         ctx.fillText('/api/v1/products', versions[0].x, 200);
         ctx.fillText('/api/v2/products', versions[1].x, 200);
         ctx.fillText('/api/v3/products', versions[2].x, 200);
         ctx.fillText('/api/v4/products', versions[3].x, 200);
-
-        // Best practice note
         ctx.fillStyle = C.text;
         ctx.font = '12px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('Support at least 2 versions concurrently for smooth migrations', w / 2, h - 30);
-
-        // Active window indicator
         ctx.strokeStyle = C.accent1;
         ctx.lineWidth = 2;
         ctx.setLineDash([6, 4]);
@@ -634,90 +605,68 @@
         ctx.fillStyle = C.accent1;
         ctx.font = 'bold 10px Arial';
         ctx.fillText('Active Versions', (versions[2].x + versions[3].x) / 2, 44);
-
         ctx.textAlign = 'start';
     });
 
     // ── Error Canvas ─────────────────────────────────────────────
-    // HTTP error codes with color-coded status blocks
     window.registerCanvas('errorCanvas', function(ctx, w, h, C) {
         ctx.fillStyle = C.bg;
         ctx.fillRect(0, 0, w, h);
-
-        // Title
         ctx.fillStyle = C.text;
         ctx.font = 'bold 15px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('Consistent Error Response Format', w / 2, 24);
-
         var errors = [
             { code: '400', color: C.accent4,  title: 'Bad Request',   field: '"error": "validation_failed", "message": "Email is required"' },
             { code: '401', color: C.danger,    title: 'Unauthorized',  field: '"error": "invalid_token", "message": "Token has expired"' },
             { code: '404', color: C.accent3,   title: 'Not Found',     field: '"error": "resource_not_found", "message": "Product prod_999 not found"' },
             { code: '500', color: C.accent5 || C.muted, title: 'Server Error', field: '"error": "internal_error", "request_id": "req_abc123"' }
         ];
-
         errors.forEach(function(err, i) {
             var y = 45 + i * 68;
-
-            // Status code block
             ctx.fillStyle = err.color;
             ctx.fillRect(40, y, 60, 50);
             ctx.fillStyle = C.card;
             ctx.font = 'bold 18px Arial';
             ctx.textAlign = 'center';
             ctx.fillText(err.code, 70, y + 32);
-
-            // Detail card
             ctx.fillStyle = C.card;
             ctx.fillRect(110, y, w - 150, 50);
             ctx.strokeStyle = C.border;
             ctx.lineWidth = 1;
             ctx.strokeRect(110, y, w - 150, 50);
-
             ctx.textAlign = 'start';
             ctx.fillStyle = C.text;
             ctx.font = 'bold 12px Arial';
             ctx.fillText(err.title, 120, y + 18);
-
             ctx.fillStyle = C.textLight;
             ctx.font = '10px monospace';
-            // Truncate if needed
             var fieldText = err.field;
             if (ctx.measureText(fieldText).width > w - 175) {
                 fieldText = fieldText.substring(0, 60) + '...';
             }
             ctx.fillText(fieldText, 120, y + 38);
         });
-
-        // Best practice bar at bottom
         ctx.fillStyle = C.accent1;
         ctx.fillRect(40, h - 45, w - 80, 32);
         ctx.fillStyle = C.card;
         ctx.font = '12px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('Always return consistent error structure with actionable messages', w / 2, h - 24);
-
         ctx.textAlign = 'start';
     });
 
     // ── Comparison Canvas ────────────────────────────────────────
-    // REST vs GraphQL side-by-side
     window.registerCanvas('comparisonCanvas', function(ctx, w, h, C) {
         ctx.fillStyle = C.bg;
         ctx.fillRect(0, 0, w, h);
-
         var half = w / 2;
-
-        // ── REST side ──
         ctx.fillStyle = C.accent1;
         ctx.fillRect(10, 30, half - 20, h - 40);
-
         ctx.fillStyle = C.card;
         ctx.font = 'bold 18px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('REST', half / 2, 58);
-
         ctx.font = '12px Arial';
         var restPros = ['Simple & familiar', 'HTTP caching built-in', 'Stateless by design'];
         var restCons = ['Over/under fetching', 'Multiple round trips'];
@@ -730,22 +679,16 @@
             ctx.fillText('✗ ' + c, half / 2, 85 + (restPros.length + i) * 22);
         });
         ctx.globalAlpha = 1;
-
-        // REST code example
         ctx.fillStyle = C.card;
         ctx.font = '10px monospace';
         ctx.fillText('GET /users/123', half / 2, h - 65);
         ctx.fillText('GET /users/123/posts', half / 2, h - 50);
         ctx.fillText('GET /users/123/friends', half / 2, h - 35);
-
-        // ── GraphQL side ──
         ctx.fillStyle = C.accent3;
         ctx.fillRect(half + 10, 30, half - 20, h - 40);
-
         ctx.fillStyle = C.card;
         ctx.font = 'bold 18px Arial';
         ctx.fillText('GraphQL', half + half / 2, 58);
-
         ctx.font = '12px Arial';
         var gqlPros = ['Get exactly what you need', 'Single request', 'Strong type system'];
         var gqlCons = ['Steeper learning curve', 'Complex caching'];
@@ -758,20 +701,15 @@
             ctx.fillText('✗ ' + c, half + half / 2, 85 + (gqlPros.length + i) * 22);
         });
         ctx.globalAlpha = 1;
-
-        // GraphQL code example
         ctx.fillStyle = C.card;
         ctx.font = '10px monospace';
         ctx.fillText('query {', half + half / 2, h - 75);
         ctx.fillText('  user(id: 123) {', half + half / 2, h - 60);
         ctx.fillText('    name, posts, friends', half + half / 2, h - 45);
         ctx.fillText('  }', half + half / 2, h - 30);
-
-        // VS divider
         ctx.fillStyle = C.text;
         ctx.font = 'bold 22px Arial';
         ctx.fillText('VS', w / 2, h / 2 + 5);
-
         ctx.textAlign = 'start';
     });
     </script>
